@@ -1,0 +1,130 @@
+Nome: Erik Mello
+Número: 1
+Posição: Goleiro
+Status: Ativo
+
+ID: 2
+Nome: Rodrigo Diguin
+Número: 3
+Posição: Ala
+Status: Ativo
+
+ID: 3
+Nome: Jhon Marques
+Número: 4
+Posição: Fixo
+Status: Ativo
+
+ID: 4
+Nome: Yuri De Paula
+Número: 5
+Posição: Ala
+Status: Ativo
+
+ID: 5
+Nome: Yuri Cursino
+Número: 7
+Posição: Meio
+Status: Ativo
+
+ID: 6
+Nome: Matheus Mesquita
+Número: 8
+Posição: Meio
+Status: Ativo
+
+ID: 7
+Nome: Lucas Aurnheimer
+Número: 9
+Posição: Pivô
+Status: Ativo
+
+ID: 8
+Nome: Leandro Oscar
+Número: 10
+Posição: Meio
+Status: Ativo
+
+ID: 9
+Nome: Hugo Dortas
+Número: 11
+Posição: Meio
+Status: Ativo
+
+ID: 10
+Nome: Dayvid Coelho
+Número: 12
+Posição: Pivô
+Status: Ativo
+
+ID: 11
+Nome: Jorge Ribeiro
+Número: 14
+Posição: Ala
+Status: Ativo
+
+ID: 12
+Nome: Luiz Davi
+Número: 18
+Posição: Fixo
+Status: Ativo
+
+ID: 13
+Nome: Henrique Lima
+Número: 20
+Posição: Ala
+Status: Ativo
+
+ID: 14
+Nome: Fabricio Vieira
+Número: 23
+Posição: Fixo
+Status: Ativo
+
+ID: 15
+Nome: Edgar Marins
+Número: 25
+Posição: Goleiro
+Status: Ativo
+
+ID: 16
+Nome: Andrey Gomes
+Número: 47
+Posição: Meio
+Status: Ativo
+
+ID: 17
+Nome: Jonathan Lima
+Número: 99
+Posição: Pivô
+Status: Ativo
+
+ID: 18
+Nome: João Pedro
+Número: 77
+Posição: Ala
+Status: Ativo
+
+ID: 19
+Nome: Arthur Petrone
+Número: 13
+Posição: Ala
+Status: Ativo
+
+ID: 20
+Nome: Matheus Rêgo
+Número: 16
+Posição: Fixo
+Status: Ativo
+
+ID: 21
+Nome: Ramon Tertuliano
+Número: 97
+Posição: Pivô
+Status: Ativo
+
+ID: 22
+Nome: Coutinho
+Número: 22
+Posição: Meio
+Status: Ativo
