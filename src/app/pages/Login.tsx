@@ -42,7 +42,7 @@ export function Login() {
       >
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 bg-clip-text text-transparent mb-2">
-            Sadock FC
+            Idosos da Zona Norte
           </h1>
           <p className="text-zinc-400">Painel Administrativo</p>
         </div>
