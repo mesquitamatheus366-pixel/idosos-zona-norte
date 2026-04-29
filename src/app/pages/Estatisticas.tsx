@@ -33,8 +33,8 @@ export function Estatisticas() {
     <div className="min-h-screen bg-[#0b0b0b] text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="flex items-center gap-3 mb-2">
-          <Trophy className="text-[#d3b379]" size={20} />
-          <p className="font-['Roboto',sans-serif] text-[11px] tracking-[0.3em] text-[#d3b379]">
+          <Trophy className="text-[#22ff88]" size={20} />
+          <p className="font-['Roboto',sans-serif] text-[11px] tracking-[0.3em] text-[#22ff88]">
             RANKING
           </p>
         </div>
@@ -70,12 +70,12 @@ export function Estatisticas() {
                   <tr key={r.jogador_id} className="border-b border-white/[0.04] hover:bg-white/[0.02]">
                     <td className="px-4 py-3 font-medium">{r.nome}</td>
                     <td className="px-3 py-3 text-center text-white/60">{r.jogos_disputados}</td>
-                    <td className="px-3 py-3 text-center text-[#d3b379] font-bold">{r.gols}</td>
+                    <td className="px-3 py-3 text-center text-[#22ff88] font-bold">{r.gols}</td>
                     <td className="px-3 py-3 text-center">{r.assistencias}</td>
                     <td className="px-3 py-3 text-center text-emerald-400">{r.vitorias}</td>
                     <td className="px-3 py-3 text-center text-white/60">{r.empates}</td>
                     <td className="px-3 py-3 text-center text-rose-400">{r.derrotas}</td>
-                    <td className="px-3 py-3 text-center text-[#d3b379]">{r.mvp_count}</td>
+                    <td className="px-3 py-3 text-center text-[#22ff88]">{r.mvp_count}</td>
                   </tr>
                 ))}
               </tbody>

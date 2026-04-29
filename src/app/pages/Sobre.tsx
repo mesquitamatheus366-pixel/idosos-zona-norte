@@ -2,7 +2,7 @@ export function Sobre() {
   return (
     <div className="min-h-screen bg-[#0b0b0b] text-white">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <p className="font-['Roboto',sans-serif] text-[11px] tracking-[0.3em] text-[#d3b379] mb-3">
+        <p className="font-['Roboto',sans-serif] text-[11px] tracking-[0.3em] text-[#22ff88] mb-3">
           A PELADA
         </p>
         <h1 className="font-['Roboto',sans-serif] font-bold text-4xl sm:text-5xl mb-8">
@@ -18,16 +18,16 @@ export function Sobre() {
           </p>
 
           <p>
-            Tem dois tipos de jogador: o <strong className="text-[#d3b379]">mensalista</strong>,
+            Tem dois tipos de jogador: o <strong className="text-[#22ff88]">mensalista</strong>,
             que paga uma mensalidade fixa e tem prioridade nas partidas e benefícios; e o{" "}
-            <strong className="text-[#d3b379]">diarista</strong>, que paga por jogo. A
+            <strong className="text-[#22ff88]">diarista</strong>, que paga por jogo. A
             tag pode mudar todo mês — então fique de olho no histórico do jogador na
             página dele.
           </p>
 
           <p>
             O sorteio dos times tenta sempre equilibrar a galera por nível técnico e
-            posição (goleiro/linha) — então não adianta reclamar quando seu time
+            posição (goleiro, fixo, ala, meio e pivô) — então não adianta reclamar quando seu time
             perder. As estatísticas registram tudo: gols, assistências, vitórias,
             empates, derrotas, presença e o MVP de cada partida.
           </p>
@@ -37,11 +37,11 @@ export function Sobre() {
           <h3 className="font-['Roboto',sans-serif] font-bold text-lg mb-2">Tipos de pelada</h3>
           <ul className="space-y-2 text-white/60 text-sm">
             <li>
-              <span className="text-[#d3b379] font-bold">Mensal:</span> o racha grande do
+              <span className="text-[#22ff88] font-bold">Mensal:</span> o racha grande do
               mês, evento maior com mais gente.
             </li>
             <li>
-              <span className="text-[#d3b379] font-bold">Diária:</span> as peladas da
+              <span className="text-[#22ff88] font-bold">Diária:</span> as peladas da
               semana, mais frequentes.
             </li>
           </ul>

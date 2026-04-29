@@ -77,8 +77,8 @@ export function Jogos() {
     <div className="min-h-screen bg-[#0b0b0b] text-white">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="flex items-center gap-3 mb-2">
-          <Calendar className="text-[#d3b379]" size={20} />
-          <p className="font-['Roboto',sans-serif] text-[11px] tracking-[0.3em] text-[#d3b379]">
+          <Calendar className="text-[#22ff88]" size={20} />
+          <p className="font-['Roboto',sans-serif] text-[11px] tracking-[0.3em] text-[#22ff88]">
             HISTÓRICO
           </p>
         </div>
@@ -91,7 +91,7 @@ export function Jogos() {
               onClick={() => setFiltro(f)}
               className={`px-4 py-2 rounded-full text-[11px] tracking-[0.18em] font-bold border ${
                 filtro === f
-                  ? "bg-[#d3b379] text-[#0b0b0b] border-[#d3b379]"
+                  ? "bg-[#22ff88] text-[#0b0b0b] border-[#22ff88]"
                   : "border-white/15 text-white/60 hover:border-white/30"
               }`}
             >
@@ -137,7 +137,7 @@ export function Jogos() {
                     </p>
                   </div>
                   {mvp?.jogadores && (
-                    <div className="hidden sm:flex items-center gap-1 text-[#d3b379] text-xs">
+                    <div className="hidden sm:flex items-center gap-1 text-[#22ff88] text-xs">
                       <Trophy size={12} /> MVP: {mvp.jogadores.apelido || mvp.jogadores.nome}
                     </div>
                   )}
@@ -179,7 +179,7 @@ export function Jogos() {
                             {es.map((e, i) => (
                               <tr key={i} className="border-t border-white/[0.04]">
                                 <td className="py-1.5">{e.jogadores?.apelido || e.jogadores?.nome}</td>
-                                <td className="py-1.5 text-center text-[#d3b379]">{e.gols}</td>
+                                <td className="py-1.5 text-center text-[#22ff88]">{e.gols}</td>
                                 <td className="py-1.5 text-center">{e.assistencias}</td>
                                 <td className="py-1.5 text-center text-white/60">{e.resultado || "-"}</td>
                                 <td className="py-1.5 text-center">{e.mvp ? "⭐" : ""}</td>

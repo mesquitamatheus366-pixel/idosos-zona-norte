@@ -17,9 +17,20 @@ import {
   Calendar,
   Trophy,
   Check,
+  Camera,
+  Upload,
+  Loader2,
 } from "lucide-react";
 
-type Posicao = "goleiro" | "linha";
+type Posicao = "goleiro" | "fixo" | "ala" | "meio" | "pivo";
+
+const POSICOES: { v: Posicao; label: string }[] = [
+  { v: "goleiro", label: "Goleiro" },
+  { v: "fixo", label: "Fixo" },
+  { v: "ala", label: "Ala" },
+  { v: "meio", label: "Meio" },
+  { v: "pivo", label: "Pivô" },
+];
 type Jogador = {
   id: string;
   nome: string;
@@ -68,8 +79,8 @@ export function Admin() {
         <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
           <div>
             <div className="flex items-center gap-3 mb-1">
-              <Settings className="text-[#d3b379]" size={18} />
-              <p className="font-['Roboto',sans-serif] text-[10px] tracking-[0.3em] text-[#d3b379]">
+              <Settings className="text-[#22ff88]" size={18} />
+              <p className="font-['Roboto',sans-serif] text-[10px] tracking-[0.3em] text-[#22ff88]">
                 ADMIN
               </p>
             </div>
@@ -124,7 +135,7 @@ function TabBtn({
       onClick={onClick}
       className={`inline-flex items-center gap-2 px-4 py-3 font-['Roboto',sans-serif] text-[11px] tracking-[0.18em] border-b-2 transition-colors -mb-px ${
         active
-          ? "text-[#d3b379] border-[#d3b379]"
+          ? "text-[#22ff88] border-[#22ff88]"
           : "text-white/40 border-transparent hover:text-white/80"
       }`}
     >
@@ -169,7 +180,7 @@ function AbaJogadores() {
         <p className="text-white/50 text-sm">{lista.length} jogador(es)</p>
         <button
           onClick={() => setCriando(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#d3b379] text-[#0b0b0b] font-['Roboto',sans-serif] text-[11px] tracking-[0.18em] font-bold hover:bg-[#e0c28a]"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#22ff88] text-[#0b0b0b] font-['Roboto',sans-serif] text-[11px] tracking-[0.18em] font-bold hover:bg-[#5cffaa]"
         >
           <Plus size={14} /> NOVO JOGADOR
         </button>
@@ -186,16 +197,25 @@ function AbaJogadores() {
                 j.ativo ? "border-white/[0.06]" : "border-white/[0.04] opacity-50"
               }`}
             >
-              <div className="min-w-0">
-                <p className="font-bold truncate">{j.apelido || j.nome}</p>
-                <p className="text-white/40 text-xs uppercase tracking-wider">
-                  {j.posicao} · nível {j.nivel} {!j.ativo && "· inativo"}
-                </p>
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="w-10 h-10 rounded-full bg-white/5 ring-1 ring-white/10 overflow-hidden flex items-center justify-center text-white/40 text-[10px] font-bold shrink-0">
+                  {j.foto_url ? (
+                    <img src={j.foto_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    (j.apelido || j.nome).split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase()
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="font-bold truncate">{j.apelido || j.nome}</p>
+                  <p className="text-white/40 text-xs uppercase tracking-wider">
+                    {POSICOES.find((p) => p.v === j.posicao)?.label || j.posicao} · nível {j.nivel}/10 {!j.ativo && "· inativo"}
+                  </p>
+                </div>
               </div>
               <div className="flex gap-1">
                 <button
                   onClick={() => setEditando(j)}
-                  className="p-2 rounded-lg text-white/50 hover:text-[#d3b379] hover:bg-white/[0.04]"
+                  className="p-2 rounded-lg text-white/50 hover:text-[#22ff88] hover:bg-white/[0.04]"
                 >
                   <Edit2 size={14} />
                 </button>
@@ -240,12 +260,46 @@ function ModalJogador({
 }) {
   const [nome, setNome] = useState(jogador?.nome || "");
   const [apelido, setApelido] = useState(jogador?.apelido || "");
-  const [posicao, setPosicao] = useState<Posicao>(jogador?.posicao || "linha");
-  const [nivel, setNivel] = useState(jogador?.nivel || 3);
-  const [foto_url, setFotoUrl] = useState(jogador?.foto_url || "");
+  const [posicao, setPosicao] = useState<Posicao>(jogador?.posicao || "ala");
+  const [nivel, setNivel] = useState(jogador?.nivel || 5);
+  const [fotoUrl, setFotoUrl] = useState(jogador?.foto_url || "");
   const [telefone, setTelefone] = useState(jogador?.telefone || "");
   const [ativo, setAtivo] = useState(jogador?.ativo ?? true);
   const [salvando, setSalvando] = useState(false);
+  const [uploadando, setUploadando] = useState(false);
+  const [arrastando, setArrastando] = useState(false);
+
+  async function uploadFoto(file: File) {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Arquivo precisa ser uma imagem");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Imagem máx 5MB");
+      return;
+    }
+    setUploadando(true);
+    const ext = file.name.split(".").pop() || "jpg";
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await supabase.storage
+      .from("fotos-jogadores")
+      .upload(path, file, { upsert: true, cacheControl: "3600" });
+    if (error) {
+      toast.error(error.message);
+      setUploadando(false);
+      return;
+    }
+    const { data } = supabase.storage.from("fotos-jogadores").getPublicUrl(path);
+    setFotoUrl(data.publicUrl);
+    setUploadando(false);
+  }
+
+  function onDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setArrastando(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) uploadFoto(file);
+  }
 
   async function salvar() {
     if (!nome.trim()) {
@@ -258,7 +312,7 @@ function ModalJogador({
       apelido: apelido.trim() || null,
       posicao,
       nivel,
-      foto_url: foto_url.trim() || null,
+      foto_url: fotoUrl || null,
       telefone: telefone.trim() || null,
       ativo,
     };
@@ -275,53 +329,154 @@ function ModalJogador({
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="w-full max-w-lg bg-[#111] border border-white/[0.08] rounded-2xl p-6">
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+      <div className="w-full max-w-xl max-h-[92vh] overflow-y-auto bg-gradient-to-b from-[#0f1410] to-[#0b0b0b] border border-[#22ff88]/15 rounded-3xl p-7 shadow-[0_0_60px_rgba(34,255,136,0.08)]">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="font-bold text-xl">{jogador ? "Editar jogador" : "Novo jogador"}</h2>
-          <button onClick={onClose} className="text-white/50 hover:text-white">
-            <X size={18} />
+          <div>
+            <p className="text-[10px] tracking-[0.3em] text-[#22ff88]">
+              {jogador ? "EDITANDO" : "NOVO"}
+            </p>
+            <h2 className="font-bold text-2xl mt-0.5">
+              {jogador ? jogador.apelido || jogador.nome : "Cadastrar jogador"}
+            </h2>
+          </div>
+          <button onClick={onClose} className="text-white/40 hover:text-white p-2 -m-2">
+            <X size={20} />
           </button>
         </div>
 
-        <div className="space-y-4">
-          <Field label="Nome">
-            <input value={nome} onChange={(e) => setNome(e.target.value)} className={inputCls} />
-          </Field>
-          <Field label="Apelido (opcional)">
-            <input value={apelido} onChange={(e) => setApelido(e.target.value)} className={inputCls} />
-          </Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Posição">
-              <select value={posicao} onChange={(e) => setPosicao(e.target.value as Posicao)} className={inputCls}>
-                <option value="linha">Linha</option>
-                <option value="goleiro">Goleiro</option>
-              </select>
-            </Field>
-            <Field label="Nível (1-5)">
-              <input type="number" min={1} max={5} value={nivel} onChange={(e) => setNivel(Number(e.target.value))} className={inputCls} />
-            </Field>
+        {/* FOTO upload */}
+        <div className="flex gap-4 items-start mb-6">
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setArrastando(true);
+            }}
+            onDragLeave={() => setArrastando(false)}
+            onDrop={onDrop}
+            className={`relative w-28 h-28 shrink-0 rounded-2xl overflow-hidden border-2 border-dashed transition-colors ${
+              arrastando
+                ? "border-[#22ff88] bg-[#22ff88]/10"
+                : fotoUrl
+                ? "border-transparent"
+                : "border-white/10 bg-white/[0.02] hover:border-[#22ff88]/40"
+            }`}
+          >
+            {fotoUrl ? (
+              <img src={fotoUrl} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center text-white/30 text-[10px] text-center px-2">
+                {uploadando ? <Loader2 className="animate-spin" size={20} /> : <Camera size={22} />}
+                <span className="mt-1.5">arraste ou clique</span>
+              </div>
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => e.target.files?.[0] && uploadFoto(e.target.files[0])}
+              className="absolute inset-0 opacity-0 cursor-pointer"
+              disabled={uploadando}
+            />
           </div>
-          <Field label="Foto URL (opcional)">
-            <input value={foto_url} onChange={(e) => setFotoUrl(e.target.value)} className={inputCls} placeholder="https://..." />
-          </Field>
-          <Field label="Telefone (opcional)">
-            <input value={telefone} onChange={(e) => setTelefone(e.target.value)} className={inputCls} />
-          </Field>
-          <label className="flex items-center gap-2 text-sm text-white/70">
-            <input type="checkbox" checked={ativo} onChange={(e) => setAtivo(e.target.checked)} />
-            Ativo
-          </label>
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] tracking-[0.18em] text-white/40 mb-2">FOTO DO JOGADOR</p>
+            <p className="text-white/50 text-xs leading-relaxed">
+              Arraste uma imagem ou clique pra escolher. JPG/PNG até 5MB.
+            </p>
+            {fotoUrl && (
+              <button
+                onClick={() => setFotoUrl("")}
+                className="mt-2 text-rose-400/80 hover:text-rose-300 text-[10px] tracking-[0.18em]"
+              >
+                REMOVER FOTO
+              </button>
+            )}
+          </div>
         </div>
 
-        <div className="flex justify-end gap-2 mt-6">
-          <button onClick={onClose} className="px-4 py-2 rounded-full border border-white/15 text-white/70 text-[11px] tracking-[0.18em]">
+        <div className="space-y-5">
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Nome">
+              <input value={nome} onChange={(e) => setNome(e.target.value)} className={inputCls} placeholder="Nome completo" />
+            </Field>
+            <Field label="Apelido">
+              <input value={apelido} onChange={(e) => setApelido(e.target.value)} className={inputCls} placeholder="Como é chamado" />
+            </Field>
+          </div>
+
+          <Field label="Posição">
+            <div className="flex flex-wrap gap-1.5">
+              {POSICOES.map((p) => (
+                <button
+                  key={p.v}
+                  type="button"
+                  onClick={() => setPosicao(p.v)}
+                  className={`px-3.5 py-2 rounded-full text-xs font-bold tracking-wider transition-all ${
+                    posicao === p.v
+                      ? "bg-[#22ff88] text-[#0b0b0b] shadow-[0_0_16px_rgba(34,255,136,0.4)]"
+                      : "border border-white/10 text-white/60 hover:border-[#22ff88]/40 hover:text-white"
+                  }`}
+                >
+                  {p.label.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </Field>
+
+          <Field label={`Nível · ${nivel}/10`}>
+            <div className="flex gap-1">
+              {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => setNivel(n)}
+                  className={`flex-1 h-9 rounded-lg text-xs font-bold transition-all ${
+                    n <= nivel
+                      ? "bg-[#22ff88] text-[#0b0b0b] shadow-[0_0_8px_rgba(34,255,136,0.3)]"
+                      : "bg-white/[0.04] text-white/30 hover:bg-white/[0.08]"
+                  }`}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+          </Field>
+
+          <Field label="Telefone (opcional)">
+            <input value={telefone} onChange={(e) => setTelefone(e.target.value)} className={inputCls} placeholder="(11) 9..." />
+          </Field>
+
+          <button
+            type="button"
+            onClick={() => setAtivo(!ativo)}
+            className="w-full flex items-center justify-between p-3 rounded-xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] transition-colors"
+          >
+            <div className="text-left">
+              <p className="text-sm font-medium">Jogador ativo</p>
+              <p className="text-xs text-white/40">Aparece nas listas e sorteios</p>
+            </div>
+            <div
+              className={`relative w-11 h-6 rounded-full transition-colors ${
+                ativo ? "bg-[#22ff88]" : "bg-white/10"
+              }`}
+            >
+              <div
+                className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                  ativo ? "translate-x-5" : "translate-x-0.5"
+                }`}
+              />
+            </div>
+          </button>
+        </div>
+
+        <div className="flex justify-end gap-2 mt-7">
+          <button onClick={onClose} className="px-5 py-2.5 rounded-full border border-white/15 text-white/70 text-[11px] tracking-[0.18em] hover:border-white/30">
             CANCELAR
           </button>
           <button
             onClick={salvar}
             disabled={salvando}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#d3b379] text-[#0b0b0b] font-bold text-[11px] tracking-[0.18em] disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#22ff88] text-[#0b0b0b] font-bold text-[11px] tracking-[0.18em] disabled:opacity-50 hover:bg-[#5cffaa] shadow-[0_0_24px_rgba(34,255,136,0.3)]"
           >
             <Save size={14} /> {salvando ? "SALVANDO..." : "SALVAR"}
           </button>
@@ -410,7 +565,7 @@ function AbaPagamentos() {
               >
                 <div className="min-w-0">
                   <p className="font-medium truncate">{j.apelido || j.nome}</p>
-                  <p className="text-white/40 text-xs uppercase tracking-wider">{j.posicao}</p>
+                  <p className="text-white/40 text-xs uppercase tracking-wider">{POSICOES.find((p) => p.v === j.posicao)?.label || j.posicao}</p>
                 </div>
                 <div className="flex gap-1">
                   <PillBtn ativo={tipo === "mensal"} onClick={() => setTipo(j.id, "mensal")}>
@@ -451,7 +606,7 @@ function PillBtn({
       onClick={onClick}
       className={`px-3 py-1.5 rounded-full text-[10px] tracking-[0.15em] font-bold border transition-colors ${
         ativo
-          ? "bg-[#d3b379] text-[#0b0b0b] border-[#d3b379]"
+          ? "bg-[#22ff88] text-[#0b0b0b] border-[#22ff88]"
           : "border-white/15 text-white/60 hover:text-white hover:border-white/30"
       }`}
     >
@@ -470,7 +625,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 const inputCls =
-  "w-full px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.08] text-white text-sm focus:outline-none focus:border-[#d3b379]/50 focus:bg-white/[0.05]";
+  "w-full px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.08] text-white text-sm focus:outline-none focus:border-[#22ff88]/50 focus:bg-white/[0.05]";
 
 /* ---------------- JOGOS ---------------- */
 function AbaJogos() {
@@ -506,7 +661,7 @@ function AbaJogos() {
         <p className="text-white/50 text-sm">{jogos.length} jogo(s)</p>
         <button
           onClick={() => setCriando(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#d3b379] text-[#0b0b0b] font-bold text-[11px] tracking-[0.18em] hover:bg-[#e0c28a]"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#22ff88] text-[#0b0b0b] font-bold text-[11px] tracking-[0.18em] hover:bg-[#5cffaa]"
         >
           <Plus size={14} /> NOVO JOGO
         </button>
@@ -536,7 +691,7 @@ function AbaJogos() {
                 <div className="flex gap-1">
                   <button
                     onClick={() => setGerenciando(j)}
-                    className="px-3 py-1.5 rounded-full border border-[#d3b379]/40 text-[#d3b379] text-[10px] tracking-[0.18em] hover:bg-[#d3b379]/10"
+                    className="px-3 py-1.5 rounded-full border border-[#22ff88]/40 text-[#22ff88] text-[10px] tracking-[0.18em] hover:bg-[#22ff88]/10"
                   >
                     LANÇAR
                   </button>
@@ -612,7 +767,7 @@ function ModalNovoJogo({ onClose, onSaved }: { onClose: () => void; onSaved: () 
         </div>
         <div className="flex justify-end gap-2 mt-6">
           <button onClick={onClose} className="px-4 py-2 rounded-full border border-white/15 text-white/70 text-[11px] tracking-[0.18em]">CANCELAR</button>
-          <button onClick={salvar} disabled={salvando} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#d3b379] text-[#0b0b0b] font-bold text-[11px] tracking-[0.18em] disabled:opacity-50">
+          <button onClick={salvar} disabled={salvando} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#22ff88] text-[#0b0b0b] font-bold text-[11px] tracking-[0.18em] disabled:opacity-50">
             <Save size={14} /> {salvando ? "SALVANDO..." : "CRIAR"}
           </button>
         </div>
@@ -799,7 +954,7 @@ function ModalGerenciarJogo({
                         <button
                           disabled={!r.presente}
                           onClick={() => setMVPUnico(i)}
-                          className={`w-7 h-7 rounded ${r.mvp ? "bg-[#d3b379] text-[#0b0b0b]" : "border border-white/10 text-white/30"}`}
+                          className={`w-7 h-7 rounded ${r.mvp ? "bg-[#22ff88] text-[#0b0b0b]" : "border border-white/10 text-white/30"}`}
                         >
                           {r.mvp ? <Check size={14} className="mx-auto" /> : <Trophy size={12} className="mx-auto" />}
                         </button>
@@ -817,7 +972,7 @@ function ModalGerenciarJogo({
 
             <div className="flex justify-end gap-2 mt-6">
               <button onClick={onClose} className="px-4 py-2 rounded-full border border-white/15 text-white/70 text-[11px] tracking-[0.18em]">FECHAR</button>
-              <button onClick={salvar} disabled={salvando} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#d3b379] text-[#0b0b0b] font-bold text-[11px] tracking-[0.18em] disabled:opacity-50">
+              <button onClick={salvar} disabled={salvando} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#22ff88] text-[#0b0b0b] font-bold text-[11px] tracking-[0.18em] disabled:opacity-50">
                 <Save size={14} /> {salvando ? "SALVANDO..." : "SALVAR TUDO"}
               </button>
             </div>

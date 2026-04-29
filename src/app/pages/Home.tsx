@@ -6,14 +6,14 @@ export function Home() {
     <div className="min-h-screen bg-[#0b0b0b] text-white">
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-white/[0.04]">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#d3b379]/10 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#22ff88]/10 via-transparent to-transparent pointer-events-none" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
-          <p className="font-['Roboto',sans-serif] text-[11px] tracking-[0.3em] text-[#d3b379] mb-4">
+          <p className="font-['Roboto',sans-serif] text-[11px] tracking-[0.3em] text-[#22ff88] mb-4">
             PELADA · MENSAL E DIÁRIA
           </p>
           <h1 className="font-['Roboto',sans-serif] font-bold text-5xl sm:text-7xl lg:text-8xl leading-[0.95] tracking-tight mb-6">
             Idosos da<br />
-            <span className="text-[#d3b379]">Zona Norte</span>
+            <span className="text-[#22ff88]">Zona Norte</span>
           </h1>
           <p className="text-white/60 max-w-xl text-lg mb-10">
             Cadastro de jogadores, sorteio de times equilibrado, resultados e
@@ -22,7 +22,7 @@ export function Home() {
           <div className="flex flex-wrap gap-3">
             <Link
               to="/sorteio"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#d3b379] text-[#0b0b0b] font-['Roboto',sans-serif] text-[11px] tracking-[0.2em] font-bold hover:bg-[#e0c28a] transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#22ff88] text-[#0b0b0b] font-['Roboto',sans-serif] text-[11px] tracking-[0.2em] font-bold hover:bg-[#5cffaa] transition-colors"
             >
               <Shuffle size={14} /> SORTEAR TIMES
             </Link>
@@ -63,9 +63,9 @@ function SectionCard({
   return (
     <Link
       to={to}
-      className="group p-6 rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:border-[#d3b379]/30 hover:bg-[#d3b379]/[0.04] transition-all"
+      className="group p-6 rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:border-[#22ff88]/30 hover:bg-[#22ff88]/[0.04] transition-all"
     >
-      <div className="w-10 h-10 rounded-xl bg-[#d3b379]/10 text-[#d3b379] flex items-center justify-center mb-4 group-hover:bg-[#d3b379]/20 transition-colors">
+      <div className="w-10 h-10 rounded-xl bg-[#22ff88]/10 text-[#22ff88] flex items-center justify-center mb-4 group-hover:bg-[#22ff88]/20 transition-colors">
         {icon}
       </div>
       <h3 className="font-['Roboto',sans-serif] font-bold text-lg mb-1">{title}</h3>

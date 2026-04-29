@@ -23,7 +23,7 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
         <Link to="/" className="flex items-center gap-2 group">
           <img src={imgLogo} alt="Idosos da Zona Norte" className="h-11 w-auto transition-transform duration-300 group-hover:scale-105" />
-          <span className="hidden sm:inline font-['Roboto',sans-serif] text-[11px] tracking-[0.2em] text-[#d3b379]">IDOSOS DA ZONA NORTE</span>
+          <span className="hidden sm:inline font-['Roboto',sans-serif] text-[11px] tracking-[0.2em] text-[#22ff88]">IDOSOS DA ZONA NORTE</span>
         </Link>
 
         {/* Desktop Nav */}
@@ -39,8 +39,8 @@ export function Navbar() {
                   to={link.path}
                   className={`relative ml-2 px-4 py-1.5 font-['Roboto',sans-serif] text-[10px] tracking-[0.18em] transition-all rounded-full border flex items-center gap-1.5 ${
                     active
-                      ? "text-[#0b0b0b] bg-[#d3b379] border-[#d3b379] shadow-[0_0_12px_rgba(211,179,121,0.3)]"
-                      : "text-[#d3b379] bg-[#d3b379]/[0.08] border-[#d3b379]/30 hover:bg-[#d3b379]/[0.15] hover:border-[#d3b379]/50 hover:shadow-[0_0_10px_rgba(211,179,121,0.15)]"
+                      ? "text-[#0b0b0b] bg-[#22ff88] border-[#22ff88] shadow-[0_0_12px_rgba(34,255,136,0.3)]"
+                      : "text-[#22ff88] bg-[#22ff88]/[0.08] border-[#22ff88]/30 hover:bg-[#22ff88]/[0.15] hover:border-[#22ff88]/50 hover:shadow-[0_0_10px_rgba(34,255,136,0.15)]"
                   }`}
                 >
                   <Shuffle size={12} />
@@ -55,7 +55,7 @@ export function Navbar() {
                 to={link.path}
                 className={`relative px-3 py-2 font-['Roboto',sans-serif] text-[10px] tracking-[0.18em] transition-all rounded-lg ${
                   active
-                    ? "text-[#d3b379] bg-[#d3b379]/[0.08]"
+                    ? "text-[#22ff88] bg-[#22ff88]/[0.08]"
                     : "text-white/50 hover:text-white hover:bg-white/[0.04]"
                 }`}
               >
@@ -67,7 +67,7 @@ export function Navbar() {
           {/* Admin Button — only gear icon */}
           <Link
             to="/admin"
-            className="ml-3 w-8 h-8 flex items-center justify-center rounded-full transition-all duration-300 text-white/25 hover:text-[#d3b379] hover:bg-[#d3b379]/[0.08]"
+            className="ml-3 w-8 h-8 flex items-center justify-center rounded-full transition-all duration-300 text-white/25 hover:text-[#22ff88] hover:bg-[#22ff88]/[0.08]"
             title="Admin"
           >
             <Settings size={16} />
@@ -96,10 +96,10 @@ export function Navbar() {
               className={`block py-3 font-['Roboto',sans-serif] text-[11px] tracking-[0.2em] border-b border-white/[0.04] ${
                 isSorteio
                   ? location.pathname === link.path
-                    ? "text-[#0b0b0b] bg-[#d3b379] px-3 rounded-lg border-transparent font-bold"
-                    : "text-[#d3b379] font-bold"
+                    ? "text-[#0b0b0b] bg-[#22ff88] px-3 rounded-lg border-transparent font-bold"
+                    : "text-[#22ff88] font-bold"
                   : location.pathname === link.path
-                    ? "text-[#d3b379]"
+                    ? "text-[#22ff88]"
                     : "text-white/50"
               }`}
             >
@@ -113,7 +113,7 @@ export function Navbar() {
           <Link
             to="/admin"
             onClick={() => setOpen(false)}
-            className="flex items-center justify-center w-9 h-9 mt-3 rounded-full text-white/25 hover:text-[#d3b379] hover:bg-[#d3b379]/[0.08] transition-all"
+            className="flex items-center justify-center w-9 h-9 mt-3 rounded-full text-white/25 hover:text-[#22ff88] hover:bg-[#22ff88]/[0.08] transition-all"
             title="Admin"
           >
             <Settings size={18} />

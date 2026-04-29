@@ -1,18 +1,47 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../lib/supabase";
-import { Shuffle, Check, RotateCcw, Save } from "lucide-react";
+import { Shuffle, Check, RotateCcw, Save, RefreshCw } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { toast } from "sonner";
+
+type Posicao = "goleiro" | "fixo" | "ala" | "meio" | "pivo";
 
 type Jogador = {
   id: string;
   nome: string;
   apelido: string | null;
-  posicao: "goleiro" | "linha";
+  posicao: Posicao;
   nivel: number;
+  foto_url: string | null;
 };
 
 type Time = { numero: number; jogadores: Jogador[]; soma: number };
+
+type CorBase = "vermelho" | "azul";
+
+const POSICAO_LABEL: Record<Posicao, string> = {
+  goleiro: "Goleiro",
+  fixo: "Fixo",
+  ala: "Ala",
+  meio: "Meio",
+  pivo: "Pivô",
+};
+
+function rotuloTime(numero: number, base: CorBase, total: number): { label: string; cor: string; bg: string } {
+  // numero 1..total: metade vermelha + metade azul (alternando se total for ímpar)
+  const meio = Math.ceil(total / 2);
+  const isVermelho = base === "vermelho" ? numero <= meio : numero > meio;
+  const grupo = isVermelho ? "vermelho" : "azul";
+  const indice = isVermelho
+    ? base === "vermelho" ? numero : numero - meio
+    : base === "vermelho" ? numero - meio : numero;
+  const label = `${grupo === "vermelho" ? "Vermelho" : "Azul"} ${indice}`;
+  const cor = grupo === "vermelho" ? "text-rose-400" : "text-sky-400";
+  const bg = grupo === "vermelho"
+    ? "border-rose-500/30 bg-rose-500/[0.05]"
+    : "border-sky-500/30 bg-sky-500/[0.05]";
+  return { label, cor, bg };
+}
 
 export function Sorteio() {
   const { user } = useAuth();
@@ -20,13 +49,14 @@ export function Sorteio() {
   const [selecionados, setSelecionados] = useState<Set<string>>(new Set());
   const [numTimes, setNumTimes] = useState(2);
   const [resultado, setResultado] = useState<Time[] | null>(null);
+  const [corBase, setCorBase] = useState<CorBase>("vermelho");
   const [salvandoJogo, setSalvandoJogo] = useState(false);
 
   useEffect(() => {
     (async () => {
       const { data } = await supabase
         .from("jogadores")
-        .select("id, nome, apelido, posicao, nivel")
+        .select("id, nome, apelido, posicao, nivel, foto_url")
         .eq("ativo", true)
         .order("nome");
       setJogadores((data as Jogador[]) || []);
@@ -96,8 +126,8 @@ export function Sorteio() {
     <div className="min-h-screen bg-[#0b0b0b] text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex items-center gap-3 mb-2">
-          <Shuffle className="text-[#d3b379]" size={20} />
-          <p className="font-['Roboto',sans-serif] text-[11px] tracking-[0.3em] text-[#d3b379]">
+          <Shuffle className="text-[#22ff88]" size={20} />
+          <p className="font-['Roboto',sans-serif] text-[11px] tracking-[0.3em] text-[#22ff88]">
             EQUILIBRADO POR NÍVEL E POSIÇÃO
           </p>
         </div>
@@ -142,13 +172,13 @@ export function Sorteio() {
                       onClick={() => toggle(j.id)}
                       className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-colors ${
                         sel
-                          ? "border-[#d3b379]/50 bg-[#d3b379]/[0.06]"
+                          ? "border-[#22ff88]/50 bg-[#22ff88]/[0.06]"
                           : "border-white/[0.06] bg-white/[0.02] hover:border-white/[0.15]"
                       }`}
                     >
                       <div
                         className={`w-5 h-5 rounded-md flex items-center justify-center border ${
-                          sel ? "bg-[#d3b379] border-[#d3b379] text-[#0b0b0b]" : "border-white/20"
+                          sel ? "bg-[#22ff88] border-[#22ff88] text-[#0b0b0b]" : "border-white/20"
                         }`}
                       >
                         {sel && <Check size={12} />}
@@ -156,7 +186,7 @@ export function Sorteio() {
                       <div className="flex-1 min-w-0">
                         <p className="font-medium truncate text-sm">{j.apelido || j.nome}</p>
                         <p className="text-white/40 text-[10px] tracking-wider uppercase">
-                          {j.posicao} · nível {j.nivel}
+                          {POSICAO_LABEL[j.posicao]} · nível {j.nivel}
                         </p>
                       </div>
                     </button>
@@ -178,7 +208,7 @@ export function Sorteio() {
                       onClick={() => setNumTimes(n)}
                       className={`flex-1 py-2 rounded-lg text-sm font-bold border ${
                         numTimes === n
-                          ? "bg-[#d3b379] text-[#0b0b0b] border-[#d3b379]"
+                          ? "bg-[#22ff88] text-[#0b0b0b] border-[#22ff88]"
                           : "border-white/15 text-white/60 hover:border-white/30"
                       }`}
                     >
@@ -188,7 +218,7 @@ export function Sorteio() {
                 </div>
                 <button
                   onClick={sortear}
-                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-[#d3b379] text-[#0b0b0b] font-bold text-[11px] tracking-[0.2em]"
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-[#22ff88] text-[#0b0b0b] font-bold text-[11px] tracking-[0.2em]"
                 >
                   <Shuffle size={14} /> SORTEAR
                 </button>
@@ -206,7 +236,7 @@ export function Sorteio() {
                 <button
                   onClick={salvarJogo}
                   disabled={salvandoJogo}
-                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-full border border-[#d3b379]/40 text-[#d3b379] hover:bg-[#d3b379]/10 text-[11px] tracking-[0.18em] font-bold"
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-full border border-[#22ff88]/40 text-[#22ff88] hover:bg-[#22ff88]/10 text-[11px] tracking-[0.18em] font-bold"
                 >
                   <Save size={14} /> {salvandoJogo ? "SALVANDO..." : "SALVAR COMO JOGO"}
                 </button>
@@ -216,34 +246,50 @@ export function Sorteio() {
         )}
 
         {resultado && (
-          <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {resultado.map((t) => (
-              <div
-                key={t.numero}
-                className="p-5 rounded-2xl border border-[#d3b379]/20 bg-[#d3b379]/[0.04]"
+          <div className="mt-10">
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+              <p className="text-[10px] tracking-[0.3em] text-white/40">TIMES SORTEADOS</p>
+              <button
+                onClick={() => setCorBase((c) => (c === "vermelho" ? "azul" : "vermelho"))}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/15 text-white/70 hover:text-white hover:border-white/40 text-[10px] tracking-[0.18em]"
               >
-                <div className="flex items-baseline justify-between mb-3">
-                  <h3 className="font-bold text-xl">Time {t.numero}</h3>
-                  <p className="text-[10px] tracking-[0.15em] text-[#d3b379]">
-                    SOMA {t.soma}
-                  </p>
-                </div>
-                <ul className="space-y-1 text-sm">
-                  {t.jogadores.map((p) => (
-                    <li
-                      key={p.id}
-                      className="flex justify-between gap-2 text-white/80 border-b border-white/[0.04] py-1.5 last:border-0"
-                    >
-                      <span className="truncate">
-                        {p.posicao === "goleiro" && "🧤 "}
-                        {p.apelido || p.nome}
-                      </span>
-                      <span className="text-white/40 text-xs">N{p.nivel}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+                <RefreshCw size={12} /> INVERTER COLETES
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {resultado.map((t) => {
+                const r = rotuloTime(t.numero, corBase, resultado.length);
+                return (
+                  <div
+                    key={t.numero}
+                    className={`p-5 rounded-2xl border ${r.bg}`}
+                  >
+                    <div className="flex items-baseline justify-between mb-3">
+                      <h3 className={`font-bold text-xl ${r.cor}`}>{r.label}</h3>
+                      <p className="text-[10px] tracking-[0.15em] text-white/40">
+                        SOMA {t.soma}
+                      </p>
+                    </div>
+                    <ul className="space-y-1 text-sm">
+                      {t.jogadores.map((p) => (
+                        <li
+                          key={p.id}
+                          className="flex items-center justify-between gap-2 text-white/85 border-b border-white/[0.04] py-1.5 last:border-0"
+                        >
+                          <span className="truncate flex items-center gap-1.5">
+                            {p.posicao === "goleiro" && "🧤"}
+                            <span className="truncate">{p.apelido || p.nome}</span>
+                          </span>
+                          <span className="text-white/40 text-[10px] tracking-wider uppercase shrink-0">
+                            {POSICAO_LABEL[p.posicao].slice(0, 3)} · N{p.nivel}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
@@ -260,7 +306,7 @@ function distribuirEquilibrado(jogadores: Jogador[], n: number): Time[] {
   }));
 
   const goleiros = shuffle(jogadores.filter((j) => j.posicao === "goleiro"));
-  const linha = jogadores.filter((j) => j.posicao === "linha");
+  const linha = jogadores.filter((j) => j.posicao !== "goleiro");
 
   // 1 goleiro por time; sobras viram linha
   goleiros.forEach((g, i) => {
