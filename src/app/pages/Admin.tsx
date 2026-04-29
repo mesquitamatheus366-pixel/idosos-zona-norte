@@ -20,6 +20,8 @@ import {
   Camera,
   Upload,
   Loader2,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 type Posicao = "goleiro" | "fixo" | "ala" | "meio" | "pivo";
@@ -263,7 +265,6 @@ function ModalJogador({
   const [posicao, setPosicao] = useState<Posicao>(jogador?.posicao || "ala");
   const [nivel, setNivel] = useState(jogador?.nivel || 5);
   const [fotoUrl, setFotoUrl] = useState(jogador?.foto_url || "");
-  const [telefone, setTelefone] = useState(jogador?.telefone || "");
   const [ativo, setAtivo] = useState(jogador?.ativo ?? true);
   const [salvando, setSalvando] = useState(false);
   const [uploadando, setUploadando] = useState(false);
@@ -313,7 +314,6 @@ function ModalJogador({
       posicao,
       nivel,
       foto_url: fotoUrl || null,
-      telefone: telefone.trim() || null,
       ativo,
     };
     const op = jogador
@@ -442,10 +442,6 @@ function ModalJogador({
             </div>
           </Field>
 
-          <Field label="Telefone (opcional)">
-            <input value={telefone} onChange={(e) => setTelefone(e.target.value)} className={inputCls} placeholder="(11) 9..." />
-          </Field>
-
           <button
             type="button"
             onClick={() => setAtivo(!ativo)}
@@ -534,40 +530,93 @@ function AbaPagamentos() {
     carregar();
   }
 
+  const [ano, mesNum] = mes.split("-").map(Number);
+  const dataLabel = new Date(ano, mesNum - 1, 1).toLocaleDateString("pt-BR", {
+    month: "long",
+    year: "numeric",
+  });
+  const mensalistas = pagamentos.filter((p) => p.tipo === "mensal").length;
+  const diaristas = pagamentos.filter((p) => p.tipo === "diarista").length;
+  const semRegistro = jogadores.length - mensalistas - diaristas;
+
+  function navegarMes(delta: number) {
+    const d = new Date(ano, mesNum - 1 + delta, 1);
+    setMes(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
+  }
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-        <div>
-          <p className="text-[10px] tracking-[0.18em] text-white/40 mb-1">MÊS DE REFERÊNCIA</p>
-          <input
-            type="month"
-            value={mes}
-            onChange={(e) => setMes(e.target.value)}
-            className={inputCls + " w-44"}
-          />
+      {/* Cabeçalho com seletor visual */}
+      <div className="mb-6 p-5 rounded-2xl border border-[#22ff88]/15 bg-gradient-to-br from-[#0e1612] to-white/[0.02]">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navegarMes(-1)}
+              className="w-9 h-9 rounded-full border border-white/10 hover:border-[#22ff88]/40 hover:text-[#22ff88] text-white/60 flex items-center justify-center"
+              title="Mês anterior"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <div className="text-center min-w-[180px]">
+              <p className="text-[9px] tracking-[0.3em] text-[#22ff88]">MÊS DE REFERÊNCIA</p>
+              <p className="font-bold text-xl capitalize mt-0.5">{dataLabel}</p>
+            </div>
+            <button
+              onClick={() => navegarMes(1)}
+              className="w-9 h-9 rounded-full border border-white/10 hover:border-[#22ff88]/40 hover:text-[#22ff88] text-white/60 flex items-center justify-center"
+              title="Próximo mês"
+            >
+              <ChevronRight size={16} />
+            </button>
+            <input
+              type="month"
+              value={mes}
+              onChange={(e) => setMes(e.target.value)}
+              className="ml-2 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.08] text-white/80 text-sm focus:border-[#22ff88]/50 focus:outline-none"
+            />
+          </div>
+          <div className="flex gap-2">
+            <ResumoChip cor="green" label="Mensal" valor={mensalistas} />
+            <ResumoChip cor="zinc" label="Diarista" valor={diaristas} />
+            <ResumoChip cor="muted" label="Sem reg." valor={semRegistro} />
+          </div>
         </div>
-        <p className="text-white/50 text-xs">
-          Defina o tipo de pagamento de cada jogador para este mês.
-        </p>
       </div>
 
       {loading ? (
         <p className="text-white/40">Carregando...</p>
       ) : (
-        <div className="space-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {jogadores.map((j) => {
             const p = pagamentos.find((x) => x.jogador_id === j.id);
             const tipo = p?.tipo;
             return (
               <div
                 key={j.id}
-                className="flex items-center justify-between gap-3 p-3 rounded-xl border border-white/[0.06] bg-white/[0.02]"
+                className={`flex items-center justify-between gap-3 p-3 rounded-xl border bg-white/[0.02] transition-colors ${
+                  tipo === "mensal"
+                    ? "border-[#22ff88]/30"
+                    : tipo === "diarista"
+                    ? "border-white/15"
+                    : "border-white/[0.04]"
+                }`}
               >
-                <div className="min-w-0">
-                  <p className="font-medium truncate">{j.apelido || j.nome}</p>
-                  <p className="text-white/40 text-xs uppercase tracking-wider">{POSICOES.find((p) => p.v === j.posicao)?.label || j.posicao}</p>
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <div className="w-9 h-9 rounded-full bg-white/5 ring-1 ring-white/10 overflow-hidden flex items-center justify-center text-white/40 text-[10px] font-bold shrink-0">
+                    {j.foto_url ? (
+                      <img src={j.foto_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      (j.apelido || j.nome).split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase()
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-medium truncate text-sm">{j.apelido || j.nome}</p>
+                    <p className="text-white/40 text-[10px] uppercase tracking-wider">
+                      {POSICOES.find((p) => p.v === j.posicao)?.label || j.posicao}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex gap-1">
+                <div className="flex gap-1 shrink-0">
                   <PillBtn ativo={tipo === "mensal"} onClick={() => setTipo(j.id, "mensal")}>
                     MENSAL
                   </PillBtn>
@@ -577,9 +626,10 @@ function AbaPagamentos() {
                   {tipo && (
                     <button
                       onClick={() => setTipo(j.id, null)}
-                      className="px-2 py-1.5 rounded-full text-white/40 hover:text-rose-400 text-[10px] tracking-[0.15em]"
+                      className="px-2 py-1.5 rounded-full text-white/30 hover:text-rose-400 text-[10px] tracking-[0.15em]"
+                      title="Limpar"
                     >
-                      LIMPAR
+                      ×
                     </button>
                   )}
                 </div>
@@ -588,6 +638,21 @@ function AbaPagamentos() {
           })}
         </div>
       )}
+    </div>
+  );
+}
+
+function ResumoChip({ cor, label, valor }: { cor: "green" | "zinc" | "muted"; label: string; valor: number }) {
+  const cls =
+    cor === "green"
+      ? "border-[#22ff88]/30 bg-[#22ff88]/10 text-[#22ff88]"
+      : cor === "zinc"
+      ? "border-white/15 bg-white/[0.04] text-white/80"
+      : "border-white/10 bg-transparent text-white/40";
+  return (
+    <div className={`px-3 py-2 rounded-xl border ${cls}`}>
+      <p className="text-[9px] tracking-[0.18em] uppercase opacity-80">{label}</p>
+      <p className="text-lg font-bold tabular-nums leading-none mt-0.5">{valor}</p>
     </div>
   );
 }
@@ -776,6 +841,8 @@ function ModalNovoJogo({ onClose, onSaved }: { onClose: () => void; onSaved: () 
   );
 }
 
+type CorColete = "vermelho" | "azul" | null;
+
 type StatRow = {
   jogador_id: string;
   nome: string;
@@ -784,6 +851,7 @@ type StatRow = {
   assistencias: number;
   resultado: "V" | "E" | "D" | null;
   mvp: boolean;
+  cor_colete: CorColete;
 };
 
 function ModalGerenciarJogo({
@@ -819,6 +887,7 @@ function ModalGerenciarJogo({
           assistencias: s?.assistencias || 0,
           resultado: s?.resultado || null,
           mvp: !!s?.mvp,
+          cor_colete: (s?.cor_colete as CorColete) || null,
         };
       });
       setRows(list);
@@ -853,6 +922,7 @@ function ModalGerenciarJogo({
         assistencias: r.assistencias,
         resultado: r.resultado,
         mvp: r.mvp,
+        cor_colete: r.cor_colete,
       }));
       const { error } = await supabase
         .from("estatisticas_jogo")
@@ -891,6 +961,7 @@ function ModalGerenciarJogo({
                   <tr className="text-[10px] tracking-[0.15em] text-white/40 border-b border-white/[0.06]">
                     <th className="px-3 py-2 text-left">JOGADOR</th>
                     <th className="px-2 py-2 text-center">PRES.</th>
+                    <th className="px-2 py-2 text-center">COLETE</th>
                     <th className="px-2 py-2 text-center">G</th>
                     <th className="px-2 py-2 text-center">A</th>
                     <th className="px-2 py-2 text-center">RESULTADO</th>
@@ -907,6 +978,30 @@ function ModalGerenciarJogo({
                           checked={r.presente}
                           onChange={(e) => update(i, { presente: e.target.checked })}
                         />
+                      </td>
+                      <td className="px-2 py-1.5">
+                        <div className="flex gap-0.5 justify-center">
+                          <button
+                            disabled={!r.presente}
+                            onClick={() => update(i, { cor_colete: r.cor_colete === "vermelho" ? null : "vermelho" })}
+                            title="Vermelho"
+                            className={`w-7 h-7 rounded-full border-2 ${
+                              r.cor_colete === "vermelho"
+                                ? "bg-rose-500 border-rose-300 shadow-[0_0_8px_rgba(244,63,94,0.6)]"
+                                : "bg-rose-500/30 border-rose-500/40 hover:bg-rose-500/50"
+                            } disabled:opacity-30`}
+                          />
+                          <button
+                            disabled={!r.presente}
+                            onClick={() => update(i, { cor_colete: r.cor_colete === "azul" ? null : "azul" })}
+                            title="Azul"
+                            className={`w-7 h-7 rounded-full border-2 ${
+                              r.cor_colete === "azul"
+                                ? "bg-sky-500 border-sky-300 shadow-[0_0_8px_rgba(14,165,233,0.6)]"
+                                : "bg-sky-500/30 border-sky-500/40 hover:bg-sky-500/50"
+                            } disabled:opacity-30`}
+                          />
+                        </div>
                       </td>
                       <td className="px-2 py-1.5">
                         <input

@@ -28,23 +28,36 @@ type Status = {
   meses_como_mensalista: number;
 };
 
+type StatLite = {
+  jogador_id: string;
+  jogos_disputados: number;
+  gols: number;
+  assistencias: number;
+  mvp_count: number;
+};
+
 export function Jogadores() {
   const [jogadores, setJogadores] = useState<Jogador[]>([]);
   const [status, setStatus] = useState<Record<string, Status>>({});
+  const [stats, setStats] = useState<Record<string, StatLite>>({});
   const [loading, setLoading] = useState(true);
   const [filtro, setFiltro] = useState<"todos" | Posicao>("todos");
   const [aberto, setAberto] = useState<Jogador | null>(null);
 
   useEffect(() => {
     (async () => {
-      const [{ data: jg }, { data: st }] = await Promise.all([
+      const [{ data: jg }, { data: st }, { data: ag }] = await Promise.all([
         supabase.from("jogadores").select("*").eq("ativo", true).order("nome"),
         supabase.from("jogador_status").select("*"),
+        supabase.from("estatisticas_agregadas").select("jogador_id, jogos_disputados, gols, assistencias, mvp_count"),
       ]);
       setJogadores((jg as Jogador[]) || []);
       const map: Record<string, Status> = {};
       ((st as Status[]) || []).forEach((s) => (map[s.jogador_id] = s));
       setStatus(map);
+      const sm: Record<string, StatLite> = {};
+      ((ag as StatLite[]) || []).forEach((a) => (sm[a.jogador_id] = a));
+      setStats(sm);
       setLoading(false);
     })();
   }, []);
@@ -138,6 +151,14 @@ export function Jogadores() {
                           ? "DIARISTA"
                           : "—"}
                       </span>
+                    </div>
+
+                    {/* Mini stats */}
+                    <div className="mt-4 pt-4 border-t border-white/[0.04] grid grid-cols-4 gap-2 text-center">
+                      <MiniStat label="J" valor={stats[j.id]?.jogos_disputados || 0} />
+                      <MiniStat label="G" valor={stats[j.id]?.gols || 0} destaque />
+                      <MiniStat label="A" valor={stats[j.id]?.assistencias || 0} />
+                      <MiniStat label="MVP" valor={stats[j.id]?.mvp_count || 0} destaque />
                     </div>
                   </button>
                 );
@@ -356,6 +377,15 @@ function FiltroPill({
     >
       {children}
     </button>
+  );
+}
+
+function MiniStat({ label, valor, destaque }: { label: string; valor: number; destaque?: boolean }) {
+  return (
+    <div>
+      <p className="text-[8px] tracking-[0.18em] text-white/30 uppercase">{label}</p>
+      <p className={`text-base font-bold tabular-nums ${destaque ? "text-[#22ff88]" : "text-white/85"}`}>{valor}</p>
+    </div>
   );
 }
 
