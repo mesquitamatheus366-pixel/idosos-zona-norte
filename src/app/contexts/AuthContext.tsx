@@ -102,58 +102,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function signIn(email: string, password: string) {
     const trimmedEmail = email.trim().toLowerCase();
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: trimmedEmail,
-        password,
-      });
-      
-      if (error) {
-        // If invalid credentials, try to re-create the user (handles project resets or unconfirmed emails)
-        if (error.message?.includes('Invalid login credentials')) {
-          console.warn('Sign in failed, attempting auto-recovery via signup...');
-          try {
-            const response = await fetch(
-              `https://${projectId}.supabase.co/functions/v1/make-server-039eccc6/auth/signup`,
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${publicAnonKey}`,
-                },
-                body: JSON.stringify({ email: trimmedEmail, password, name: 'Admin' }),
-              }
-            );
-            const result = await response.json();
-            if (response.ok) {
-              // Retry sign in after successful signup
-              const { data: retryData, error: retryError } = await supabase.auth.signInWithPassword({
-                email: trimmedEmail,
-                password,
-              });
-              if (retryError) throw retryError;
-              if (retryData.session) {
-                setUser(retryData.session.user);
-                setAccessToken(retryData.session.access_token);
-              }
-              return;
-            }
-            // If signup also failed (user already exists but password is truly wrong), throw original error
-            console.warn('Auto-recovery signup failed:', result.error);
-          } catch (recoveryErr) {
-            console.warn('Auto-recovery failed:', recoveryErr);
-          }
-        }
-        throw error;
-      }
-      
-      if (data.session) {
-        setUser(data.session.user);
-        setAccessToken(data.session.access_token);
-      }
-    } catch (err: any) {
-      console.error('Sign in error:', err);
-      throw new Error(err.message || 'Erro ao fazer login');
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: trimmedEmail,
+      password,
+    });
+    if (error) throw new Error(error.message || 'Erro ao fazer login');
+    if (data.session) {
+      setUser(data.session.user);
+      setAccessToken(data.session.access_token);
     }
   }
 
@@ -170,32 +126,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  async function signUp(email: string, password: string, name: string) {
-    try {
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-039eccc6/auth/signup`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${publicAnonKey}`,
-          },
-          body: JSON.stringify({ email, password, name }),
-        }
-      );
-      
-      const result = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(result.error || 'Erro ao criar conta');
-      }
-      
-      // After signup, sign in automatically
-      await signIn(email, password);
-    } catch (err: any) {
-      console.error('Sign up error:', err);
-      throw new Error(err.message || 'Erro ao criar conta');
-    }
+  async function signUp(email: string, password: string, _name: string) {
+    const { error } = await supabase.auth.signUp({ email: email.trim().toLowerCase(), password });
+    if (error) throw new Error(error.message || 'Erro ao criar conta');
+    await signIn(email, password);
   }
 
   return (
