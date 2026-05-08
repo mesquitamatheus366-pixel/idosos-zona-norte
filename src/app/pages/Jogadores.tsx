@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
-import { Users, X, Trophy, Target, ListChecks, Star, Calendar } from "lucide-react";
+import { Users, X, Trophy, Target, ListChecks, Star, Calendar, Shield } from "lucide-react";
 
 type Posicao = "goleiro" | "fixo" | "ala" | "meio" | "pivo";
 
@@ -178,10 +178,23 @@ type Agregado = {
   jogos_disputados: number;
   gols: number;
   assistencias: number;
+  defesas: number;
   vitorias: number;
   empates: number;
   derrotas: number;
   mvp_count: number;
+};
+
+type ColeteStats = {
+  jogador_id: string;
+  jogos_vermelho: number;
+  jogos_azul: number;
+  v_vermelho: number;
+  e_vermelho: number;
+  d_vermelho: number;
+  v_azul: number;
+  e_azul: number;
+  d_azul: number;
 };
 
 function ModalJogadorDetalhes({
@@ -194,16 +207,17 @@ function ModalJogadorDetalhes({
   onClose: () => void;
 }) {
   const [stats, setStats] = useState<Agregado | null>(null);
+  const [colete, setColete] = useState<ColeteStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
-        .from("estatisticas_agregadas")
-        .select("*")
-        .eq("jogador_id", jogador.id)
-        .maybeSingle();
-      setStats((data as Agregado) || null);
+      const [{ data: ag }, { data: cs }] = await Promise.all([
+        supabase.from("estatisticas_agregadas").select("*").eq("jogador_id", jogador.id).maybeSingle(),
+        supabase.from("estatisticas_por_colete").select("*").eq("jogador_id", jogador.id).maybeSingle(),
+      ]);
+      setStats((ag as Agregado) || null);
+      setColete((cs as ColeteStats) || null);
       setLoading(false);
     })();
   }, [jogador.id]);
@@ -288,10 +302,13 @@ function ModalJogadorDetalhes({
             <p className="text-white/40 text-sm py-4">Nenhum jogo registrado ainda.</p>
           ) : (
             <>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+              <div className={`grid gap-2 mb-4 ${jogador.posicao === "goleiro" ? "grid-cols-2 sm:grid-cols-5" : "grid-cols-2 sm:grid-cols-4"}`}>
                 <StatBox icon={<Calendar size={14} />} label="Jogos" valor={stats.jogos_disputados} />
                 <StatBox icon={<Target size={14} />} label="Gols" valor={stats.gols} destaque />
                 <StatBox icon={<ListChecks size={14} />} label="Assists" valor={stats.assistencias} />
+                {jogador.posicao === "goleiro" && (
+                  <StatBox icon={<Shield size={14} />} label="Defesas" valor={stats.defesas || 0} destaque />
+                )}
                 <StatBox icon={<Star size={14} />} label="MVP" valor={stats.mvp_count} destaque />
               </div>
               <div className="grid grid-cols-3 gap-2 mb-4">
@@ -299,16 +316,87 @@ function ModalJogadorDetalhes({
                 <StatMini cor="zinc" label="E" valor={stats.empates} />
                 <StatMini cor="rose" label="D" valor={stats.derrotas} />
               </div>
-              <div className="p-3 rounded-xl border border-white/[0.06] bg-white/[0.02] flex items-center justify-between">
+              <div className="p-3 rounded-xl border border-white/[0.06] bg-white/[0.02] flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <Trophy className="text-[#22ff88]" size={16} />
                   <span className="text-sm text-white/70">Aproveitamento</span>
                 </div>
                 <span className="font-bold text-[#22ff88]">{aproveit}%</span>
               </div>
+
+              {/* POR COLETE */}
+              {colete && (colete.jogos_vermelho > 0 || colete.jogos_azul > 0) && (
+                <>
+                  <p className="text-[10px] tracking-[0.18em] text-white/40 mb-3 mt-6">POR COLETE</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <ColeteCard
+                      cor="vermelho"
+                      jogos={colete.jogos_vermelho}
+                      v={colete.v_vermelho}
+                      e={colete.e_vermelho}
+                      d={colete.d_vermelho}
+                    />
+                    <ColeteCard
+                      cor="azul"
+                      jogos={colete.jogos_azul}
+                      v={colete.v_azul}
+                      e={colete.e_azul}
+                      d={colete.d_azul}
+                    />
+                  </div>
+                </>
+              )}
             </>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function ColeteCard({
+  cor,
+  jogos,
+  v,
+  e,
+  d,
+}: {
+  cor: "vermelho" | "azul";
+  jogos: number;
+  v: number;
+  e: number;
+  d: number;
+}) {
+  const cls =
+    cor === "vermelho"
+      ? "border-rose-500/30 bg-rose-500/[0.06] text-rose-300"
+      : "border-sky-500/30 bg-sky-500/[0.06] text-sky-300";
+  const aproveit = jogos > 0 ? Math.round(((v * 3 + e) / (jogos * 3)) * 100) : 0;
+  return (
+    <div className={`p-3 rounded-xl border ${cls}`}>
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] tracking-[0.18em] font-bold uppercase">
+          {cor === "vermelho" ? "🔴 Vermelho" : "🔵 Azul"}
+        </span>
+        <span className="text-xs opacity-80 tabular-nums">{jogos} jogo{jogos !== 1 ? "s" : ""}</span>
+      </div>
+      <div className="grid grid-cols-3 gap-1 text-center text-white">
+        <div>
+          <p className="text-[9px] tracking-[0.18em] text-emerald-400/80">V</p>
+          <p className="font-bold tabular-nums">{v}</p>
+        </div>
+        <div>
+          <p className="text-[9px] tracking-[0.18em] text-white/40">E</p>
+          <p className="font-bold tabular-nums">{e}</p>
+        </div>
+        <div>
+          <p className="text-[9px] tracking-[0.18em] text-rose-400/80">D</p>
+          <p className="font-bold tabular-nums">{d}</p>
+        </div>
+      </div>
+      <div className="mt-2 pt-2 border-t border-white/10 flex justify-between items-center">
+        <span className="text-[9px] text-white/50 tracking-wider uppercase">Aproveit.</span>
+        <span className="text-xs font-bold tabular-nums">{aproveit}%</span>
       </div>
     </div>
   );

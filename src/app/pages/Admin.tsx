@@ -846,9 +846,11 @@ type CorColete = "vermelho" | "azul" | null;
 type StatRow = {
   jogador_id: string;
   nome: string;
+  posicao: Posicao;
   presente: boolean;
   gols: number;
   assistencias: number;
+  defesas: number;
   resultado: "V" | "E" | "D" | null;
   mvp: boolean;
   cor_colete: CorColete;
@@ -871,7 +873,7 @@ function ModalGerenciarJogo({
   useEffect(() => {
     (async () => {
       const [{ data: jg }, { data: stats }, { data: ts }] = await Promise.all([
-        supabase.from("jogadores").select("id, nome, apelido").eq("ativo", true).order("nome"),
+        supabase.from("jogadores").select("id, nome, apelido, posicao").eq("ativo", true).order("nome"),
         supabase.from("estatisticas_jogo").select("*").eq("jogo_id", jogo.id),
         supabase.from("times_sorteados").select("jogador_id").eq("jogo_id", jogo.id),
       ]);
@@ -882,9 +884,11 @@ function ModalGerenciarJogo({
         return {
           jogador_id: j.id,
           nome: j.apelido || j.nome,
+          posicao: j.posicao as Posicao,
           presente: s ? !!s.presente : sorteados.has(j.id),
           gols: s?.gols || 0,
           assistencias: s?.assistencias || 0,
+          defesas: s?.defesas || 0,
           resultado: s?.resultado || null,
           mvp: !!s?.mvp,
           cor_colete: (s?.cor_colete as CorColete) || null,
@@ -920,6 +924,7 @@ function ModalGerenciarJogo({
         presente: true,
         gols: r.gols,
         assistencias: r.assistencias,
+        defesas: r.defesas,
         resultado: r.resultado,
         mvp: r.mvp,
         cor_colete: r.cor_colete,
@@ -964,6 +969,7 @@ function ModalGerenciarJogo({
                     <th className="px-2 py-2 text-center">COLETE</th>
                     <th className="px-2 py-2 text-center">G</th>
                     <th className="px-2 py-2 text-center">A</th>
+                    <th className="px-2 py-2 text-center" title="Defesas (goleiro)">DEF</th>
                     <th className="px-2 py-2 text-center">RESULTADO</th>
                     <th className="px-2 py-2 text-center">MVP</th>
                   </tr>
@@ -1021,6 +1027,21 @@ function ModalGerenciarJogo({
                           value={r.assistencias}
                           onChange={(e) => update(i, { assistencias: Number(e.target.value) })}
                           className="w-14 px-2 py-1 rounded bg-white/[0.03] border border-white/[0.08] text-center text-sm"
+                        />
+                      </td>
+                      <td className="px-2 py-1.5">
+                        <input
+                          type="number"
+                          min={0}
+                          disabled={!r.presente}
+                          value={r.defesas}
+                          onChange={(e) => update(i, { defesas: Number(e.target.value) })}
+                          title={r.posicao === "goleiro" ? "Defesas" : "(geralmente só goleiro)"}
+                          className={`w-14 px-2 py-1 rounded border text-center text-sm ${
+                            r.posicao === "goleiro"
+                              ? "bg-[#22ff88]/[0.04] border-[#22ff88]/30"
+                              : "bg-white/[0.03] border-white/[0.08]"
+                          }`}
                         />
                       </td>
                       <td className="px-2 py-1.5 text-center">
