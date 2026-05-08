@@ -1,14 +1,17 @@
 -- ============================================================
--- Idosos da Zona Norte — Migração V4
--- Adiciona coluna "defesas" (goleiro) e atualiza view agregada
+-- Idosos da Zona Norte — Migração V4 (corrigida)
+-- defesas + recria views agregada e por colete
 -- ============================================================
 
 alter table public.estatisticas_jogo
   add column if not exists defesas int not null default 0
   check (defesas >= 0);
 
--- Recria a view agregada incluindo defesas
-create or replace view public.estatisticas_agregadas as
+-- Dropa views antes de recriar (ordem das colunas muda)
+drop view if exists public.estatisticas_agregadas;
+drop view if exists public.estatisticas_por_colete;
+
+create view public.estatisticas_agregadas as
 select
   j.id as jogador_id,
   j.nome,
@@ -24,8 +27,7 @@ from public.jogadores j
 left join public.estatisticas_jogo e on e.jogador_id = j.id
 group by j.id, j.nome;
 
--- Recria a view por colete (caso v3 não tenha rodado, garante que existe)
-create or replace view public.estatisticas_por_colete as
+create view public.estatisticas_por_colete as
 select
   jogador_id,
   count(*) filter (where cor_colete = 'vermelho') as jogos_vermelho,
