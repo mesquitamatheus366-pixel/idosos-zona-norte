@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../lib/supabase";
-import { Trophy, Target, ListChecks, Star, Calendar } from "lucide-react";
+import { Trophy, Target, ListChecks, Star, Calendar, Award } from "lucide-react";
 
 type Agregado = {
   jogador_id: string;
@@ -12,24 +12,26 @@ type Agregado = {
   empates: number;
   derrotas: number;
   mvp_count: number;
+  nota_total: number;
 };
 
 type Foto = { id: string; foto_url: string | null; apelido: string | null; nome: string };
 
-type Modo = "gols" | "assistencias" | "jogos_disputados" | "mvp_count";
+type Modo = "nota_total" | "gols" | "assistencias" | "jogos_disputados" | "mvp_count";
 
 const MODOS: { v: Modo; label: string; icon: React.ReactNode; sufixo: string }[] = [
+  { v: "nota_total", label: "NOTA TOTAL", icon: <Award size={12} />, sufixo: "pts" },
   { v: "gols", label: "GOLS", icon: <Target size={12} />, sufixo: "gols" },
   { v: "assistencias", label: "ASSISTÊNCIAS", icon: <ListChecks size={12} />, sufixo: "assists" },
   { v: "jogos_disputados", label: "PRESENÇA", icon: <Calendar size={12} />, sufixo: "jogos" },
-  { v: "mvp_count", label: "MVP", icon: <Star size={12} />, sufixo: "MVPs" },
+  { v: "mvp_count", label: "MVPs", icon: <Star size={12} />, sufixo: "MVPs" },
 ];
 
 export function Estatisticas() {
   const [rows, setRows] = useState<Agregado[]>([]);
   const [fotos, setFotos] = useState<Record<string, Foto>>({});
   const [loading, setLoading] = useState(true);
-  const [modo, setModo] = useState<Modo>("gols");
+  const [modo, setModo] = useState<Modo>("nota_total");
 
   useEffect(() => {
     (async () => {
@@ -111,7 +113,7 @@ export function Estatisticas() {
                     <p className="text-2xl mb-0.5">{podium}</p>
                     <p className="font-bold text-sm truncate px-1">{f?.apelido || f?.nome}</p>
                     <p className={`font-bold ${i === 0 ? "text-[#22ff88]" : "text-white/60"}`}>
-                      {r[modo]} <span className="text-[10px] text-white/40">{modoAtual.sufixo}</span>
+                      {modo === "nota_total" ? Number(r[modo]).toFixed(1) : r[modo]} <span className="text-[10px] text-white/40">{modoAtual.sufixo}</span>
                     </p>
                   </div>
                 );
@@ -125,6 +127,7 @@ export function Estatisticas() {
                   <tr className="text-left text-[10px] tracking-[0.18em] text-white/40 uppercase border-b border-white/[0.06]">
                     <th className="px-4 py-3 w-10">#</th>
                     <th className="px-2 py-3">Jogador</th>
+                    <th className="px-3 py-3 text-center">NOTA</th>
                     <th className="px-3 py-3 text-center">J</th>
                     <th className="px-3 py-3 text-center">G</th>
                     <th className="px-3 py-3 text-center">A</th>
@@ -152,6 +155,7 @@ export function Estatisticas() {
                             <span className="font-medium">{f?.apelido || r.nome}</span>
                           </div>
                         </td>
+                        <td className={`px-3 py-2.5 text-center tabular-nums ${modo === "nota_total" ? "text-[#22ff88] font-bold" : "text-[#22ff88]/80"}`}>{Number(r.nota_total || 0).toFixed(1)}</td>
                         <td className="px-3 py-2.5 text-center text-white/60 tabular-nums">{r.jogos_disputados}</td>
                         <td className={`px-3 py-2.5 text-center tabular-nums ${modo === "gols" ? "text-[#22ff88] font-bold" : "text-white/80"}`}>{r.gols}</td>
                         <td className={`px-3 py-2.5 text-center tabular-nums ${modo === "assistencias" ? "text-[#22ff88] font-bold" : ""}`}>{r.assistencias}</td>

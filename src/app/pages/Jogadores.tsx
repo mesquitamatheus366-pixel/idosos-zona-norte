@@ -182,7 +182,10 @@ type Agregado = {
   vitorias: number;
   empates: number;
   derrotas: number;
+  cartoes_vermelhos: number;
+  gols_contra: number;
   mvp_count: number;
+  nota_total: number;
 };
 
 type ColeteStats = {
@@ -282,17 +285,31 @@ function ModalJogadorDetalhes({
         </div>
 
         <div className="px-6 pb-6 mt-6">
-          <p className="text-[10px] tracking-[0.18em] text-white/40 mb-2">NÍVEL TÉCNICO</p>
-          <div className="flex items-center gap-3 mb-6">
-            <div className="flex-1 h-2 rounded-full bg-white/5 overflow-hidden">
+          {/* NOTA TOTAL acumulada */}
+          <div className="mb-5 p-4 rounded-2xl border border-[#22ff88]/30 bg-gradient-to-br from-[#22ff88]/10 to-transparent">
+            <div className="flex items-end justify-between gap-3">
+              <div>
+                <p className="text-[10px] tracking-[0.3em] text-[#22ff88] mb-1">NOTA TOTAL</p>
+                <p className="text-4xl font-bold tabular-nums text-[#22ff88] leading-none">
+                  {(stats?.nota_total || 0).toFixed(1)}
+                </p>
+                <p className="text-white/40 text-[10px] mt-1.5">
+                  acumulada de todas as peladas
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] tracking-[0.18em] text-white/40 mb-1">NÍVEL TÉCNICO</p>
+                <p className="text-xl font-bold tabular-nums text-white/80">
+                  {jogador.nivel}<span className="text-sm text-white/30">/10</span>
+                </p>
+              </div>
+            </div>
+            <div className="mt-3 h-1.5 rounded-full bg-white/5 overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-[#22ff88] to-[#5cffaa] rounded-full"
                 style={{ width: `${(jogador.nivel / 10) * 100}%` }}
               />
             </div>
-            <span className="text-2xl font-bold text-[#22ff88] tabular-nums w-14 text-right">
-              {jogador.nivel}<span className="text-sm text-white/30">/10</span>
-            </span>
           </div>
 
           <p className="text-[10px] tracking-[0.18em] text-white/40 mb-3">ESTATÍSTICAS</p>

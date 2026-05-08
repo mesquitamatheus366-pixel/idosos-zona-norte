@@ -21,12 +21,22 @@ type TimeJogador = {
 type Estatistica = {
   jogo_id: string;
   jogador_id: string;
+  presente: boolean;
   gols: number;
   assistencias: number;
-  resultado: "V" | "E" | "D" | null;
-  mvp: boolean;
+  defesas: number;
+  cartoes_vermelhos: number;
+  gols_contra: number;
+  vitorias_vermelho: number;
+  empates_vermelho: number;
+  derrotas_vermelho: number;
+  vitorias_azul: number;
+  empates_azul: number;
+  derrotas_azul: number;
   jogadores: { nome: string; apelido: string | null } | null;
 };
+
+type Pontos = { jogo_id: string; jogador_id: string; pontos: number };
 
 type Filtro = "todos" | "diaria" | "mensal";
 
@@ -34,6 +44,7 @@ export function Jogos() {
   const [jogos, setJogos] = useState<Jogo[]>([]);
   const [times, setTimes] = useState<Record<string, TimeJogador[]>>({});
   const [stats, setStats] = useState<Record<string, Estatistica[]>>({});
+  const [pontosMap, setPontosMap] = useState<Record<string, Record<string, number>>>({});
   const [filtro, setFiltro] = useState<Filtro>("todos");
   const [aberto, setAberto] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -48,26 +59,32 @@ export function Jogos() {
 
       if (lista.length) {
         const ids = lista.map((j) => j.id);
-        const [{ data: ts }, { data: es }] = await Promise.all([
+        const [{ data: ts }, { data: es }, { data: ps }] = await Promise.all([
           supabase
             .from("times_sorteados")
             .select("jogo_id, jogador_id, time_numero, jogadores(nome, apelido)")
             .in("jogo_id", ids),
           supabase
             .from("estatisticas_jogo")
-            .select("jogo_id, jogador_id, gols, assistencias, resultado, mvp, jogadores(nome, apelido)")
+            .select("*, jogadores(nome, apelido)")
             .in("jogo_id", ids),
+          supabase.from("pontuacao_dia").select("*").in("jogo_id", ids),
         ]);
         const tMap: Record<string, TimeJogador[]> = {};
-        (ts as any[] || []).forEach((r) => {
+        ((ts as any[]) || []).forEach((r) => {
           (tMap[r.jogo_id] ||= []).push(r);
         });
         const sMap: Record<string, Estatistica[]> = {};
-        (es as any[] || []).forEach((r) => {
+        ((es as any[]) || []).forEach((r) => {
           (sMap[r.jogo_id] ||= []).push(r);
+        });
+        const pMap: Record<string, Record<string, number>> = {};
+        ((ps as Pontos[]) || []).forEach((p) => {
+          (pMap[p.jogo_id] ||= {})[p.jogador_id] = Number(p.pontos);
         });
         setTimes(tMap);
         setStats(sMap);
+        setPontosMap(pMap);
       }
       setLoading(false);
     })();
@@ -113,9 +130,14 @@ export function Jogos() {
             const expanded = aberto === j.id;
             const ts = times[j.id] || [];
             const es = stats[j.id] || [];
-            const mvp = es.find((e) => e.mvp);
             const data = new Date(j.data_jogo);
             const grupos = agruparPorTime(ts);
+            const ptsDoJogo = pontosMap[j.id] || {};
+
+            // MVP do dia = top pontos (>0)
+            const mvp = es
+              .filter((e) => (ptsDoJogo[e.jogador_id] || 0) > 0)
+              .sort((a, b) => (ptsDoJogo[b.jogador_id] || 0) - (ptsDoJogo[a.jogador_id] || 0))[0];
 
             return (
               <div
@@ -138,7 +160,7 @@ export function Jogos() {
                   </div>
                   {mvp?.jogadores && (
                     <div className="hidden sm:flex items-center gap-1 text-[#22ff88] text-xs">
-                      <Trophy size={12} /> MVP: {mvp.jogadores.apelido || mvp.jogadores.nome}
+                      <Trophy size={12} /> MVP do dia: {mvp.jogadores.apelido || mvp.jogadores.nome}
                     </div>
                   )}
                 </button>
@@ -164,29 +186,51 @@ export function Jogos() {
                     )}
                     {es.length > 0 && (
                       <div>
-                        <p className="text-[10px] tracking-[0.18em] text-white/40 mb-2">ESTATÍSTICAS</p>
-                        <table className="w-full text-sm">
-                          <thead>
-                            <tr className="text-left text-[10px] tracking-[0.15em] text-white/40">
-                              <th className="py-1">Jogador</th>
-                              <th className="py-1 text-center">G</th>
-                              <th className="py-1 text-center">A</th>
-                              <th className="py-1 text-center">RES</th>
-                              <th className="py-1 text-center">MVP</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {es.map((e, i) => (
-                              <tr key={i} className="border-t border-white/[0.04]">
-                                <td className="py-1.5">{e.jogadores?.apelido || e.jogadores?.nome}</td>
-                                <td className="py-1.5 text-center text-[#22ff88]">{e.gols}</td>
-                                <td className="py-1.5 text-center">{e.assistencias}</td>
-                                <td className="py-1.5 text-center text-white/60">{e.resultado || "-"}</td>
-                                <td className="py-1.5 text-center">{e.mvp ? "⭐" : ""}</td>
+                        <p className="text-[10px] tracking-[0.18em] text-white/40 mb-2">ESTATÍSTICAS DO DIA</p>
+                        <div className="overflow-x-auto rounded-xl border border-white/[0.06]">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="text-left text-[10px] tracking-[0.15em] text-white/40 border-b border-white/[0.06]">
+                                <th className="px-3 py-2">Jogador</th>
+                                <th className="px-2 py-2 text-center">Pts</th>
+                                <th className="px-2 py-2 text-center">G</th>
+                                <th className="px-2 py-2 text-center">A</th>
+                                <th className="px-2 py-2 text-center">DEF</th>
+                                <th className="px-2 py-2 text-center" title="Vitórias / Empates / Derrotas">V/E/D</th>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                            </thead>
+                            <tbody>
+                              {[...es]
+                                .sort((a, b) => (ptsDoJogo[b.jogador_id] || 0) - (ptsDoJogo[a.jogador_id] || 0))
+                                .map((e) => {
+                                  const pts = ptsDoJogo[e.jogador_id] || 0;
+                                  const v = e.vitorias_vermelho + e.vitorias_azul;
+                                  const emp = e.empates_vermelho + e.empates_azul;
+                                  const d = e.derrotas_vermelho + e.derrotas_azul;
+                                  const isMvp = mvp?.jogador_id === e.jogador_id;
+                                  return (
+                                    <tr key={e.jogador_id} className="border-t border-white/[0.04]">
+                                      <td className="px-3 py-1.5">
+                                        {isMvp && "🏆 "}
+                                        {e.jogadores?.apelido || e.jogadores?.nome}
+                                      </td>
+                                      <td className={`px-2 py-1.5 text-center font-bold tabular-nums ${pts > 0 ? "text-[#22ff88]" : pts < 0 ? "text-rose-400" : "text-white/40"}`}>
+                                        {pts.toFixed(1)}
+                                      </td>
+                                      <td className="px-2 py-1.5 text-center text-[#22ff88] tabular-nums">{e.gols}</td>
+                                      <td className="px-2 py-1.5 text-center tabular-nums">{e.assistencias}</td>
+                                      <td className="px-2 py-1.5 text-center tabular-nums">{e.defesas}</td>
+                                      <td className="px-2 py-1.5 text-center tabular-nums text-white/70">
+                                        <span className="text-emerald-400">{v}</span>
+                                        /<span className="text-white/60">{emp}</span>
+                                        /<span className="text-rose-400">{d}</span>
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
                     )}
                     {grupos.length === 0 && es.length === 0 && (

@@ -841,20 +841,40 @@ function ModalNovoJogo({ onClose, onSaved }: { onClose: () => void; onSaved: () 
   );
 }
 
-type CorColete = "vermelho" | "azul" | null;
-
 type StatRow = {
   jogador_id: string;
   nome: string;
+  apelido: string | null;
+  foto_url: string | null;
   posicao: Posicao;
   presente: boolean;
   gols: number;
   assistencias: number;
   defesas: number;
-  resultado: "V" | "E" | "D" | null;
-  mvp: boolean;
-  cor_colete: CorColete;
+  cartoes_vermelhos: number;
+  gols_contra: number;
+  vitorias_vermelho: number;
+  empates_vermelho: number;
+  derrotas_vermelho: number;
+  vitorias_azul: number;
+  empates_azul: number;
+  derrotas_azul: number;
 };
+
+function calcularPontos(r: StatRow): number {
+  const v = r.vitorias_vermelho + r.vitorias_azul;
+  const d = r.derrotas_vermelho + r.derrotas_azul;
+  const p =
+    v * 0.3 -
+    d * 0.1 +
+    r.gols * 0.3 +
+    r.assistencias * 0.2 +
+    r.defesas * 0.1 -
+    r.cartoes_vermelhos * 1 -
+    r.gols_contra * 1 +
+    (r.presente ? 5 : 0);
+  return Math.round(p * 100) / 100;
+}
 
 function ModalGerenciarJogo({
   jogo,
@@ -869,11 +889,13 @@ function ModalGerenciarJogo({
   const [loading, setLoading] = useState(true);
   const [salvando, setSalvando] = useState(false);
   const [finalizado, setFinalizado] = useState(jogo.finalizado);
+  const [filtro, setFiltro] = useState<"todos" | "presentes">("presentes");
+  const [busca, setBusca] = useState("");
 
   useEffect(() => {
     (async () => {
       const [{ data: jg }, { data: stats }, { data: ts }] = await Promise.all([
-        supabase.from("jogadores").select("id, nome, apelido, posicao").eq("ativo", true).order("nome"),
+        supabase.from("jogadores").select("id, nome, apelido, foto_url, posicao").eq("ativo", true).order("nome"),
         supabase.from("estatisticas_jogo").select("*").eq("jogo_id", jogo.id),
         supabase.from("times_sorteados").select("jogador_id").eq("jogo_id", jogo.id),
       ]);
@@ -883,15 +905,22 @@ function ModalGerenciarJogo({
         const s = statMap.get(j.id);
         return {
           jogador_id: j.id,
-          nome: j.apelido || j.nome,
+          nome: j.nome,
+          apelido: j.apelido,
+          foto_url: j.foto_url,
           posicao: j.posicao as Posicao,
           presente: s ? !!s.presente : sorteados.has(j.id),
           gols: s?.gols || 0,
           assistencias: s?.assistencias || 0,
           defesas: s?.defesas || 0,
-          resultado: s?.resultado || null,
-          mvp: !!s?.mvp,
-          cor_colete: (s?.cor_colete as CorColete) || null,
+          cartoes_vermelhos: s?.cartoes_vermelhos || 0,
+          gols_contra: s?.gols_contra || 0,
+          vitorias_vermelho: s?.vitorias_vermelho || 0,
+          empates_vermelho: s?.empates_vermelho || 0,
+          derrotas_vermelho: s?.derrotas_vermelho || 0,
+          vitorias_azul: s?.vitorias_azul || 0,
+          empates_azul: s?.empates_azul || 0,
+          derrotas_azul: s?.derrotas_azul || 0,
         };
       });
       setRows(list);
@@ -901,10 +930,6 @@ function ModalGerenciarJogo({
 
   function update(idx: number, patch: Partial<StatRow>) {
     setRows((rs) => rs.map((r, i) => (i === idx ? { ...r, ...patch } : r)));
-  }
-
-  function setMVPUnico(idx: number) {
-    setRows((rs) => rs.map((r, i) => ({ ...r, mvp: i === idx ? !r.mvp : false })));
   }
 
   async function salvar() {
@@ -925,9 +950,14 @@ function ModalGerenciarJogo({
         gols: r.gols,
         assistencias: r.assistencias,
         defesas: r.defesas,
-        resultado: r.resultado,
-        mvp: r.mvp,
-        cor_colete: r.cor_colete,
+        cartoes_vermelhos: r.cartoes_vermelhos,
+        gols_contra: r.gols_contra,
+        vitorias_vermelho: r.vitorias_vermelho,
+        empates_vermelho: r.empates_vermelho,
+        derrotas_vermelho: r.derrotas_vermelho,
+        vitorias_azul: r.vitorias_azul,
+        empates_azul: r.empates_azul,
+        derrotas_azul: r.derrotas_azul,
       }));
       const { error } = await supabase
         .from("estatisticas_jogo")
@@ -945,156 +975,233 @@ function ModalGerenciarJogo({
     onSaved();
   }
 
+  // Calcula MVP do dia (top pontos)
+  const linhasComPontos = rows.map((r) => ({ ...r, pontos: calcularPontos(r) }));
+  const mvpDia = [...linhasComPontos]
+    .filter((r) => r.presente && r.pontos > 0)
+    .sort((a, b) => b.pontos - a.pontos)[0];
+
+  const visiveis = linhasComPontos.filter((r) => {
+    if (filtro === "presentes" && !r.presente) return false;
+    if (busca.trim()) {
+      const q = busca.trim().toLowerCase();
+      if (!r.nome.toLowerCase().includes(q) && !(r.apelido || "").toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-[#111] border border-white/[0.08] rounded-2xl p-6">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="font-bold text-xl">Lançar resultado</h2>
-          <button onClick={onClose} className="text-white/50 hover:text-white"><X size={18} /></button>
+    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+      <div className="w-full max-w-3xl max-h-[92vh] flex flex-col bg-gradient-to-b from-[#0e1612] to-[#0b0b0b] border border-[#22ff88]/15 rounded-3xl">
+        {/* Header */}
+        <div className="p-5 border-b border-white/[0.06] flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[10px] tracking-[0.3em] text-[#22ff88]">LANÇAR RESULTADO</p>
+            <h2 className="font-bold text-xl mt-0.5">
+              {new Date(jogo.data_jogo).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })}
+            </h2>
+            <p className="text-white/40 text-xs mt-0.5">
+              {jogo.tipo === "mensal" ? "Pelada Mensal" : "Pelada Diária"}
+              {mvpDia && ` · MVP do dia: ${mvpDia.apelido || mvpDia.nome} (${mvpDia.pontos} pts)`}
+            </p>
+          </div>
+          <button onClick={onClose} className="text-white/50 hover:text-white p-1">
+            <X size={20} />
+          </button>
         </div>
-        <p className="text-white/40 text-xs mb-4">
-          {new Date(jogo.data_jogo).toLocaleString("pt-BR")} · {jogo.tipo}
-        </p>
 
-        {loading ? (
-          <p className="text-white/40">Carregando...</p>
-        ) : (
-          <>
-            <div className="overflow-x-auto rounded-xl border border-white/[0.06]">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-[10px] tracking-[0.15em] text-white/40 border-b border-white/[0.06]">
-                    <th className="px-3 py-2 text-left">JOGADOR</th>
-                    <th className="px-2 py-2 text-center">PRES.</th>
-                    <th className="px-2 py-2 text-center">COLETE</th>
-                    <th className="px-2 py-2 text-center">G</th>
-                    <th className="px-2 py-2 text-center">A</th>
-                    <th className="px-2 py-2 text-center" title="Defesas (goleiro)">DEF</th>
-                    <th className="px-2 py-2 text-center">RESULTADO</th>
-                    <th className="px-2 py-2 text-center">MVP</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((r, i) => (
-                    <tr key={r.jogador_id} className={`border-b border-white/[0.04] ${!r.presente && "opacity-40"}`}>
-                      <td className="px-3 py-1.5">{r.nome}</td>
-                      <td className="px-2 py-1.5 text-center">
-                        <input
-                          type="checkbox"
-                          checked={r.presente}
-                          onChange={(e) => update(i, { presente: e.target.checked })}
-                        />
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <div className="flex gap-0.5 justify-center">
-                          <button
-                            disabled={!r.presente}
-                            onClick={() => update(i, { cor_colete: r.cor_colete === "vermelho" ? null : "vermelho" })}
-                            title="Vermelho"
-                            className={`w-7 h-7 rounded-full border-2 ${
-                              r.cor_colete === "vermelho"
-                                ? "bg-rose-500 border-rose-300 shadow-[0_0_8px_rgba(244,63,94,0.6)]"
-                                : "bg-rose-500/30 border-rose-500/40 hover:bg-rose-500/50"
-                            } disabled:opacity-30`}
-                          />
-                          <button
-                            disabled={!r.presente}
-                            onClick={() => update(i, { cor_colete: r.cor_colete === "azul" ? null : "azul" })}
-                            title="Azul"
-                            className={`w-7 h-7 rounded-full border-2 ${
-                              r.cor_colete === "azul"
-                                ? "bg-sky-500 border-sky-300 shadow-[0_0_8px_rgba(14,165,233,0.6)]"
-                                : "bg-sky-500/30 border-sky-500/40 hover:bg-sky-500/50"
-                            } disabled:opacity-30`}
-                          />
+        {/* Filtros */}
+        <div className="p-4 border-b border-white/[0.06] flex flex-wrap gap-2 items-center">
+          <button
+            onClick={() => setFiltro(filtro === "presentes" ? "todos" : "presentes")}
+            className={`px-3 py-1.5 rounded-full text-[10px] tracking-[0.18em] font-bold border ${
+              filtro === "presentes"
+                ? "bg-[#22ff88] text-[#0b0b0b] border-[#22ff88]"
+                : "border-white/15 text-white/60"
+            }`}
+          >
+            {filtro === "presentes" ? "SÓ PRESENTES" : "TODOS"}
+          </button>
+          <input
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            placeholder="Buscar jogador..."
+            className="flex-1 min-w-[140px] px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] text-sm focus:outline-none focus:border-[#22ff88]/50"
+          />
+          <p className="text-[10px] text-white/40 tracking-[0.18em]">
+            {rows.filter((r) => r.presente).length} PRESENTES · MVP {mvpDia?.pontos.toFixed(1) || "—"} PTS
+          </p>
+        </div>
+
+        {/* Lista de jogadores */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {loading ? (
+            <p className="text-white/40">Carregando...</p>
+          ) : visiveis.length === 0 ? (
+            <p className="text-white/40 text-center py-6">Nenhum jogador.</p>
+          ) : (
+            visiveis.map((r) => {
+              const idx = rows.findIndex((x) => x.jogador_id === r.jogador_id);
+              const eMVP = mvpDia?.jogador_id === r.jogador_id;
+              return (
+                <div
+                  key={r.jogador_id}
+                  className={`rounded-2xl border bg-white/[0.02] transition-all ${
+                    !r.presente
+                      ? "border-white/[0.04] opacity-50"
+                      : eMVP
+                      ? "border-[#22ff88]/40 shadow-[0_0_16px_rgba(34,255,136,0.1)]"
+                      : "border-white/[0.06]"
+                  }`}
+                >
+                  {/* Header card */}
+                  <div className="flex items-center gap-3 p-3 border-b border-white/[0.04]">
+                    <div className="w-9 h-9 rounded-full bg-white/5 ring-1 ring-white/10 overflow-hidden flex items-center justify-center text-white/40 text-[10px] font-bold shrink-0">
+                      {r.foto_url ? (
+                        <img src={r.foto_url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        (r.apelido || r.nome).split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase()
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold truncate text-sm">{r.apelido || r.nome}</p>
+                      <p className="text-[10px] text-white/40 uppercase tracking-wider">
+                        {POSICOES.find((p) => p.v === r.posicao)?.label}
+                        {eMVP && r.presente && " · 🏆 MVP do dia"}
+                      </p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-[9px] tracking-[0.18em] text-white/40">PONTOS</p>
+                      <p className={`text-xl font-bold tabular-nums ${r.pontos > 0 ? "text-[#22ff88]" : r.pontos < 0 ? "text-rose-400" : "text-white/40"}`}>
+                        {r.pontos.toFixed(1)}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => update(idx, { presente: !r.presente })}
+                      className={`relative w-12 h-6 rounded-full transition-colors shrink-0 ${
+                        r.presente ? "bg-[#22ff88]" : "bg-white/10"
+                      }`}
+                      title={r.presente ? "Presente" : "Ausente"}
+                    >
+                      <div
+                        className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                          r.presente ? "translate-x-6" : "translate-x-0.5"
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* Inputs */}
+                  {r.presente && (
+                    <div className="p-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      <NumInput label="Gols" valor={r.gols} onChange={(v) => update(idx, { gols: v })} cor="green" />
+                      <NumInput label="Assist" valor={r.assistencias} onChange={(v) => update(idx, { assistencias: v })} />
+                      <NumInput
+                        label="Defesas"
+                        valor={r.defesas}
+                        onChange={(v) => update(idx, { defesas: v })}
+                        cor={r.posicao === "goleiro" ? "green" : undefined}
+                      />
+                      <NumInput label="Cart. 🟥" valor={r.cartoes_vermelhos} onChange={(v) => update(idx, { cartoes_vermelhos: v })} cor="rose" />
+
+                      <div className="col-span-2 sm:col-span-4 pt-2 mt-1 border-t border-white/[0.04] grid grid-cols-2 gap-2">
+                        {/* VERMELHO */}
+                        <div className="rounded-xl border border-rose-500/30 bg-rose-500/[0.04] p-2">
+                          <p className="text-[9px] tracking-[0.18em] text-rose-300 mb-1.5">🔴 COLETE VERMELHO</p>
+                          <div className="grid grid-cols-3 gap-1">
+                            <NumInput compact label="V" valor={r.vitorias_vermelho} onChange={(v) => update(idx, { vitorias_vermelho: v })} />
+                            <NumInput compact label="E" valor={r.empates_vermelho} onChange={(v) => update(idx, { empates_vermelho: v })} />
+                            <NumInput compact label="D" valor={r.derrotas_vermelho} onChange={(v) => update(idx, { derrotas_vermelho: v })} />
+                          </div>
                         </div>
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <input
-                          type="number"
-                          min={0}
-                          disabled={!r.presente}
-                          value={r.gols}
-                          onChange={(e) => update(i, { gols: Number(e.target.value) })}
-                          className="w-14 px-2 py-1 rounded bg-white/[0.03] border border-white/[0.08] text-center text-sm"
-                        />
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <input
-                          type="number"
-                          min={0}
-                          disabled={!r.presente}
-                          value={r.assistencias}
-                          onChange={(e) => update(i, { assistencias: Number(e.target.value) })}
-                          className="w-14 px-2 py-1 rounded bg-white/[0.03] border border-white/[0.08] text-center text-sm"
-                        />
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <input
-                          type="number"
-                          min={0}
-                          disabled={!r.presente}
-                          value={r.defesas}
-                          onChange={(e) => update(i, { defesas: Number(e.target.value) })}
-                          title={r.posicao === "goleiro" ? "Defesas" : "(geralmente só goleiro)"}
-                          className={`w-14 px-2 py-1 rounded border text-center text-sm ${
-                            r.posicao === "goleiro"
-                              ? "bg-[#22ff88]/[0.04] border-[#22ff88]/30"
-                              : "bg-white/[0.03] border-white/[0.08]"
-                          }`}
-                        />
-                      </td>
-                      <td className="px-2 py-1.5 text-center">
-                        <div className="flex gap-0.5 justify-center">
-                          {(["V", "E", "D"] as const).map((res) => (
-                            <button
-                              key={res}
-                              disabled={!r.presente}
-                              onClick={() => update(i, { resultado: r.resultado === res ? null : res })}
-                              className={`w-7 h-7 rounded text-xs font-bold ${
-                                r.resultado === res
-                                  ? res === "V"
-                                    ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
-                                    : res === "E"
-                                    ? "bg-white/10 text-white/80 border border-white/20"
-                                    : "bg-rose-500/20 text-rose-300 border border-rose-500/40"
-                                  : "border border-white/10 text-white/40"
-                              }`}
-                            >
-                              {res}
-                            </button>
-                          ))}
+                        {/* AZUL */}
+                        <div className="rounded-xl border border-sky-500/30 bg-sky-500/[0.04] p-2">
+                          <p className="text-[9px] tracking-[0.18em] text-sky-300 mb-1.5">🔵 COLETE AZUL</p>
+                          <div className="grid grid-cols-3 gap-1">
+                            <NumInput compact label="V" valor={r.vitorias_azul} onChange={(v) => update(idx, { vitorias_azul: v })} />
+                            <NumInput compact label="E" valor={r.empates_azul} onChange={(v) => update(idx, { empates_azul: v })} />
+                            <NumInput compact label="D" valor={r.derrotas_azul} onChange={(v) => update(idx, { derrotas_azul: v })} />
+                          </div>
                         </div>
-                      </td>
-                      <td className="px-2 py-1.5 text-center">
-                        <button
-                          disabled={!r.presente}
-                          onClick={() => setMVPUnico(i)}
-                          className={`w-7 h-7 rounded ${r.mvp ? "bg-[#22ff88] text-[#0b0b0b]" : "border border-white/10 text-white/30"}`}
-                        >
-                          {r.mvp ? <Check size={14} className="mx-auto" /> : <Trophy size={12} className="mx-auto" />}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      </div>
 
-            <label className="flex items-center gap-2 mt-4 text-sm text-white/70">
-              <input type="checkbox" checked={finalizado} onChange={(e) => setFinalizado(e.target.checked)} />
-              Marcar jogo como finalizado
-            </label>
+                      <NumInput label="Gol contra" valor={r.gols_contra} onChange={(v) => update(idx, { gols_contra: v })} cor="rose" />
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
 
-            <div className="flex justify-end gap-2 mt-6">
-              <button onClick={onClose} className="px-4 py-2 rounded-full border border-white/15 text-white/70 text-[11px] tracking-[0.18em]">FECHAR</button>
-              <button onClick={salvar} disabled={salvando} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#22ff88] text-[#0b0b0b] font-bold text-[11px] tracking-[0.18em] disabled:opacity-50">
-                <Save size={14} /> {salvando ? "SALVANDO..." : "SALVAR TUDO"}
-              </button>
-            </div>
-          </>
-        )}
+        {/* Footer */}
+        <div className="p-4 border-t border-white/[0.06] flex items-center justify-between gap-3 flex-wrap">
+          <label className="flex items-center gap-2 text-sm text-white/70">
+            <input type="checkbox" checked={finalizado} onChange={(e) => setFinalizado(e.target.checked)} />
+            Finalizado
+          </label>
+          <div className="flex gap-2">
+            <button onClick={onClose} className="px-4 py-2 rounded-full border border-white/15 text-white/70 text-[11px] tracking-[0.18em]">FECHAR</button>
+            <button
+              onClick={salvar}
+              disabled={salvando}
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[#22ff88] text-[#0b0b0b] font-bold text-[11px] tracking-[0.18em] disabled:opacity-50 hover:bg-[#5cffaa] shadow-[0_0_18px_rgba(34,255,136,0.3)]"
+            >
+              <Save size={14} /> {salvando ? "SALVANDO..." : "SALVAR TUDO"}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
+  );
+}
+
+function NumInput({
+  label,
+  valor,
+  onChange,
+  compact,
+  cor,
+}: {
+  label: string;
+  valor: number;
+  onChange: (v: number) => void;
+  compact?: boolean;
+  cor?: "green" | "rose";
+}) {
+  const txt = cor === "green" ? "text-[#22ff88]" : cor === "rose" ? "text-rose-300" : "text-white/40";
+  const bd =
+    cor === "green"
+      ? "border-[#22ff88]/30 bg-[#22ff88]/[0.04]"
+      : cor === "rose"
+      ? "border-rose-500/30 bg-rose-500/[0.04]"
+      : "border-white/[0.08] bg-white/[0.03]";
+  return (
+    <label className={`block`}>
+      <p className={`${compact ? "text-[9px]" : "text-[10px]"} tracking-[0.18em] uppercase mb-0.5 ${txt}`}>{label}</p>
+      <div className={`flex items-center rounded-lg border ${bd} overflow-hidden`}>
+        <button
+          type="button"
+          onClick={() => onChange(Math.max(0, valor - 1))}
+          className="px-2 py-1 text-white/50 hover:text-white hover:bg-white/[0.04] text-sm"
+        >
+          −
+        </button>
+        <input
+          type="number"
+          min={0}
+          value={valor}
+          onChange={(e) => onChange(Math.max(0, Number(e.target.value) || 0))}
+          className="flex-1 w-10 px-1 py-1 bg-transparent text-center text-sm focus:outline-none tabular-nums"
+        />
+        <button
+          type="button"
+          onClick={() => onChange(valor + 1)}
+          className="px-2 py-1 text-white/50 hover:text-white hover:bg-white/[0.04] text-sm"
+        >
+          +
+        </button>
+      </div>
+    </label>
   );
 }
