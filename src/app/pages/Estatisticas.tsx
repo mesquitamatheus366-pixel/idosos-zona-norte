@@ -33,22 +33,40 @@ export function Estatisticas() {
   const [loading, setLoading] = useState(true);
   const [modo, setModo] = useState<Modo>("nota_total");
 
+  async function carregar() {
+    const [{ data: ag }, { data: jg }] = await Promise.all([
+      supabase.from("estatisticas_agregadas").select("*"),
+      supabase.from("jogadores").select("id, nome, apelido, foto_url"),
+    ]);
+    setRows(((ag as any[]) || []).map((r) => ({
+      jogador_id: r.jogador_id,
+      nome: r.nome,
+      jogos_disputados: Number(r.jogos_disputados) || 0,
+      gols: Number(r.gols) || 0,
+      assistencias: Number(r.assistencias) || 0,
+      vitorias: Number(r.vitorias) || 0,
+      empates: Number(r.empates) || 0,
+      derrotas: Number(r.derrotas) || 0,
+      mvp_count: Number(r.mvp_count) || 0,
+      nota_total: Number(r.nota_total) || 0,
+    })));
+    const fmap: Record<string, Foto> = {};
+    ((jg as Foto[]) || []).forEach((f) => (fmap[f.id] = f));
+    setFotos(fmap);
+    setLoading(false);
+  }
+
   useEffect(() => {
-    (async () => {
-      const [{ data: ag }, { data: jg }] = await Promise.all([
-        supabase.from("estatisticas_agregadas").select("*"),
-        supabase.from("jogadores").select("id, nome, apelido, foto_url"),
-      ]);
-      setRows((ag as Agregado[]) || []);
-      const fmap: Record<string, Foto> = {};
-      ((jg as Foto[]) || []).forEach((f) => (fmap[f.id] = f));
-      setFotos(fmap);
-      setLoading(false);
-    })();
+    carregar();
+    const onVisible = () => {
+      if (document.visibilityState === "visible") carregar();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
   }, []);
 
   const ordenado = useMemo(() => {
-    return [...rows].sort((a, b) => (b[modo] as number) - (a[modo] as number));
+    return [...rows].sort((a, b) => (Number(b[modo]) || 0) - (Number(a[modo]) || 0));
   }, [rows, modo]);
 
   const modoAtual = MODOS.find((m) => m.v === modo)!;

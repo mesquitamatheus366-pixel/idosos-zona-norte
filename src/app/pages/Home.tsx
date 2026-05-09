@@ -49,23 +49,50 @@ export function Home() {
   const [agregados, setAgregados] = useState<Agregado[]>([]);
   const [melhorMes, setMelhorMes] = useState<MelhorMes[]>([]);
   const [loading, setLoading] = useState(true);
+  const [recarregando, setRecarregando] = useState(false);
+
+  async function carregar(silencioso = false) {
+    if (!silencioso) setLoading(true);
+    if (silencioso) setRecarregando(true);
+    const [{ data: jg }, { data: ag }, { data: mm }] = await Promise.all([
+      supabase
+        .from("jogadores")
+        .select("id, nome, apelido, posicao, nivel, foto_url")
+        .eq("ativo", true)
+        .order("nome"),
+      supabase.from("estatisticas_agregadas").select("*"),
+      supabase.from("melhor_time_mes").select("*").order("pontos", { ascending: false }),
+    ]);
+    setJogadores((jg as Jogador[]) || []);
+    setAgregados(((ag as Agregado[]) || []).map((a) => ({
+      ...a,
+      gols: Number(a.gols),
+      assistencias: Number(a.assistencias),
+      jogos_disputados: Number(a.jogos_disputados),
+      mvp_count: Number(a.mvp_count),
+    })));
+    setMelhorMes(((mm as MelhorMes[]) || []).map((m) => ({
+      ...m,
+      pontos: Number(m.pontos),
+      gols: Number(m.gols),
+      assistencias: Number(m.assistencias),
+      mvps: Number(m.mvps),
+    })));
+    setLoading(false);
+    setRecarregando(false);
+  }
 
   useEffect(() => {
-    (async () => {
-      const [{ data: jg }, { data: ag }, { data: mm }] = await Promise.all([
-        supabase
-          .from("jogadores")
-          .select("id, nome, apelido, posicao, nivel, foto_url")
-          .eq("ativo", true)
-          .order("nome"),
-        supabase.from("estatisticas_agregadas").select("*"),
-        supabase.from("melhor_time_mes").select("*").order("pontos", { ascending: false }),
-      ]);
-      setJogadores((jg as Jogador[]) || []);
-      setAgregados((ag as Agregado[]) || []);
-      setMelhorMes((mm as MelhorMes[]) || []);
-      setLoading(false);
-    })();
+    carregar();
+    // Recarrega quando a aba volta a ficar visível
+    const onVisible = () => {
+      if (document.visibilityState === "visible") carregar(true);
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", () => carregar(true));
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, []);
 
   const fotosMap = useMemo(() => {
