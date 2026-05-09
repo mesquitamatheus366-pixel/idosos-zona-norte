@@ -822,8 +822,8 @@ function ModalNovoJogo({ onClose, onSaved }: { onClose: () => void; onSaved: () 
           </Field>
           <Field label="Tipo">
             <select value={tipo} onChange={(e) => setTipo(e.target.value as any)} className={inputCls}>
-              <option value="diaria">Pelada Diária</option>
-              <option value="mensal">Pelada Mensal</option>
+              <option value="diaria">Diária</option>
+              <option value="mensal">Campeonato do Mês</option>
             </select>
           </Field>
           <Field label="Local (opcional)">
@@ -1001,7 +1001,7 @@ function ModalGerenciarJogo({
               {new Date(jogo.data_jogo).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })}
             </h2>
             <p className="text-white/40 text-xs mt-0.5">
-              {jogo.tipo === "mensal" ? "Pelada Mensal" : "Pelada Diária"}
+              {jogo.tipo === "mensal" ? "Campeonato do Mês" : "Diária"}
               {mvpDia && ` · MVP do dia: ${mvpDia.apelido || mvpDia.nome} (${mvpDia.pontos} pts)`}
             </p>
           </div>
@@ -1033,8 +1033,18 @@ function ModalGerenciarJogo({
           </p>
         </div>
 
-        {/* Lista de jogadores */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        {/* Conteúdo: Partidas + Lista de jogadores */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {/* PARTIDAS DO DIA */}
+          <SecaoPartidas jogo={jogo} />
+
+          <div className="px-1 pt-2">
+            <p className="text-[10px] tracking-[0.3em] text-[#22ff88] mb-1">RESUMO POR JOGADOR</p>
+            <p className="text-white/40 text-[11px]">
+              Recalculado automaticamente com base nas partidas do dia. Você ainda pode ajustar manualmente abaixo.
+            </p>
+          </div>
+
           {loading ? (
             <p className="text-white/40">Carregando...</p>
           ) : visiveis.length === 0 ? (
@@ -1203,5 +1213,489 @@ function NumInput({
         </button>
       </div>
     </label>
+  );
+}
+
+/* ================================================================
+   PARTIDAS DO DIA
+================================================================ */
+
+type PartidaRow = {
+  id: string;
+  jogo_id: string;
+  ordem: number;
+  cor_a: "vermelho" | "azul";
+  cor_b: "vermelho" | "azul";
+  gols_a: number;
+  gols_b: number;
+  finalizada: boolean;
+};
+
+type PartidaJogador = {
+  partida_id: string;
+  jogador_id: string;
+  lado: "A" | "B";
+  gols: number;
+  assistencias: number;
+  defesas: number;
+  cartoes_vermelhos: number;
+  gols_contra: number;
+};
+
+function SecaoPartidas({ jogo }: { jogo: Jogo }) {
+  const [partidas, setPartidas] = useState<PartidaRow[]>([]);
+  const [participantes, setParticipantes] = useState<Record<string, PartidaJogador[]>>({});
+  const [jogadores, setJogadores] = useState<{ id: string; nome: string; apelido: string | null; foto_url: string | null }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editando, setEditando] = useState<PartidaRow | null>(null);
+  const [criando, setCriando] = useState(false);
+
+  async function carregar() {
+    setLoading(true);
+    const [{ data: ps }, { data: jg }] = await Promise.all([
+      supabase.from("partidas").select("*").eq("jogo_id", jogo.id).order("ordem"),
+      supabase.from("jogadores").select("id, nome, apelido, foto_url").eq("ativo", true).order("nome"),
+    ]);
+    const lista = (ps as PartidaRow[]) || [];
+    setPartidas(lista);
+    setJogadores((jg as any[]) || []);
+    if (lista.length) {
+      const ids = lista.map((p) => p.id);
+      const { data: pjs } = await supabase.from("partida_jogadores").select("*").in("partida_id", ids);
+      const map: Record<string, PartidaJogador[]> = {};
+      ((pjs as PartidaJogador[]) || []).forEach((pj) => {
+        (map[pj.partida_id] ||= []).push(pj);
+      });
+      setParticipantes(map);
+    } else {
+      setParticipantes({});
+    }
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    carregar();
+  }, [jogo.id]);
+
+  async function excluir(p: PartidaRow) {
+    if (!confirm(`Excluir Partida ${p.ordem}?`)) return;
+    const { error } = await supabase.from("partidas").delete().eq("id", p.id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Partida excluída — estatísticas recalculadas");
+      carregar();
+    }
+  }
+
+  const proximaOrdem = (partidas[partidas.length - 1]?.ordem || 0) + 1;
+  const jogadoresMap = new Map(jogadores.map((j) => [j.id, j]));
+
+  return (
+    <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4">
+      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div>
+          <p className="text-[10px] tracking-[0.3em] text-[#22ff88]">PARTIDAS DO DIA</p>
+          <p className="text-white/40 text-[11px] mt-0.5">
+            Cadastre cada partida — as estatísticas são somadas automaticamente.
+          </p>
+        </div>
+        <button
+          onClick={() => setCriando(true)}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#22ff88] text-[#0b0b0b] font-bold text-[10px] tracking-[0.18em] hover:bg-[#5cffaa]"
+        >
+          <Plus size={12} /> NOVA PARTIDA
+        </button>
+      </div>
+
+      {loading ? (
+        <p className="text-white/40 text-sm">Carregando...</p>
+      ) : partidas.length === 0 ? (
+        <p className="text-white/30 text-sm py-3 text-center">Nenhuma partida cadastrada.</p>
+      ) : (
+        <div className="space-y-2">
+          {partidas.map((p) => {
+            const pjs = participantes[p.id] || [];
+            const ladoA = pjs.filter((x) => x.lado === "A");
+            const ladoB = pjs.filter((x) => x.lado === "B");
+            const corA = p.cor_a === "vermelho" ? "🔴" : "🔵";
+            const corB = p.cor_b === "vermelho" ? "🔴" : "🔵";
+            return (
+              <div key={p.id} className="rounded-xl border border-white/[0.06] bg-white/[0.02]">
+                <div className="flex items-center justify-between p-3 gap-2">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <span className="text-[10px] tracking-[0.18em] text-white/40 font-bold shrink-0">
+                      P{p.ordem}
+                    </span>
+                    <div className="flex items-center gap-2 text-sm min-w-0">
+                      <span className="truncate">{corA} {p.gols_a}</span>
+                      <span className="text-white/30">×</span>
+                      <span className="truncate">{p.gols_b} {corB}</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-1 shrink-0">
+                    <button onClick={() => setEditando(p)} className="p-1.5 rounded-lg text-white/50 hover:text-[#22ff88] hover:bg-white/[0.04]">
+                      <Edit2 size={12} />
+                    </button>
+                    <button onClick={() => excluir(p)} className="p-1.5 rounded-lg text-white/50 hover:text-rose-400 hover:bg-white/[0.04]">
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
+                </div>
+                <div className="px-3 pb-3 grid grid-cols-2 gap-2 text-[11px]">
+                  <div className={`p-2 rounded-lg ${p.cor_a === "vermelho" ? "bg-rose-500/[0.06] border border-rose-500/20" : "bg-sky-500/[0.06] border border-sky-500/20"}`}>
+                    <p className="text-[9px] tracking-[0.18em] mb-1 opacity-60">LADO A</p>
+                    <ul className="space-y-0.5">
+                      {ladoA.map((x) => {
+                        const j = jogadoresMap.get(x.jogador_id);
+                        return (
+                          <li key={x.jogador_id} className="flex justify-between">
+                            <span className="truncate">{j?.apelido || j?.nome}</span>
+                            <span className="text-white/40 text-[10px] shrink-0">
+                              {x.gols ? `${x.gols}⚽` : ""} {x.assistencias ? `${x.assistencias}🅰` : ""}
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                  <div className={`p-2 rounded-lg ${p.cor_b === "vermelho" ? "bg-rose-500/[0.06] border border-rose-500/20" : "bg-sky-500/[0.06] border border-sky-500/20"}`}>
+                    <p className="text-[9px] tracking-[0.18em] mb-1 opacity-60">LADO B</p>
+                    <ul className="space-y-0.5">
+                      {ladoB.map((x) => {
+                        const j = jogadoresMap.get(x.jogador_id);
+                        return (
+                          <li key={x.jogador_id} className="flex justify-between">
+                            <span className="truncate">{j?.apelido || j?.nome}</span>
+                            <span className="text-white/40 text-[10px] shrink-0">
+                              {x.gols ? `${x.gols}⚽` : ""} {x.assistencias ? `${x.assistencias}🅰` : ""}
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {(criando || editando) && (
+        <ModalPartida
+          jogo={jogo}
+          jogadores={jogadores}
+          partida={editando}
+          ordem={proximaOrdem}
+          participantes={editando ? participantes[editando.id] || [] : []}
+          onClose={() => {
+            setCriando(false);
+            setEditando(null);
+          }}
+          onSaved={() => {
+            setCriando(false);
+            setEditando(null);
+            carregar();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function ModalPartida({
+  jogo,
+  jogadores,
+  partida,
+  ordem,
+  participantes,
+  onClose,
+  onSaved,
+}: {
+  jogo: Jogo;
+  jogadores: { id: string; nome: string; apelido: string | null; foto_url: string | null }[];
+  partida: PartidaRow | null;
+  ordem: number;
+  participantes: PartidaJogador[];
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [corA, setCorA] = useState<"vermelho" | "azul">(partida?.cor_a || "vermelho");
+  const [corB, setCorB] = useState<"vermelho" | "azul">(partida?.cor_b || "azul");
+  const [golsA, setGolsA] = useState(partida?.gols_a || 0);
+  const [golsB, setGolsB] = useState(partida?.gols_b || 0);
+
+  // jogador_id → { lado, gols, assists, defesas, cartoes, golcontra }
+  const [stats, setStats] = useState<Record<string, { lado: "A" | "B"; gols: number; assistencias: number; defesas: number; cartoes_vermelhos: number; gols_contra: number }>>(() => {
+    const m: any = {};
+    participantes.forEach((p) => {
+      m[p.jogador_id] = {
+        lado: p.lado,
+        gols: p.gols,
+        assistencias: p.assistencias,
+        defesas: p.defesas,
+        cartoes_vermelhos: p.cartoes_vermelhos,
+        gols_contra: p.gols_contra,
+      };
+    });
+    return m;
+  });
+
+  const [busca, setBusca] = useState("");
+  const [salvando, setSalvando] = useState(false);
+
+  const visiveis = jogadores.filter((j) => {
+    if (!busca.trim()) return true;
+    const q = busca.toLowerCase();
+    return j.nome.toLowerCase().includes(q) || (j.apelido || "").toLowerCase().includes(q);
+  });
+
+  function setLado(jid: string, lado: "A" | "B" | null) {
+    setStats((s) => {
+      const next = { ...s };
+      if (lado === null) {
+        delete next[jid];
+      } else {
+        next[jid] = next[jid]
+          ? { ...next[jid], lado }
+          : { lado, gols: 0, assistencias: 0, defesas: 0, cartoes_vermelhos: 0, gols_contra: 0 };
+      }
+      return next;
+    });
+  }
+
+  function patchPlayer(jid: string, patch: Partial<typeof stats[string]>) {
+    setStats((s) => ({ ...s, [jid]: { ...s[jid], ...patch } }));
+  }
+
+  // Auto-fill gols_a/gols_b dos somatórios (se admin não modificou)
+  const sumGolsA = Object.entries(stats).reduce((s, [_, v]) => (v.lado === "A" ? s + v.gols : s), 0);
+  const sumGolsB = Object.entries(stats).reduce((s, [_, v]) => (v.lado === "B" ? s + v.gols : s), 0);
+
+  async function salvar() {
+    if (corA === corB) {
+      toast.error("As cores dos times devem ser diferentes.");
+      return;
+    }
+    if (Object.keys(stats).length === 0) {
+      toast.error("Adicione ao menos 1 jogador.");
+      return;
+    }
+    setSalvando(true);
+
+    let partidaId = partida?.id;
+    if (partida) {
+      const { error } = await supabase
+        .from("partidas")
+        .update({ cor_a: corA, cor_b: corB, gols_a: golsA, gols_b: golsB })
+        .eq("id", partida.id);
+      if (error) {
+        toast.error(error.message);
+        setSalvando(false);
+        return;
+      }
+      // reset participantes
+      await supabase.from("partida_jogadores").delete().eq("partida_id", partida.id);
+    } else {
+      const { data, error } = await supabase
+        .from("partidas")
+        .insert({ jogo_id: jogo.id, ordem, cor_a: corA, cor_b: corB, gols_a: golsA, gols_b: golsB })
+        .select()
+        .single();
+      if (error || !data) {
+        toast.error(error?.message || "Erro ao criar partida");
+        setSalvando(false);
+        return;
+      }
+      partidaId = data.id;
+    }
+
+    const rows = Object.entries(stats).map(([jogador_id, v]) => ({
+      partida_id: partidaId!,
+      jogador_id,
+      lado: v.lado,
+      gols: v.gols,
+      assistencias: v.assistencias,
+      defesas: v.defesas,
+      cartoes_vermelhos: v.cartoes_vermelhos,
+      gols_contra: v.gols_contra,
+    }));
+    const { error: errPj } = await supabase.from("partida_jogadores").insert(rows);
+    setSalvando(false);
+    if (errPj) {
+      toast.error(errPj.message);
+      return;
+    }
+    toast.success(partida ? "Partida atualizada" : "Partida cadastrada");
+    onSaved();
+  }
+
+  const corClass = (c: "vermelho" | "azul") =>
+    c === "vermelho"
+      ? "border-rose-500/40 bg-rose-500/[0.08] text-rose-300"
+      : "border-sky-500/40 bg-sky-500/[0.08] text-sky-300";
+
+  return (
+    <div className="fixed inset-0 z-[60] bg-black/85 backdrop-blur-md flex items-center justify-center p-4" onClick={onClose}>
+      <div
+        className="w-full max-w-2xl max-h-[92vh] flex flex-col bg-gradient-to-b from-[#0e1612] to-[#0b0b0b] border border-[#22ff88]/15 rounded-3xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-5 border-b border-white/[0.06] flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[10px] tracking-[0.3em] text-[#22ff88]">{partida ? "EDITANDO" : "NOVA"} PARTIDA</p>
+            <h2 className="font-bold text-xl mt-0.5">Partida {partida?.ordem || ordem}</h2>
+          </div>
+          <button onClick={onClose} className="text-white/50 hover:text-white p-1">
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="p-5 border-b border-white/[0.06]">
+          <p className="text-[10px] tracking-[0.18em] text-white/40 mb-2">CORES DOS TIMES</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <p className="text-[10px] text-white/50 mb-1">LADO A</p>
+              <div className="flex gap-1.5">
+                <button
+                  onClick={() => setCorA("vermelho")}
+                  className={`flex-1 py-2 rounded-lg text-[11px] font-bold border ${corA === "vermelho" ? corClass("vermelho") : "border-white/10 text-white/50"}`}
+                >
+                  🔴 VERMELHO
+                </button>
+                <button
+                  onClick={() => setCorA("azul")}
+                  className={`flex-1 py-2 rounded-lg text-[11px] font-bold border ${corA === "azul" ? corClass("azul") : "border-white/10 text-white/50"}`}
+                >
+                  🔵 AZUL
+                </button>
+              </div>
+            </div>
+            <div>
+              <p className="text-[10px] text-white/50 mb-1">LADO B</p>
+              <div className="flex gap-1.5">
+                <button
+                  onClick={() => setCorB("vermelho")}
+                  className={`flex-1 py-2 rounded-lg text-[11px] font-bold border ${corB === "vermelho" ? corClass("vermelho") : "border-white/10 text-white/50"}`}
+                >
+                  🔴 VERMELHO
+                </button>
+                <button
+                  onClick={() => setCorB("azul")}
+                  className={`flex-1 py-2 rounded-lg text-[11px] font-bold border ${corB === "azul" ? corClass("azul") : "border-white/10 text-white/50"}`}
+                >
+                  🔵 AZUL
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <div>
+              <p className="text-[10px] tracking-[0.18em] text-white/40 mb-1">PLACAR LADO A {sumGolsA > 0 && <span className="text-white/30">(soma: {sumGolsA})</span>}</p>
+              <input
+                type="number"
+                min={0}
+                value={golsA}
+                onChange={(e) => setGolsA(Math.max(0, Number(e.target.value) || 0))}
+                className={`w-full px-3 py-2 rounded-lg border text-center text-2xl font-bold ${corClass(corA)}`}
+              />
+            </div>
+            <div>
+              <p className="text-[10px] tracking-[0.18em] text-white/40 mb-1">PLACAR LADO B {sumGolsB > 0 && <span className="text-white/30">(soma: {sumGolsB})</span>}</p>
+              <input
+                type="number"
+                min={0}
+                value={golsB}
+                onChange={(e) => setGolsB(Math.max(0, Number(e.target.value) || 0))}
+                className={`w-full px-3 py-2 rounded-lg border text-center text-2xl font-bold ${corClass(corB)}`}
+              />
+            </div>
+          </div>
+          <p className="text-[10px] text-white/30 mt-1.5">
+            {golsA > golsB ? `Vitória do Lado A` : golsB > golsA ? `Vitória do Lado B` : "Empate"}
+          </p>
+        </div>
+
+        <div className="p-3 border-b border-white/[0.06]">
+          <input
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            placeholder="Buscar jogador..."
+            className="w-full px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.08] text-sm focus:outline-none focus:border-[#22ff88]/50"
+          />
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
+          {visiveis.map((j) => {
+            const cur = stats[j.id];
+            return (
+              <div
+                key={j.id}
+                className={`rounded-xl border p-2.5 ${
+                  cur ? "border-[#22ff88]/30 bg-[#22ff88]/[0.04]" : "border-white/[0.06] bg-white/[0.02]"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-white/5 ring-1 ring-white/10 overflow-hidden flex items-center justify-center text-white/40 text-[10px] font-bold shrink-0">
+                    {j.foto_url ? (
+                      <img src={j.foto_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      (j.apelido || j.nome).split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase()
+                    )}
+                  </div>
+                  <span className="flex-1 text-sm font-medium truncate">{j.apelido || j.nome}</span>
+                  <div className="flex gap-1 shrink-0">
+                    <button
+                      onClick={() => setLado(j.id, cur?.lado === "A" ? null : "A")}
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${
+                        cur?.lado === "A" ? corClass(corA) : "border-white/15 text-white/50"
+                      }`}
+                    >
+                      A
+                    </button>
+                    <button
+                      onClick={() => setLado(j.id, cur?.lado === "B" ? null : "B")}
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${
+                        cur?.lado === "B" ? corClass(corB) : "border-white/15 text-white/50"
+                      }`}
+                    >
+                      B
+                    </button>
+                  </div>
+                </div>
+                {cur && (
+                  <div className="mt-2 grid grid-cols-5 gap-1">
+                    <NumInput compact label="G" valor={cur.gols} onChange={(v) => patchPlayer(j.id, { gols: v })} cor="green" />
+                    <NumInput compact label="A" valor={cur.assistencias} onChange={(v) => patchPlayer(j.id, { assistencias: v })} />
+                    <NumInput compact label="DEF" valor={cur.defesas} onChange={(v) => patchPlayer(j.id, { defesas: v })} />
+                    <NumInput compact label="🟥" valor={cur.cartoes_vermelhos} onChange={(v) => patchPlayer(j.id, { cartoes_vermelhos: v })} cor="rose" />
+                    <NumInput compact label="GC" valor={cur.gols_contra} onChange={(v) => patchPlayer(j.id, { gols_contra: v })} cor="rose" />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="p-4 border-t border-white/[0.06] flex justify-between items-center gap-2 flex-wrap">
+          <p className="text-[10px] text-white/40 tracking-[0.18em]">
+            {Object.keys(stats).length} JOGADORES
+          </p>
+          <div className="flex gap-2">
+            <button onClick={onClose} className="px-4 py-2 rounded-full border border-white/15 text-white/70 text-[11px] tracking-[0.18em]">
+              CANCELAR
+            </button>
+            <button
+              onClick={salvar}
+              disabled={salvando}
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[#22ff88] text-[#0b0b0b] font-bold text-[11px] tracking-[0.18em] disabled:opacity-50 hover:bg-[#5cffaa]"
+            >
+              <Save size={14} /> {salvando ? "SALVANDO..." : partida ? "ATUALIZAR" : "CADASTRAR"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

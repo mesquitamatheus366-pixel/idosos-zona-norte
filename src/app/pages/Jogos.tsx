@@ -38,6 +38,25 @@ type Estatistica = {
 
 type Pontos = { jogo_id: string; jogador_id: string; pontos: number };
 
+type Partida = {
+  id: string;
+  jogo_id: string;
+  ordem: number;
+  cor_a: "vermelho" | "azul";
+  cor_b: "vermelho" | "azul";
+  gols_a: number;
+  gols_b: number;
+};
+
+type PartidaJogador = {
+  partida_id: string;
+  jogador_id: string;
+  lado: "A" | "B";
+  gols: number;
+  assistencias: number;
+  jogadores: { nome: string; apelido: string | null } | null;
+};
+
 type Filtro = "todos" | "diaria" | "mensal";
 
 export function Jogos() {
@@ -45,6 +64,8 @@ export function Jogos() {
   const [times, setTimes] = useState<Record<string, TimeJogador[]>>({});
   const [stats, setStats] = useState<Record<string, Estatistica[]>>({});
   const [pontosMap, setPontosMap] = useState<Record<string, Record<string, number>>>({});
+  const [partidas, setPartidas] = useState<Record<string, Partida[]>>({});
+  const [partidaJogadores, setPartidaJogadores] = useState<Record<string, PartidaJogador[]>>({});
   const [filtro, setFiltro] = useState<Filtro>("todos");
   const [aberto, setAberto] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -59,7 +80,7 @@ export function Jogos() {
 
       if (lista.length) {
         const ids = lista.map((j) => j.id);
-        const [{ data: ts }, { data: es }, { data: ps }] = await Promise.all([
+        const [{ data: ts }, { data: es }, { data: ps }, { data: prts }] = await Promise.all([
           supabase
             .from("times_sorteados")
             .select("jogo_id, jogador_id, time_numero, jogadores(nome, apelido)")
@@ -69,6 +90,7 @@ export function Jogos() {
             .select("*, jogadores(nome, apelido)")
             .in("jogo_id", ids),
           supabase.from("pontuacao_dia").select("*").in("jogo_id", ids),
+          supabase.from("partidas").select("*").in("jogo_id", ids).order("ordem"),
         ]);
         const tMap: Record<string, TimeJogador[]> = {};
         ((ts as any[]) || []).forEach((r) => {
@@ -82,9 +104,28 @@ export function Jogos() {
         ((ps as Pontos[]) || []).forEach((p) => {
           (pMap[p.jogo_id] ||= {})[p.jogador_id] = Number(p.pontos);
         });
+        const prMap: Record<string, Partida[]> = {};
+        ((prts as Partida[]) || []).forEach((p) => {
+          (prMap[p.jogo_id] ||= []).push(p);
+        });
         setTimes(tMap);
         setStats(sMap);
         setPontosMap(pMap);
+        setPartidas(prMap);
+
+        // load partida_jogadores
+        const partidaIds = (prts as Partida[] || []).map((p) => p.id);
+        if (partidaIds.length) {
+          const { data: pjs } = await supabase
+            .from("partida_jogadores")
+            .select("*, jogadores(nome, apelido)")
+            .in("partida_id", partidaIds);
+          const pjMap: Record<string, PartidaJogador[]> = {};
+          ((pjs as PartidaJogador[]) || []).forEach((r) => {
+            (pjMap[r.partida_id] ||= []).push(r);
+          });
+          setPartidaJogadores(pjMap);
+        }
       }
       setLoading(false);
     })();
@@ -153,7 +194,7 @@ export function Jogos() {
                       {data.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })}
                     </p>
                     <p className="text-white/50 text-xs">
-                      {j.tipo === "mensal" ? "Pelada Mensal" : "Pelada Diária"}
+                      {j.tipo === "mensal" ? "Campeonato do Mês" : "Diária"}
                       {j.local && ` · ${j.local}`}
                       {!j.finalizado && " · em andamento"}
                     </p>
@@ -167,6 +208,63 @@ export function Jogos() {
 
                 {expanded && (
                   <div className="p-4 border-t border-white/[0.04] space-y-4">
+                    {/* PARTIDAS */}
+                    {(partidas[j.id] || []).length > 0 && (
+                      <div>
+                        <p className="text-[10px] tracking-[0.18em] text-white/40 mb-2">
+                          PARTIDAS DO DIA · {(partidas[j.id] || []).length}
+                        </p>
+                        <div className="space-y-2">
+                          {(partidas[j.id] || []).map((p) => {
+                            const pjs = partidaJogadores[p.id] || [];
+                            const ladoA = pjs.filter((x) => x.lado === "A");
+                            const ladoB = pjs.filter((x) => x.lado === "B");
+                            const corALabel = p.cor_a === "vermelho" ? "🔴" : "🔵";
+                            const corBLabel = p.cor_b === "vermelho" ? "🔴" : "🔵";
+                            const winner = p.gols_a > p.gols_b ? "A" : p.gols_b > p.gols_a ? "B" : null;
+                            return (
+                              <div key={p.id} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
+                                <div className="flex items-center justify-between mb-2 text-sm">
+                                  <span className="text-white/40 text-[10px] tracking-[0.18em] font-bold">P{p.ordem}</span>
+                                  <span className="font-bold tabular-nums">
+                                    <span className={winner === "A" ? "text-emerald-400" : "text-white/60"}>{corALabel} {p.gols_a}</span>
+                                    <span className="text-white/30 mx-2">×</span>
+                                    <span className={winner === "B" ? "text-emerald-400" : "text-white/60"}>{p.gols_b} {corBLabel}</span>
+                                  </span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2 text-xs">
+                                  <div className={`p-2 rounded-lg ${p.cor_a === "vermelho" ? "border border-rose-500/20 bg-rose-500/[0.05]" : "border border-sky-500/20 bg-sky-500/[0.05]"}`}>
+                                    <ul className="space-y-0.5">
+                                      {ladoA.map((x) => (
+                                        <li key={x.jogador_id} className="flex justify-between gap-2">
+                                          <span className="truncate">{x.jogadores?.apelido || x.jogadores?.nome}</span>
+                                          <span className="text-white/40 text-[10px] shrink-0">
+                                            {x.gols ? `${x.gols}⚽` : ""} {x.assistencias ? `${x.assistencias}🅰` : ""}
+                                          </span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                  <div className={`p-2 rounded-lg ${p.cor_b === "vermelho" ? "border border-rose-500/20 bg-rose-500/[0.05]" : "border border-sky-500/20 bg-sky-500/[0.05]"}`}>
+                                    <ul className="space-y-0.5">
+                                      {ladoB.map((x) => (
+                                        <li key={x.jogador_id} className="flex justify-between gap-2">
+                                          <span className="truncate">{x.jogadores?.apelido || x.jogadores?.nome}</span>
+                                          <span className="text-white/40 text-[10px] shrink-0">
+                                            {x.gols ? `${x.gols}⚽` : ""} {x.assistencias ? `${x.assistencias}🅰` : ""}
+                                          </span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
                     {grupos.length > 0 && (
                       <div>
                         <p className="text-[10px] tracking-[0.18em] text-white/40 mb-2">TIMES SORTEADOS</p>
