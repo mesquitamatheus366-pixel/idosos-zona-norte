@@ -291,7 +291,8 @@ function ModalJogadorDetalhes({
               <div>
                 <p className="text-[10px] tracking-[0.3em] text-[#22ff88] mb-1">NOTA TOTAL</p>
                 <p className="text-4xl font-bold tabular-nums text-[#22ff88] leading-none">
-                  {(stats?.nota_total || 0).toFixed(1)}
+                  {Math.min(10, Math.max(0, Number(stats?.nota_total || 0))).toFixed(1)}
+                  <span className="text-base text-white/30">/10</span>
                 </p>
                 <p className="text-white/40 text-[10px] mt-1.5">
                   acumulada de todas as peladas
