@@ -313,7 +313,7 @@ export function Jogos() {
                                         {e.jogadores?.apelido || e.jogadores?.nome}
                                       </td>
                                       <td className={`px-2 py-1.5 text-center font-bold tabular-nums ${pts > 0 ? "text-[#22ff88]" : pts < 0 ? "text-rose-400" : "text-white/40"}`}>
-                                        {pts.toFixed(1)}
+                                        {Math.min(10, Math.max(0, pts)).toFixed(1)}
                                       </td>
                                       <td className="px-2 py-1.5 text-center text-[#22ff88] tabular-nums">{e.gols}</td>
                                       <td className="px-2 py-1.5 text-center tabular-nums">{e.assistencias}</td>

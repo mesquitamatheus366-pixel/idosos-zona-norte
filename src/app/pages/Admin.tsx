@@ -876,6 +876,10 @@ function calcularPontos(r: StatRow): number {
   return Math.round(p * 100) / 100;
 }
 
+function clampNota(n: number): number {
+  return Math.min(10, Math.max(0, n));
+}
+
 function ModalGerenciarJogo({
   jogo,
   onClose,
@@ -1002,7 +1006,7 @@ function ModalGerenciarJogo({
             </h2>
             <p className="text-white/40 text-xs mt-0.5">
               {jogo.tipo === "mensal" ? "Campeonato do Mês" : "Diária"}
-              {mvpDia && ` · MVP do dia: ${mvpDia.apelido || mvpDia.nome} (${mvpDia.pontos} pts)`}
+              {mvpDia && ` · MVP do dia: ${mvpDia.apelido || mvpDia.nome} (${clampNota(mvpDia.pontos).toFixed(1)} pts)`}
             </p>
           </div>
           <button onClick={onClose} className="text-white/50 hover:text-white p-1">
@@ -1029,7 +1033,7 @@ function ModalGerenciarJogo({
             className="flex-1 min-w-[140px] px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] text-sm focus:outline-none focus:border-[#22ff88]/50"
           />
           <p className="text-[10px] text-white/40 tracking-[0.18em]">
-            {rows.filter((r) => r.presente).length} PRESENTES · MVP {mvpDia?.pontos.toFixed(1) || "—"} PTS
+            {rows.filter((r) => r.presente).length} PRESENTES · MVP {mvpDia ? clampNota(mvpDia.pontos).toFixed(1) : "—"} PTS
           </p>
         </div>
 
@@ -1083,7 +1087,7 @@ function ModalGerenciarJogo({
                     <div className="text-right shrink-0">
                       <p className="text-[9px] tracking-[0.18em] text-white/40">PONTOS</p>
                       <p className={`text-xl font-bold tabular-nums ${r.pontos > 0 ? "text-[#22ff88]" : r.pontos < 0 ? "text-rose-400" : "text-white/40"}`}>
-                        {r.pontos.toFixed(1)}
+                        {clampNota(r.pontos).toFixed(1)}
                       </p>
                     </div>
                     <button
