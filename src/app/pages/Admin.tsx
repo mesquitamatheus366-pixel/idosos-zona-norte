@@ -1205,8 +1205,14 @@ function NumInput({
           type="number"
           min={0}
           value={valor}
-          onChange={(e) => onChange(Math.max(0, Number(e.target.value) || 0))}
-          className="flex-1 w-10 px-1 py-1 bg-transparent text-center text-sm focus:outline-none tabular-nums"
+          onFocus={(e) => e.currentTarget.select()}
+          onChange={(e) => {
+            const v = e.target.value;
+            // Remove zeros à esquerda automaticamente
+            const cleaned = v.replace(/^0+(?=\d)/, "");
+            onChange(Math.max(0, Number(cleaned) || 0));
+          }}
+          className="flex-1 w-10 px-1 py-1 bg-transparent text-center text-sm focus:outline-none tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
         />
         <button
           type="button"
@@ -1601,8 +1607,9 @@ function ModalPartida({
                 type="number"
                 min={0}
                 value={golsA}
-                onChange={(e) => setGolsA(Math.max(0, Number(e.target.value) || 0))}
-                className={`w-full px-3 py-2 rounded-lg border text-center text-2xl font-bold ${corClass(corA)}`}
+                onFocus={(e) => e.currentTarget.select()}
+                onChange={(e) => setGolsA(Math.max(0, Number(e.target.value.replace(/^0+(?=\d)/, "")) || 0))}
+                className={`w-full px-3 py-2 rounded-lg border text-center text-2xl font-bold ${corClass(corA)} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
               />
             </div>
             <div>
@@ -1611,8 +1618,9 @@ function ModalPartida({
                 type="number"
                 min={0}
                 value={golsB}
-                onChange={(e) => setGolsB(Math.max(0, Number(e.target.value) || 0))}
-                className={`w-full px-3 py-2 rounded-lg border text-center text-2xl font-bold ${corClass(corB)}`}
+                onFocus={(e) => e.currentTarget.select()}
+                onChange={(e) => setGolsB(Math.max(0, Number(e.target.value.replace(/^0+(?=\d)/, "")) || 0))}
+                className={`w-full px-3 py-2 rounded-lg border text-center text-2xl font-bold ${corClass(corB)} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
               />
             </div>
           </div>
