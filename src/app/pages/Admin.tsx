@@ -1290,11 +1290,21 @@ function SecaoPartidas({ jogo }: { jogo: Jogo }) {
   async function excluir(p: PartidaRow) {
     if (!confirm(`Excluir Partida ${p.ordem}?`)) return;
     const { error } = await supabase.from("partidas").delete().eq("id", p.id);
-    if (error) toast.error(error.message);
-    else {
-      toast.success("Partida excluída — estatísticas recalculadas");
-      carregar();
+    if (error) {
+      toast.error(error.message);
+      return;
     }
+    // Recalcula explicitamente
+    await supabase.rpc("recompute_estatisticas_jogo", { p_jogo_id: jogo.id });
+    toast.success("Partida excluída — estatísticas recalculadas");
+    carregar();
+  }
+
+  async function forcarRecalculo() {
+    const { error } = await supabase.rpc("recompute_estatisticas_jogo", { p_jogo_id: jogo.id });
+    if (error) toast.error(error.message);
+    else toast.success("Estatísticas recalculadas");
+    carregar();
   }
 
   const proximaOrdem = (partidas[partidas.length - 1]?.ordem || 0) + 1;
@@ -1309,12 +1319,23 @@ function SecaoPartidas({ jogo }: { jogo: Jogo }) {
             Cadastre cada partida — as estatísticas são somadas automaticamente.
           </p>
         </div>
-        <button
-          onClick={() => setCriando(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#22ff88] text-[#0b0b0b] font-bold text-[10px] tracking-[0.18em] hover:bg-[#5cffaa]"
-        >
-          <Plus size={12} /> NOVA PARTIDA
-        </button>
+        <div className="flex items-center gap-2">
+          {partidas.length > 0 && (
+            <button
+              onClick={forcarRecalculo}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/15 text-white/60 hover:text-[#22ff88] hover:border-[#22ff88]/40 text-[10px] tracking-[0.18em]"
+              title="Recalcular estatísticas a partir das partidas"
+            >
+              ↻ RECALCULAR
+            </button>
+          )}
+          <button
+            onClick={() => setCriando(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#22ff88] text-[#0b0b0b] font-bold text-[10px] tracking-[0.18em] hover:bg-[#5cffaa]"
+          >
+            <Plus size={12} /> NOVA PARTIDA
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -1555,10 +1576,16 @@ function ModalPartida({
       gols_contra: v.gols_contra,
     }));
     const { error: errPj } = await supabase.from("partida_jogadores").insert(rows);
-    setSalvando(false);
     if (errPj) {
+      setSalvando(false);
       toast.error(errPj.message);
       return;
+    }
+    // Garante recálculo das estatísticas do dia (caso a trigger não dispare)
+    const { error: errRpc } = await supabase.rpc("recompute_estatisticas_jogo", { p_jogo_id: jogo.id });
+    setSalvando(false);
+    if (errRpc) {
+      console.warn("Erro ao recalcular estatísticas:", errRpc.message);
     }
     toast.success(partida ? "Partida atualizada" : "Partida cadastrada");
     onSaved();
