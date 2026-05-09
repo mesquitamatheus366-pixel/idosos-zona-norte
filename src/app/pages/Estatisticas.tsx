@@ -113,9 +113,7 @@ export function Estatisticas() {
                     <p className="text-2xl mb-0.5">{podium}</p>
                     <p className="font-bold text-sm truncate px-1">{f?.apelido || f?.nome}</p>
                     <p className={`font-bold ${i === 0 ? "text-[#22ff88]" : "text-white/60"}`}>
-                      {modo === "nota_total"
-                        ? Math.min(10, Math.max(0, Number(r[modo]))).toFixed(1)
-                        : r[modo]}{" "}
+                      {modo === "nota_total" ? Number(r[modo]).toFixed(1) : r[modo]}{" "}
                       <span className="text-[10px] text-white/40">{modoAtual.sufixo}</span>
                     </p>
                   </div>
@@ -158,7 +156,7 @@ export function Estatisticas() {
                             <span className="font-medium">{f?.apelido || r.nome}</span>
                           </div>
                         </td>
-                        <td className={`px-3 py-2.5 text-center tabular-nums ${modo === "nota_total" ? "text-[#22ff88] font-bold" : "text-[#22ff88]/80"}`}>{Math.min(10, Math.max(0, Number(r.nota_total || 0))).toFixed(1)}</td>
+                        <td className={`px-3 py-2.5 text-center tabular-nums ${modo === "nota_total" ? "text-[#22ff88] font-bold" : "text-[#22ff88]/80"}`}>{Number(r.nota_total || 0).toFixed(1)}</td>
                         <td className="px-3 py-2.5 text-center text-white/60 tabular-nums">{r.jogos_disputados}</td>
                         <td className={`px-3 py-2.5 text-center tabular-nums ${modo === "gols" ? "text-[#22ff88] font-bold" : "text-white/80"}`}>{r.gols}</td>
                         <td className={`px-3 py-2.5 text-center tabular-nums ${modo === "assistencias" ? "text-[#22ff88] font-bold" : ""}`}>{r.assistencias}</td>

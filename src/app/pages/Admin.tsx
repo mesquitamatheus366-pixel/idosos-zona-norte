@@ -1397,7 +1397,24 @@ function SecaoPartidas({ jogo }: { jogo: Jogo }) {
           jogadores={jogadores}
           partida={editando}
           ordem={proximaOrdem}
-          participantes={editando ? participantes[editando.id] || [] : []}
+          participantes={
+            editando
+              ? participantes[editando.id] || []
+              : // Pré-preenche nova partida com os jogadores da partida anterior (zerando stats)
+                (() => {
+                  const ultima = partidas[partidas.length - 1];
+                  if (!ultima) return [];
+                  return (participantes[ultima.id] || []).map((pj) => ({
+                    ...pj,
+                    gols: 0,
+                    assistencias: 0,
+                    defesas: 0,
+                    cartoes_vermelhos: 0,
+                    gols_contra: 0,
+                  }));
+                })()
+          }
+          partidaAnterior={!editando ? partidas[partidas.length - 1] : null}
           onClose={() => {
             setCriando(false);
             setEditando(null);
@@ -1419,6 +1436,7 @@ function ModalPartida({
   partida,
   ordem,
   participantes,
+  partidaAnterior,
   onClose,
   onSaved,
 }: {
@@ -1427,11 +1445,17 @@ function ModalPartida({
   partida: PartidaRow | null;
   ordem: number;
   participantes: PartidaJogador[];
+  partidaAnterior?: PartidaRow | null;
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const [corA, setCorA] = useState<"vermelho" | "azul">(partida?.cor_a || "vermelho");
-  const [corB, setCorB] = useState<"vermelho" | "azul">(partida?.cor_b || "azul");
+  // Quando é nova partida, herda as cores da partida anterior
+  const [corA, setCorA] = useState<"vermelho" | "azul">(
+    partida?.cor_a || partidaAnterior?.cor_a || "vermelho"
+  );
+  const [corB, setCorB] = useState<"vermelho" | "azul">(
+    partida?.cor_b || partidaAnterior?.cor_b || "azul"
+  );
   const [golsA, setGolsA] = useState(partida?.gols_a || 0);
   const [golsB, setGolsB] = useState(partida?.gols_b || 0);
 
