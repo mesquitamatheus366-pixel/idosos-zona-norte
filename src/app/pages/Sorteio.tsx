@@ -391,7 +391,15 @@ export function Sorteio() {
   );
 }
 
-/* Algoritmo: 1 goleiro por time + linha equilibrada por nível, máx 7 por time */
+/*
+ * Algoritmo (modo d): equilibra POR POSIÇÃO e por nível.
+ * - 1 goleiro por time
+ * - Cada posição (fixo, ala, meio, pivô) é distribuída separadamente:
+ *   cada jogador vai pro time que tem MENOS jogadores daquela posição,
+ *   usando o nível (soma) como desempate. Assim cada time fica com uma
+ *   quantidade parecida de cada posição.
+ * - Máx 7 por time. Sobras viram reservas.
+ */
 function distribuirEquilibrado(jogadores: Jogador[], n: number): Resultado {
   const times: Time[] = Array.from({ length: n }, (_, i) => ({
     numero: i + 1,
@@ -400,36 +408,58 @@ function distribuirEquilibrado(jogadores: Jogador[], n: number): Resultado {
   }));
   const reservas: Jogador[] = [];
 
-  const goleiros = shuffle(jogadores.filter((j) => j.posicao === "goleiro"));
-  const linha = jogadores.filter((j) => j.posicao !== "goleiro");
-
-  // 1 goleiro por time; goleiros extras viram linha
-  goleiros.forEach((g, i) => {
-    if (i < n) {
-      times[i].jogadores.push(g);
-      times[i].soma += g.nivel;
-    } else {
-      linha.push(g);
-    }
-  });
-
-  // ordena linha por nível desc, com tie-break aleatório
-  const linhaOrd = shuffle(linha).sort((a, b) => b.nivel - a.nivel);
-
-  for (const j of linhaOrd) {
-    // só times com vaga (< MAX_POR_TIME)
+  function alocar(j: Jogador, balancearPosicao: boolean) {
     const candidatos = times
-      .map((t, i) => ({ i, soma: t.soma, count: t.jogadores.length }))
+      .map((t, i) => ({
+        i,
+        countPos: balancearPosicao
+          ? t.jogadores.filter((x) => x.posicao === j.posicao).length
+          : 0,
+        count: t.jogadores.length,
+        soma: t.soma,
+      }))
       .filter((t) => t.count < MAX_POR_TIME)
-      .sort((a, b) => a.soma - b.soma || a.count - b.count);
+      .sort(
+        (a, b) =>
+          a.countPos - b.countPos || // 1º: menos jogadores dessa posição
+          a.soma - b.soma ||         // 2º: time mais fraco
+          a.count - b.count          // 3º: time com menos gente
+      );
     if (candidatos.length === 0) {
-      reservas.push(j); // todos os times cheios
-      continue;
+      reservas.push(j);
+      return;
     }
     const idx = candidatos[0].i;
     times[idx].jogadores.push(j);
     times[idx].soma += j.nivel;
   }
+
+  // 1) Goleiros — 1 por time; extras entram depois como linha
+  const goleiros = shuffle(jogadores.filter((j) => j.posicao === "goleiro")).sort(
+    (a, b) => b.nivel - a.nivel
+  );
+  const extraGoleiros: Jogador[] = [];
+  goleiros.forEach((g, i) => {
+    if (i < n) {
+      times[i].jogadores.push(g);
+      times[i].soma += g.nivel;
+    } else {
+      extraGoleiros.push(g);
+    }
+  });
+
+  // 2) Cada posição de linha, equilibrando quantidade por posição
+  for (const pos of ["fixo", "ala", "meio", "pivo"] as Posicao[]) {
+    const grupo = shuffle(jogadores.filter((j) => j.posicao === pos)).sort(
+      (a, b) => b.nivel - a.nivel
+    );
+    grupo.forEach((j) => alocar(j, true));
+  }
+
+  // 3) Goleiros extras — distribuídos só por nível (sem balancear posição)
+  shuffle(extraGoleiros)
+    .sort((a, b) => b.nivel - a.nivel)
+    .forEach((j) => alocar(j, false));
 
   return { times, reservas };
 }
