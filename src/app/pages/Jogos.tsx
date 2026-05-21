@@ -162,7 +162,7 @@ export function Jogos() {
                     : "border-white/10 text-white/55 hover:border-white/30 hover:text-white"
                 }`}
               >
-                {f === "diaria" ? "DIÁRIAS" : f === "mensal" ? "CAMPEONATOS" : "TODOS"}
+                {f === "diaria" ? "PELADAS" : f === "mensal" ? "CAMPEONATOS" : "TODOS"}
               </button>
             ))}
           </div>
@@ -185,8 +185,52 @@ export function Jogos() {
           </div>
         )}
 
-        <div className="space-y-3">
-          {jogos.map((j, idx) => {
+        {!loading && jogos.length > 0 && filtro === "todos" && (
+          <div className="space-y-10">
+            {jogos.some((j) => j.tipo === "mensal") && (
+              <section>
+                <div className="flex items-center gap-2 mb-3">
+                  <Trophy size={16} className="text-amber-400" />
+                  <h2 className="font-['Archivo',sans-serif] font-extrabold text-xl tracking-tight">
+                    Campeonatos do Mês
+                  </h2>
+                  <span className="text-white/30 text-xs tabular-nums">
+                    {jogos.filter((j) => j.tipo === "mensal").length}
+                  </span>
+                </div>
+                <div className="space-y-3">
+                  {jogos.filter((j) => j.tipo === "mensal").map((j, idx) => renderJogo(j, idx))}
+                </div>
+              </section>
+            )}
+            {jogos.some((j) => j.tipo === "diaria") && (
+              <section>
+                <div className="flex items-center gap-2 mb-3">
+                  <Calendar size={16} className="text-[#22ff88]" />
+                  <h2 className="font-['Archivo',sans-serif] font-extrabold text-xl tracking-tight">
+                    Peladas de Domingo
+                  </h2>
+                  <span className="text-white/30 text-xs tabular-nums">
+                    {jogos.filter((j) => j.tipo === "diaria").length}
+                  </span>
+                </div>
+                <div className="space-y-3">
+                  {jogos.filter((j) => j.tipo === "diaria").map((j, idx) => renderJogo(j, idx))}
+                </div>
+              </section>
+            )}
+          </div>
+        )}
+
+        {!loading && jogos.length > 0 && filtro !== "todos" && (
+          <div className="space-y-3">{jogos.map((j, idx) => renderJogo(j, idx))}</div>
+        )}
+      </div>
+    </div>
+  );
+
+  function renderJogo(j: Jogo, idx: number) {
+    {
             const expanded = aberto === j.id;
             const ts = times[j.id] || [];
             const es = stats[j.id] || [];
@@ -235,7 +279,7 @@ export function Jogos() {
                             : "bg-[#22ff88]/15 text-[#22ff88]"
                         }`}
                       >
-                        {j.tipo === "mensal" ? "CAMPEONATO" : "DIÁRIA"}
+                        {j.tipo === "mensal" ? "CAMPEONATO" : "PELADA"}
                       </span>
                       {!j.finalizado && (
                         <span className="px-2 py-0.5 rounded text-[9px] tracking-[0.15em] font-bold bg-white/[0.06] text-white/50">
@@ -388,11 +432,8 @@ export function Jogos() {
                 )}
               </motion.div>
             );
-          })}
-        </div>
-      </div>
-    </div>
-  );
+    }
+  }
 }
 
 function SubHeader({ children }: { children: React.ReactNode }) {
