@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../lib/supabase";
-import { Trophy, Target, ListChecks, Star, Calendar, Award } from "lucide-react";
+import { Trophy, Target, ListChecks, Star, Calendar, Award, TrendingUp, TrendingDown, Minus, Camera } from "lucide-react";
 import { motion } from "motion/react";
+import { useAuth } from "../contexts/AuthContext";
+import { toast } from "sonner";
 
 type Agregado = {
   jogador_id: string;
@@ -29,15 +31,19 @@ const MODOS: { v: Modo; label: string; icon: React.ReactNode; sufixo: string }[]
 ];
 
 export function Estatisticas() {
+  const { user } = useAuth();
   const [rows, setRows] = useState<Agregado[]>([]);
   const [fotos, setFotos] = useState<Record<string, Foto>>({});
+  const [variacao, setVariacao] = useState<Record<string, number | null>>({});
+  const [temSnapshot, setTemSnapshot] = useState(false);
   const [loading, setLoading] = useState(true);
   const [modo, setModo] = useState<Modo>("nota_total");
 
   async function carregar() {
-    const [{ data: ag }, { data: jg }] = await Promise.all([
+    const [{ data: ag }, { data: jg }, { data: pr }] = await Promise.all([
       supabase.from("estatisticas_agregadas").select("*"),
       supabase.from("jogadores").select("id, nome, apelido, foto_url"),
+      supabase.from("power_ranking").select("jogador_id, variacao, rank_anterior"),
     ]);
     setRows(((ag as any[]) || []).map((r) => ({
       jogador_id: r.jogador_id,
@@ -54,7 +60,24 @@ export function Estatisticas() {
     const fmap: Record<string, Foto> = {};
     ((jg as Foto[]) || []).forEach((f) => (fmap[f.id] = f));
     setFotos(fmap);
+    const vmap: Record<string, number | null> = {};
+    let snap = false;
+    ((pr as any[]) || []).forEach((p) => {
+      vmap[p.jogador_id] = p.variacao === null ? null : Number(p.variacao);
+      if (p.rank_anterior !== null) snap = true;
+    });
+    setVariacao(vmap);
+    setTemSnapshot(snap);
     setLoading(false);
+  }
+
+  async function registrarSnapshot() {
+    const { error } = await supabase.rpc("tirar_snapshot_ranking");
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Ranking da semana registrado! As setas vão comparar a partir daqui.");
+      carregar();
+    }
   }
 
   useEffect(() => {
@@ -92,7 +115,7 @@ export function Estatisticas() {
           <h1 className="font-['Archivo',sans-serif] font-black text-5xl sm:text-6xl tracking-tight mb-4">
             Estatísticas
           </h1>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap items-center">
             {MODOS.map((m) => (
               <button
                 key={m.v}
@@ -106,6 +129,15 @@ export function Estatisticas() {
                 {m.icon} {m.label}
               </button>
             ))}
+            {user && (
+              <button
+                onClick={registrarSnapshot}
+                title="Salva a foto do ranking de hoje pra comparar na próxima semana"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-[11px] tracking-[0.18em] font-bold border border-[#22ff88]/40 text-[#22ff88] hover:bg-[#22ff88]/10"
+              >
+                <Camera size={13} /> FECHAR SEMANA
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -179,12 +211,71 @@ export function Estatisticas() {
               })}
             </div>
 
+            {/* POWER RANKING — mexidas */}
+            {modo === "nota_total" && temSnapshot && (() => {
+              const subiram = ordenado
+                .filter((r) => (variacao[r.jogador_id] ?? 0) > 0)
+                .sort((a, b) => (variacao[b.jogador_id] || 0) - (variacao[a.jogador_id] || 0))
+                .slice(0, 3);
+              const cairam = ordenado
+                .filter((r) => (variacao[r.jogador_id] ?? 0) < 0)
+                .sort((a, b) => (variacao[a.jogador_id] || 0) - (variacao[b.jogador_id] || 0))
+                .slice(0, 3);
+              if (subiram.length === 0 && cairam.length === 0) return null;
+              return (
+                <div className="mb-6 p-4 rounded-2xl border border-white/[0.07] bg-gradient-to-br from-white/[0.03] to-white/[0.01]">
+                  <p className="text-[10px] tracking-[0.25em] text-[#22ff88] mb-3">⚡ MEXIDAS NO RANKING</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-[10px] tracking-[0.18em] text-emerald-400 mb-1.5 flex items-center gap-1">
+                        <TrendingUp size={12} /> SUBIRAM
+                      </p>
+                      {subiram.length ? (
+                        <div className="space-y-1">
+                          {subiram.map((r) => (
+                            <div key={r.jogador_id} className="flex items-center justify-between text-sm">
+                              <span className="truncate">{fotos[r.jogador_id]?.apelido || r.nome}</span>
+                              <span className="text-emerald-400 font-bold tabular-nums">
+                                +{variacao[r.jogador_id]} {Number(variacao[r.jogador_id]) === 1 ? "posição" : "posições"}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-white/30 text-xs">Ninguém subiu.</p>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-[10px] tracking-[0.18em] text-rose-400 mb-1.5 flex items-center gap-1">
+                        <TrendingDown size={12} /> CAÍRAM
+                      </p>
+                      {cairam.length ? (
+                        <div className="space-y-1">
+                          {cairam.map((r) => (
+                            <div key={r.jogador_id} className="flex items-center justify-between text-sm">
+                              <span className="truncate">{fotos[r.jogador_id]?.apelido || r.nome}</span>
+                              <span className="text-rose-400 font-bold tabular-nums">
+                                {variacao[r.jogador_id]} {Math.abs(Number(variacao[r.jogador_id])) === 1 ? "posição" : "posições"}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-white/30 text-xs">Ninguém caiu.</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* TABELA */}
             <div className="overflow-x-auto rounded-2xl border border-white/[0.07] bg-gradient-to-br from-white/[0.03] to-white/[0.01]">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-[10px] tracking-[0.18em] text-white/40 uppercase border-b border-white/[0.07] bg-white/[0.02]">
                     <th className="px-4 py-3.5 w-12 text-center">#</th>
+                    {modo === "nota_total" && <th className="px-1 py-3.5 w-10 text-center">Mov</th>}
                     <th className="px-2 py-3.5">Jogador</th>
                     <th className={`px-3 py-3.5 text-center ${modo === "nota_total" ? "text-[#22ff88]" : ""}`}>Nota</th>
                     <th className="px-3 py-3.5 text-center">J</th>
@@ -220,6 +311,11 @@ export function Estatisticas() {
                             {i + 1}
                           </span>
                         </td>
+                        {modo === "nota_total" && (
+                          <td className="px-1 py-3 text-center">
+                            <VariacaoBadge v={variacao[r.jogador_id]} />
+                          </td>
+                        )}
                         <td className="px-2 py-3">
                           <div className="flex items-center gap-2.5">
                             <div className="w-9 h-9 rounded-full bg-white/5 ring-1 ring-white/10 overflow-hidden flex items-center justify-center text-white/40 text-[10px] font-bold shrink-0">
@@ -257,4 +353,27 @@ export function Estatisticas() {
       </div>
     </div>
   );
+}
+
+function VariacaoBadge({ v }: { v: number | null | undefined }) {
+  if (v === null || v === undefined) {
+    return <span className="text-white/20 text-[10px]">novo</span>;
+  }
+  if (v > 0) {
+    return (
+      <span className="inline-flex items-center gap-0.5 text-emerald-400 text-xs font-bold tabular-nums">
+        <TrendingUp size={11} />
+        {v}
+      </span>
+    );
+  }
+  if (v < 0) {
+    return (
+      <span className="inline-flex items-center gap-0.5 text-rose-400 text-xs font-bold tabular-nums">
+        <TrendingDown size={11} />
+        {Math.abs(v)}
+      </span>
+    );
+  }
+  return <Minus size={12} className="inline text-white/25" />;
 }
