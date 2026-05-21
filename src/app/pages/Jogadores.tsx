@@ -211,6 +211,112 @@ type ColeteStats = {
   d_azul: number;
 };
 
+type Conquista = {
+  emoji: string;
+  nome: string;
+  desc: string;
+  desbloqueada: boolean;
+};
+
+function calcularConquistas(
+  jogador: Jogador,
+  agg: Agregado | null,
+  jogos: any[],
+  pjs: any[]
+): Conquista[] {
+  const ordenados = [...jogos].sort((a, b) => {
+    const da = a.jogos?.data_jogo || "";
+    const db = b.jogos?.data_jogo || "";
+    return da.localeCompare(db);
+  });
+
+  let maxV = 0, maxD = 0, maxSemGol = 0;
+  let curV = 0, curD = 0, curSemGol = 0;
+  for (const j of ordenados) {
+    const v = (j.vitorias_vermelho || 0) + (j.vitorias_azul || 0);
+    const d = (j.derrotas_vermelho || 0) + (j.derrotas_azul || 0);
+    if (v > d) { curV++; curD = 0; }
+    else if (d > v) { curD++; curV = 0; }
+    else { curV = 0; curD = 0; }
+    maxV = Math.max(maxV, curV);
+    maxD = Math.max(maxD, curD);
+    if ((j.gols || 0) === 0) curSemGol++;
+    else curSemGol = 0;
+    maxSemGol = Math.max(maxSemGol, curSemGol);
+  }
+
+  const hatTrick = ordenados.some((j) => (j.gols || 0) >= 3);
+
+  let cleanSheet = false;
+  if (jogador.posicao === "goleiro") {
+    cleanSheet = pjs.some((pj) => {
+      const p = pj.partidas;
+      if (!p) return false;
+      const sofridos = pj.lado === "A" ? p.gols_b : p.gols_a;
+      return sofridos === 0;
+    });
+  }
+
+  const agora = new Date();
+  const primeiraData = ordenados[0]?.jogos?.data_jogo;
+  let estreante = false;
+  if (primeiraData) {
+    const d = new Date(primeiraData);
+    estreante = d.getFullYear() === agora.getFullYear() && d.getMonth() === agora.getMonth();
+  }
+
+  return [
+    {
+      emoji: "🥇",
+      nome: "Primeira vez MVP",
+      desc: "Foi o craque do dia ao menos uma vez",
+      desbloqueada: (agg?.mvp_count || 0) >= 1,
+    },
+    {
+      emoji: "🎯",
+      nome: "Hat-trick",
+      desc: "Marcou 3+ gols num mesmo jogo",
+      desbloqueada: hatTrick,
+    },
+    {
+      emoji: "🔒",
+      nome: "Clean Sheet",
+      desc: "Goleiro que segurou o time sem tomar gol",
+      desbloqueada: cleanSheet,
+    },
+    {
+      emoji: "💯",
+      nome: "Veterano",
+      desc: "100 jogos disputados",
+      desbloqueada: (agg?.jogos_disputados || 0) >= 100,
+    },
+    {
+      emoji: "🔥",
+      nome: "Embalado",
+      desc: "5 vitórias seguidas",
+      desbloqueada: maxV >= 5,
+    },
+    {
+      emoji: "💀",
+      nome: "Pé Frio",
+      desc: "5 derrotas seguidas (vacilou, hein)",
+      desbloqueada: maxD >= 5,
+    },
+    {
+      emoji: "🦵",
+      nome: "Pernas de Pau",
+      desc: "10 jogos seguidos sem marcar",
+      desbloqueada: maxSemGol >= 10,
+    },
+    {
+      emoji: "👶",
+      nome: "Estreante do Mês",
+      desc: "Fez o primeiro jogo neste mês",
+      desbloqueada: estreante,
+    },
+  ];
+}
+
 function ModalJogadorDetalhes({
   jogador,
   status,
@@ -223,18 +329,29 @@ function ModalJogadorDetalhes({
   const [stats, setStats] = useState<Agregado | null>(null);
   const [colete, setColete] = useState<ColeteStats | null>(null);
   const [titulos, setTitulos] = useState<{ id: string; titulo: string }[]>([]);
+  const [conquistas, setConquistas] = useState<Conquista[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
-      const [{ data: ag }, { data: cs }, { data: tt }] = await Promise.all([
+      const [{ data: ag }, { data: cs }, { data: tt }, { data: jogos }, { data: pjs }] = await Promise.all([
         supabase.from("estatisticas_agregadas").select("*").eq("jogador_id", jogador.id).maybeSingle(),
         supabase.from("estatisticas_por_colete").select("*").eq("jogador_id", jogador.id).maybeSingle(),
         supabase.from("titulos").select("id, titulo").eq("jogador_id", jogador.id).order("data_conquista", { ascending: false }),
+        supabase
+          .from("estatisticas_jogo")
+          .select("gols, vitorias_vermelho, vitorias_azul, derrotas_vermelho, derrotas_azul, jogos(data_jogo)")
+          .eq("jogador_id", jogador.id),
+        supabase
+          .from("partida_jogadores")
+          .select("lado, partidas(gols_a, gols_b)")
+          .eq("jogador_id", jogador.id),
       ]);
-      setStats((ag as Agregado) || null);
+      const agg = (ag as Agregado) || null;
+      setStats(agg);
       setColete((cs as ColeteStats) || null);
       setTitulos((tt as { id: string; titulo: string }[]) || []);
+      setConquistas(calcularConquistas(jogador, agg, (jogos as any[]) || [], (pjs as any[]) || []));
       setLoading(false);
     })();
   }, [jogador.id]);
@@ -395,6 +512,36 @@ function ModalJogadorDetalhes({
                   >
                     <span className="text-lg">🏆</span>
                     <span className="text-sm text-white/90">{t.titulo}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* CONQUISTAS */}
+          {!loading && conquistas.length > 0 && (
+            <>
+              <p className="text-[10px] tracking-[0.18em] text-white/40 mb-3 mt-6">
+                🎖️ CONQUISTAS · {conquistas.filter((c) => c.desbloqueada).length}/{conquistas.length}
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {conquistas.map((c) => (
+                  <div
+                    key={c.nome}
+                    title={c.desc}
+                    className={`flex items-center gap-2.5 p-2.5 rounded-xl border transition-all ${
+                      c.desbloqueada
+                        ? "border-[#22ff88]/30 bg-[#22ff88]/[0.06]"
+                        : "border-white/[0.05] bg-white/[0.02] opacity-45 grayscale"
+                    }`}
+                  >
+                    <span className="text-2xl shrink-0">{c.emoji}</span>
+                    <div className="min-w-0">
+                      <p className={`text-xs font-bold truncate ${c.desbloqueada ? "text-white" : "text-white/60"}`}>
+                        {c.nome}
+                      </p>
+                      <p className="text-[9px] text-white/40 leading-tight line-clamp-2">{c.desc}</p>
+                    </div>
                   </div>
                 ))}
               </div>
