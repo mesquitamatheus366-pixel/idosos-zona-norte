@@ -56,6 +56,46 @@ export function Sorteio() {
   const [resultado, setResultado] = useState<Resultado | null>(null);
   const [corBase, setCorBase] = useState<CorBase>("vermelho");
   const [salvandoJogo, setSalvandoJogo] = useState(false);
+  const [movendoId, setMovendoId] = useState<string | null>(null);
+
+  function moverJogador(jogadorId: string, destino: number | "reserva") {
+    if (!resultado) return;
+    const times = resultado.times.map((t) => ({ ...t, jogadores: [...t.jogadores] }));
+    let reservas = [...resultado.reservas];
+    let jogador: Jogador | undefined;
+
+    for (const t of times) {
+      const idx = t.jogadores.findIndex((j) => j.id === jogadorId);
+      if (idx >= 0) {
+        jogador = t.jogadores[idx];
+        t.jogadores.splice(idx, 1);
+        break;
+      }
+    }
+    if (!jogador) {
+      const idx = reservas.findIndex((j) => j.id === jogadorId);
+      if (idx >= 0) {
+        jogador = reservas[idx];
+        reservas.splice(idx, 1);
+      }
+    }
+    if (!jogador) return;
+
+    if (destino === "reserva") {
+      reservas.push(jogador);
+    } else {
+      const t = times.find((t) => t.numero === destino);
+      if (!t) return;
+      if (t.jogadores.length >= MAX_POR_TIME) {
+        toast.error(`Time cheio (máx ${MAX_POR_TIME})`);
+        return;
+      }
+      t.jogadores.push(jogador);
+    }
+    times.forEach((t) => (t.soma = t.jogadores.reduce((s, j) => s + j.nivel, 0)));
+    setResultado({ times, reservas });
+    setMovendoId(null);
+  }
 
   useEffect(() => {
     (async () => {
@@ -322,7 +362,7 @@ export function Sorteio() {
 
         {resultado && (
           <div className="mt-10">
-            <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+            <div className="flex items-center justify-between mb-2 flex-wrap gap-3">
               <p className="text-[10px] tracking-[0.3em] text-white/40">TIMES SORTEADOS</p>
               <button
                 onClick={() => setCorBase((c) => (c === "vermelho" ? "azul" : "vermelho"))}
@@ -331,11 +371,25 @@ export function Sorteio() {
                 <RefreshCw size={12} /> INVERTER COLETES
               </button>
             </div>
+            <p className="text-white/40 text-xs mb-4">
+              {movendoId
+                ? "Agora clique no time (ou no banco) pra mover o jogador. Clique nele de novo pra cancelar."
+                : "Quer ajustar manualmente? Clique num jogador pra movê-lo de time."}
+            </p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {resultado.times.map((t) => {
                 const r = rotuloTime(t.numero, corBase, resultado.times.length);
+                const podeReceber = movendoId && t.jogadores.length < MAX_POR_TIME;
                 return (
-                  <div key={t.numero} className={`p-5 rounded-2xl border ${r.bg}`}>
+                  <div
+                    key={t.numero}
+                    onClick={() => podeReceber && moverJogador(movendoId!, t.numero)}
+                    className={`p-5 rounded-2xl border transition-all ${r.bg} ${
+                      podeReceber
+                        ? "ring-2 ring-[#22ff88]/60 cursor-pointer hover:bg-[#22ff88]/[0.08]"
+                        : ""
+                    }`}
+                  >
                     <div className="flex items-baseline justify-between mb-3">
                       <h3 className={`font-bold text-xl ${r.cor}`}>{r.label}</h3>
                       <p className="text-[10px] tracking-[0.15em] text-white/40">
@@ -344,17 +398,26 @@ export function Sorteio() {
                     </div>
                     <ul className="space-y-1 text-sm">
                       {t.jogadores.map((p) => (
-                        <li
-                          key={p.id}
-                          className="flex items-center justify-between gap-2 text-white/85 border-b border-white/[0.04] py-1.5 last:border-0"
-                        >
-                          <span className="truncate flex items-center gap-1.5">
-                            {p.posicao === "goleiro" && "🧤"}
-                            <span className="truncate">{p.apelido || p.nome}</span>
-                          </span>
-                          <span className="text-white/40 text-[10px] tracking-wider uppercase shrink-0">
-                            {POSICAO_LABEL[p.posicao].slice(0, 3)} · N{p.nivel}
-                          </span>
+                        <li key={p.id}>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setMovendoId(movendoId === p.id ? null : p.id);
+                            }}
+                            className={`w-full flex items-center justify-between gap-2 border-b border-white/[0.04] py-1.5 text-left rounded transition-colors ${
+                              movendoId === p.id
+                                ? "bg-[#22ff88]/15 ring-1 ring-[#22ff88]/50 px-1.5"
+                                : "text-white/85 hover:bg-white/[0.04] px-1.5"
+                            }`}
+                          >
+                            <span className="truncate flex items-center gap-1.5">
+                              {p.posicao === "goleiro" && "🧤"}
+                              <span className="truncate">{p.apelido || p.nome}</span>
+                            </span>
+                            <span className="text-white/40 text-[10px] tracking-wider uppercase shrink-0">
+                              {POSICAO_LABEL[p.posicao].slice(0, 3)} · N{p.nivel}
+                            </span>
+                          </button>
                         </li>
                       ))}
                     </ul>
@@ -363,24 +426,44 @@ export function Sorteio() {
               })}
             </div>
 
-            {resultado.reservas.length > 0 && (
-              <div className="mt-4 p-5 rounded-2xl border border-amber-500/25 bg-amber-500/[0.04]">
-                <p className="text-[10px] tracking-[0.3em] text-amber-400 mb-2">
-                  RESERVAS ({resultado.reservas.length})
+            {(resultado.reservas.length > 0 || movendoId) && (
+              <div
+                onClick={() => movendoId && moverJogador(movendoId, "reserva")}
+                className={`mt-4 p-5 rounded-2xl border transition-all ${
+                  movendoId
+                    ? "border-[#22ff88]/50 ring-2 ring-[#22ff88]/40 bg-[#22ff88]/[0.04] cursor-pointer"
+                    : "border-amber-500/25 bg-amber-500/[0.04]"
+                }`}
+              >
+                <p className={`text-[10px] tracking-[0.3em] mb-2 ${movendoId ? "text-[#22ff88]" : "text-amber-400"}`}>
+                  BANCO / RESERVAS ({resultado.reservas.length})
                 </p>
                 <p className="text-white/40 text-xs mb-3">
-                  Times cheios ({MAX_POR_TIME} por time). Esses ficaram de fora — aumente o nº de times ou desmarque alguém.
+                  {movendoId
+                    ? "Clique aqui pra mandar o jogador pro banco."
+                    : `Times cheios (${MAX_POR_TIME} por time) ou movidos manualmente.`}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {resultado.reservas.map((p) => (
-                    <span
+                    <button
                       key={p.id}
-                      className="px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/10 text-xs text-white/70"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMovendoId(movendoId === p.id ? null : p.id);
+                      }}
+                      className={`px-2.5 py-1 rounded-full border text-xs transition-colors ${
+                        movendoId === p.id
+                          ? "bg-[#22ff88]/15 border-[#22ff88]/50 text-white"
+                          : "bg-white/[0.04] border-white/10 text-white/70 hover:border-white/30"
+                      }`}
                     >
                       {p.posicao === "goleiro" && "🧤 "}
                       {p.apelido || p.nome}
-                    </span>
+                    </button>
                   ))}
+                  {resultado.reservas.length === 0 && (
+                    <span className="text-white/30 text-xs">Vazio</span>
+                  )}
                 </div>
               </div>
             )}
