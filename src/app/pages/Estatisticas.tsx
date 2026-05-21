@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { Trophy, Target, ListChecks, Star, Calendar, Award } from "lucide-react";
+import { motion } from "motion/react";
 
 type Agregado = {
   jogador_id: string;
@@ -71,125 +72,186 @@ export function Estatisticas() {
 
   const modoAtual = MODOS.find((m) => m.v === modo)!;
 
+  const valorExibido = (r: Agregado) =>
+    modo === "nota_total"
+      ? Math.min(10, Math.max(0, Number(r[modo]))).toFixed(1)
+      : String(r[modo]);
+
   return (
     <div className="min-h-screen bg-[#0b0b0b] text-white">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="flex items-center gap-3 mb-2">
-          <Trophy className="text-[#22ff88]" size={20} />
-          <p className="font-['Archivo',sans-serif] font-extrabold text-[11px] tracking-[0.3em] text-[#22ff88]">
-            RANKING
-          </p>
+      {/* HEADER */}
+      <div className="relative border-b border-white/[0.05] overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(34,255,136,0.1),transparent_60%)]" />
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="w-6 h-[2px] rounded-full bg-[#22ff88]" />
+            <p className="font-['Archivo',sans-serif] text-[11px] tracking-[0.3em] text-[#22ff88]">
+              CLASSIFICAÇÃO
+            </p>
+          </div>
+          <h1 className="font-['Archivo',sans-serif] font-black text-5xl sm:text-6xl tracking-tight mb-4">
+            Estatísticas
+          </h1>
+          <div className="flex gap-2 flex-wrap">
+            {MODOS.map((m) => (
+              <button
+                key={m.v}
+                onClick={() => setModo(m.v)}
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-[11px] tracking-[0.18em] font-bold border transition-all ${
+                  modo === m.v
+                    ? "bg-[#22ff88] text-[#0b0b0b] border-[#22ff88] shadow-[0_0_18px_rgba(34,255,136,0.3)]"
+                    : "border-white/10 text-white/55 hover:border-white/30 hover:text-white"
+                }`}
+              >
+                {m.icon} {m.label}
+              </button>
+            ))}
+          </div>
         </div>
-        <h1 className="font-['Archivo',sans-serif] font-extrabold text-4xl sm:text-5xl mb-8">
-          Estatísticas
-        </h1>
+      </div>
 
-        <div className="flex gap-2 flex-wrap mb-8">
-          {MODOS.map((m) => (
-            <button
-              key={m.v}
-              onClick={() => setModo(m.v)}
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-[11px] tracking-[0.18em] font-bold border transition-all ${
-                modo === m.v
-                  ? "bg-[#22ff88] text-[#0b0b0b] border-[#22ff88] shadow-[0_0_18px_rgba(34,255,136,0.3)]"
-                  : "border-white/10 text-white/60 hover:border-white/30 hover:text-white"
-              }`}
-            >
-              {m.icon} {m.label}
-            </button>
-          ))}
-        </div>
-
-        {loading && <p className="text-white/40">Carregando...</p>}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {loading && (
+          <div className="h-64 rounded-2xl bg-white/[0.03] border border-white/[0.05] animate-pulse" />
+        )}
 
         {!loading && ordenado.length === 0 && (
-          <div className="p-8 rounded-2xl border border-white/[0.06] bg-white/[0.02] text-white/50">
+          <div className="p-10 rounded-2xl border border-white/[0.06] bg-white/[0.02] text-white/50 text-center">
+            <Trophy className="mx-auto mb-3 text-white/20" size={32} />
             Sem jogos registrados ainda.
           </div>
         )}
 
         {!loading && ordenado.length > 0 && (
           <>
-            {/* Pódio top 3 */}
-            <div className="grid grid-cols-3 gap-3 mb-6">
-              {ordenado.slice(0, 3).map((r, i) => {
+            {/* PÓDIO — 2º, 1º, 3º */}
+            <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-8 items-end">
+              {[1, 0, 2].map((pos) => {
+                const r = ordenado[pos];
+                if (!r) return <div key={pos} />;
                 const f = fotos[r.jogador_id];
-                const podium = ["🥇", "🥈", "🥉"][i];
-                const altura = ["pt-2", "pt-6", "pt-8"][i];
+                const ehPrimeiro = pos === 0;
+                const medalha = ["🥇", "🥈", "🥉"][pos];
+                const ring = ehPrimeiro
+                  ? "ring-[#22ff88] shadow-[0_0_30px_rgba(34,255,136,0.45)]"
+                  : pos === 1
+                  ? "ring-white/30"
+                  : "ring-amber-700/50";
                 return (
-                  <div
+                  <motion.div
                     key={r.jogador_id}
-                    className={`relative ${altura} text-center`}
+                    initial={{ opacity: 0, y: 24 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 + pos * 0.08, duration: 0.4 }}
+                    className="text-center"
                   >
-                    <div className={`mx-auto w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden ring-2 ${i === 0 ? "ring-[#22ff88] shadow-[0_0_24px_rgba(34,255,136,0.4)]" : "ring-white/15"} bg-white/5 flex items-center justify-center text-white/40 font-bold mb-2`}>
+                    <div
+                      className={`mx-auto rounded-full overflow-hidden ring-2 ${ring} bg-white/5 flex items-center justify-center text-white/40 font-bold mb-2 ${
+                        ehPrimeiro ? "w-20 h-20 sm:w-28 sm:h-28" : "w-16 h-16 sm:w-20 sm:h-20"
+                      }`}
+                    >
                       {f?.foto_url ? (
                         <img src={f.foto_url} alt="" className="w-full h-full object-cover" />
                       ) : (
                         (f?.apelido || f?.nome || "?").split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase()
                       )}
                     </div>
-                    <p className="text-2xl mb-0.5">{podium}</p>
-                    <p className="font-bold text-sm truncate px-1">{f?.apelido || f?.nome}</p>
-                    <p className={`font-bold ${i === 0 ? "text-[#22ff88]" : "text-white/60"}`}>
-                      {modo === "nota_total"
-                        ? Math.min(10, Math.max(0, Number(r[modo]))).toFixed(1)
-                        : r[modo]}{" "}
-                      <span className="text-[10px] text-white/40">{modoAtual.sufixo}</span>
+                    <p className={ehPrimeiro ? "text-3xl mb-0.5" : "text-2xl mb-0.5"}>{medalha}</p>
+                    <p className="font-bold text-xs sm:text-sm truncate px-1">{f?.apelido || f?.nome}</p>
+                    <p
+                      className={`font-['Archivo',sans-serif] font-black tabular-nums ${
+                        ehPrimeiro ? "text-2xl sm:text-3xl text-[#22ff88]" : "text-lg text-white/70"
+                      }`}
+                    >
+                      {valorExibido(r)}
                     </p>
-                  </div>
+                    <p className="text-[9px] tracking-[0.18em] text-white/35 uppercase">{modoAtual.sufixo}</p>
+                    {/* base do pódio */}
+                    <div
+                      className={`mt-2 rounded-t-lg ${
+                        ehPrimeiro
+                          ? "h-10 bg-gradient-to-t from-[#22ff88]/20 to-[#22ff88]/5 border-t-2 border-[#22ff88]/40"
+                          : "h-6 bg-gradient-to-t from-white/[0.06] to-transparent border-t border-white/10"
+                      }`}
+                    />
+                  </motion.div>
                 );
               })}
             </div>
 
-            {/* Tabela completa */}
-            <div className="overflow-x-auto rounded-2xl border border-white/[0.06] bg-white/[0.02]">
+            {/* TABELA */}
+            <div className="overflow-x-auto rounded-2xl border border-white/[0.07] bg-gradient-to-br from-white/[0.03] to-white/[0.01]">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-[10px] tracking-[0.18em] text-white/40 uppercase border-b border-white/[0.06]">
-                    <th className="px-4 py-3 w-10">#</th>
-                    <th className="px-2 py-3">Jogador</th>
-                    <th className="px-3 py-3 text-center">NOTA</th>
-                    <th className="px-3 py-3 text-center">J</th>
-                    <th className="px-3 py-3 text-center">G</th>
-                    <th className="px-3 py-3 text-center">A</th>
-                    <th className="px-3 py-3 text-center">V</th>
-                    <th className="px-3 py-3 text-center">E</th>
-                    <th className="px-3 py-3 text-center">D</th>
-                    <th className="px-3 py-3 text-center">MVP</th>
+                  <tr className="text-left text-[10px] tracking-[0.18em] text-white/40 uppercase border-b border-white/[0.07] bg-white/[0.02]">
+                    <th className="px-4 py-3.5 w-12 text-center">#</th>
+                    <th className="px-2 py-3.5">Jogador</th>
+                    <th className={`px-3 py-3.5 text-center ${modo === "nota_total" ? "text-[#22ff88]" : ""}`}>Nota</th>
+                    <th className="px-3 py-3.5 text-center">J</th>
+                    <th className={`px-3 py-3.5 text-center ${modo === "gols" ? "text-[#22ff88]" : ""}`}>G</th>
+                    <th className={`px-3 py-3.5 text-center ${modo === "assistencias" ? "text-[#22ff88]" : ""}`}>A</th>
+                    <th className="px-3 py-3.5 text-center">V</th>
+                    <th className="px-3 py-3.5 text-center">E</th>
+                    <th className="px-3 py-3.5 text-center">D</th>
+                    <th className={`px-3 py-3.5 text-center ${modo === "mvp_count" ? "text-[#22ff88]" : ""}`}>MVP</th>
                   </tr>
                 </thead>
                 <tbody>
                   {ordenado.map((r, i) => {
                     const f = fotos[r.jogador_id];
+                    const top3 = i < 3;
                     return (
-                      <tr key={r.jogador_id} className="border-b border-white/[0.04] hover:bg-white/[0.02]">
-                        <td className="px-4 py-2.5 text-white/40 tabular-nums">{i + 1}</td>
-                        <td className="px-2 py-2.5">
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-full bg-white/5 ring-1 ring-white/10 overflow-hidden flex items-center justify-center text-white/40 text-[10px] font-bold">
+                      <tr
+                        key={r.jogador_id}
+                        className={`border-b border-white/[0.04] transition-colors hover:bg-white/[0.03] ${
+                          i === 0 ? "bg-[#22ff88]/[0.04]" : ""
+                        }`}
+                      >
+                        <td className="px-4 py-3 text-center">
+                          <span
+                            className={`inline-flex items-center justify-center w-6 h-6 rounded-md text-xs font-black tabular-nums ${
+                              i === 0
+                                ? "bg-[#22ff88] text-[#0b0b0b]"
+                                : top3
+                                ? "bg-white/10 text-white"
+                                : "text-white/40"
+                            }`}
+                          >
+                            {i + 1}
+                          </span>
+                        </td>
+                        <td className="px-2 py-3">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-9 h-9 rounded-full bg-white/5 ring-1 ring-white/10 overflow-hidden flex items-center justify-center text-white/40 text-[10px] font-bold shrink-0">
                               {f?.foto_url ? (
                                 <img src={f.foto_url} alt="" className="w-full h-full object-cover" />
                               ) : (
                                 (f?.apelido || r.nome).split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase()
                               )}
                             </div>
-                            <span className="font-medium">{f?.apelido || r.nome}</span>
+                            <span className="font-bold">{f?.apelido || r.nome}</span>
                           </div>
                         </td>
-                        <td className={`px-3 py-2.5 text-center tabular-nums ${modo === "nota_total" ? "text-[#22ff88] font-bold" : "text-[#22ff88]/80"}`}>{Math.min(10, Math.max(0, Number(r.nota_total || 0))).toFixed(1)}</td>
-                        <td className="px-3 py-2.5 text-center text-white/60 tabular-nums">{r.jogos_disputados}</td>
-                        <td className={`px-3 py-2.5 text-center tabular-nums ${modo === "gols" ? "text-[#22ff88] font-bold" : "text-white/80"}`}>{r.gols}</td>
-                        <td className={`px-3 py-2.5 text-center tabular-nums ${modo === "assistencias" ? "text-[#22ff88] font-bold" : ""}`}>{r.assistencias}</td>
-                        <td className="px-3 py-2.5 text-center tabular-nums text-emerald-400">{r.vitorias}</td>
-                        <td className="px-3 py-2.5 text-center tabular-nums text-white/60">{r.empates}</td>
-                        <td className="px-3 py-2.5 text-center tabular-nums text-rose-400">{r.derrotas}</td>
-                        <td className={`px-3 py-2.5 text-center tabular-nums ${modo === "mvp_count" ? "text-[#22ff88] font-bold" : "text-[#22ff88]/70"}`}>{r.mvp_count}</td>
+                        <td className={`px-3 py-3 text-center tabular-nums font-bold ${modo === "nota_total" ? "text-[#22ff88]" : "text-[#22ff88]/70"}`}>
+                          {Math.min(10, Math.max(0, Number(r.nota_total || 0))).toFixed(1)}
+                        </td>
+                        <td className="px-3 py-3 text-center text-white/55 tabular-nums">{r.jogos_disputados}</td>
+                        <td className={`px-3 py-3 text-center tabular-nums ${modo === "gols" ? "text-[#22ff88] font-bold" : "text-white/80"}`}>{r.gols}</td>
+                        <td className={`px-3 py-3 text-center tabular-nums ${modo === "assistencias" ? "text-[#22ff88] font-bold" : "text-white/80"}`}>{r.assistencias}</td>
+                        <td className="px-3 py-3 text-center tabular-nums text-emerald-400">{r.vitorias}</td>
+                        <td className="px-3 py-3 text-center tabular-nums text-white/50">{r.empates}</td>
+                        <td className="px-3 py-3 text-center tabular-nums text-rose-400">{r.derrotas}</td>
+                        <td className={`px-3 py-3 text-center tabular-nums ${modo === "mvp_count" ? "text-[#22ff88] font-bold" : "text-[#22ff88]/60"}`}>{r.mvp_count}</td>
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
             </div>
+
+            <p className="text-white/30 text-[10px] mt-3 tracking-wide">
+              J = jogos · G = gols · A = assistências · V/E/D = vitórias/empates/derrotas · MVP = vezes craque do dia
+            </p>
           </>
         )}
       </div>
