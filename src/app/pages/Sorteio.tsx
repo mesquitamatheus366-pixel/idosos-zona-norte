@@ -57,6 +57,11 @@ export function Sorteio() {
   const [corBase, setCorBase] = useState<CorBase>("vermelho");
   const [salvandoJogo, setSalvandoJogo] = useState(false);
   const [movendoId, setMovendoId] = useState<string | null>(null);
+  const [parcerias, setParcerias] = useState<Map<string, number>>(new Map());
+
+  function chaveDupla(a: string, b: string) {
+    return a < b ? `${a}|${b}` : `${b}|${a}`;
+  }
 
   function moverJogador(jogadorId: string, destino: number | "reserva") {
     if (!resultado) return;
@@ -99,13 +104,14 @@ export function Sorteio() {
 
   useEffect(() => {
     (async () => {
-      const [{ data: jg }, { data: st }] = await Promise.all([
+      const [{ data: jg }, { data: st }, { data: pc }] = await Promise.all([
         supabase
           .from("jogadores")
           .select("id, nome, apelido, posicao, nivel, foto_url")
           .eq("ativo", true)
           .order("nome"),
         supabase.from("jogador_status").select("jogador_id, tipo_atual"),
+        supabase.from("parcerias").select("jogador_a, jogador_b, vezes_juntos"),
       ]);
       const tipoMap = new Map<string, Tipo>();
       ((st as any[]) || []).forEach((s) => tipoMap.set(s.jogador_id, s.tipo_atual));
@@ -115,6 +121,11 @@ export function Sorteio() {
           tipo: (tipoMap.get(j.id) || "sem_registro") as Tipo,
         }))
       );
+      const pMap = new Map<string, number>();
+      ((pc as any[]) || []).forEach((p) => {
+        pMap.set(chaveDupla(p.jogador_a, p.jogador_b), Number(p.vezes_juntos));
+      });
+      setParcerias(pMap);
     })();
   }, []);
 
@@ -147,7 +158,7 @@ export function Sorteio() {
       toast.error(`Mínimo ${numTimes * 2} jogadores para ${numTimes} times`);
       return;
     }
-    const res = distribuirEquilibrado(presentes, numTimes);
+    const res = distribuirEquilibrado(presentes, numTimes, parcerias);
     setResultado(res);
     if (res.reservas.length > 0) {
       toast.info(`${res.reservas.length} jogador(es) ficaram de reserva (times cheios — máx ${MAX_POR_TIME} por time)`);
@@ -199,7 +210,7 @@ export function Sorteio() {
           <div className="flex items-center gap-2 mb-2">
             <span className="w-6 h-[2px] rounded-full bg-[#22ff88]" />
             <p className="font-['Archivo',sans-serif] text-[11px] tracking-[0.3em] text-[#22ff88]">
-              EQUILIBRADO POR NÍVEL E POSIÇÃO
+EQUILIBRA NÍVEL, POSIÇÃO E VARIA PARCEIROS
             </p>
           </div>
           <h1 className="font-['Archivo',sans-serif] font-black text-5xl sm:text-6xl tracking-tight">
@@ -481,21 +492,27 @@ export function Sorteio() {
 }
 
 /*
- * Algoritmo (modo d): equilibra POR POSIÇÃO e por nível.
+ * Algoritmo (modo d): equilibra POR POSIÇÃO, varia PARCEIROS e equilibra nível.
  * - 1 goleiro por time
- * - Cada posição (fixo, ala, meio, pivô) é distribuída separadamente:
- *   cada jogador vai pro time que tem MENOS jogadores daquela posição,
- *   usando o nível (soma) como desempate. Assim cada time fica com uma
- *   quantidade parecida de cada posição.
+ * - Cada posição (fixo, ala, meio, pivô) é distribuída separadamente
+ * - Prioridade ao escolher o time do jogador:
+ *   1º balanço de posição · 2º variar parceiros (quem jogou junto fica separado)
+ *   3º nível (time mais fraco) · 4º menos gente
  * - Máx 7 por time. Sobras viram reservas.
  */
-function distribuirEquilibrado(jogadores: Jogador[], n: number): Resultado {
+function distribuirEquilibrado(
+  jogadores: Jogador[],
+  n: number,
+  parcerias: Map<string, number>
+): Resultado {
   const times: Time[] = Array.from({ length: n }, (_, i) => ({
     numero: i + 1,
     jogadores: [],
     soma: 0,
   }));
   const reservas: Jogador[] = [];
+
+  const chave = (a: string, b: string) => (a < b ? `${a}|${b}` : `${b}|${a}`);
 
   function alocar(j: Jogador, balancearPosicao: boolean) {
     const candidatos = times
@@ -504,6 +521,11 @@ function distribuirEquilibrado(jogadores: Jogador[], n: number): Resultado {
         countPos: balancearPosicao
           ? t.jogadores.filter((x) => x.posicao === j.posicao).length
           : 0,
+        // soma de quantas vezes j já jogou com cada membro do time
+        parceria: t.jogadores.reduce(
+          (s, x) => s + (parcerias.get(chave(j.id, x.id)) || 0),
+          0
+        ),
         count: t.jogadores.length,
         soma: t.soma,
       }))
@@ -511,8 +533,9 @@ function distribuirEquilibrado(jogadores: Jogador[], n: number): Resultado {
       .sort(
         (a, b) =>
           a.countPos - b.countPos || // 1º: menos jogadores dessa posição
-          a.soma - b.soma ||         // 2º: time mais fraco
-          a.count - b.count          // 3º: time com menos gente
+          a.parceria - b.parceria || // 2º: variar parceiros (menos repetição)
+          a.soma - b.soma ||         // 3º: time mais fraco
+          a.count - b.count          // 4º: time com menos gente
       );
     if (candidatos.length === 0) {
       reservas.push(j);

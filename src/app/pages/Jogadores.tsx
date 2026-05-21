@@ -179,7 +179,14 @@ export function Jogadores() {
         )}
       </div>
 
-      {aberto && <ModalJogadorDetalhes jogador={aberto} status={status[aberto.id]} onClose={() => setAberto(null)} />}
+      {aberto && (
+        <ModalJogadorDetalhes
+          jogador={aberto}
+          status={status[aberto.id]}
+          todos={jogadores}
+          onClose={() => setAberto(null)}
+        />
+      )}
     </div>
   );
 }
@@ -298,13 +305,17 @@ function calcularConquistas(
   ];
 }
 
+type Parceiro = { jogador: Jogador; vezes: number };
+
 function ModalJogadorDetalhes({
   jogador,
   status,
+  todos,
   onClose,
 }: {
   jogador: Jogador;
   status?: Status;
+  todos: Jogador[];
   onClose: () => void;
 }) {
   const [stats, setStats] = useState<Agregado | null>(null);
@@ -312,11 +323,13 @@ function ModalJogadorDetalhes({
   const [titulos, setTitulos] = useState<{ id: string; titulo: string }[]>([]);
   const [conquistas, setConquistas] = useState<Conquista[]>([]);
   const [filtroConquista, setFiltroConquista] = useState<"todas" | "feitas" | "faltam">("todas");
+  const [parceiros, setParceiros] = useState<Parceiro[]>([]);
+  const [nuncaJogou, setNuncaJogou] = useState<Jogador[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
-      const [{ data: ag }, { data: cs }, { data: tt }, { data: jogos }, { data: pjs }] = await Promise.all([
+      const [{ data: ag }, { data: cs }, { data: tt }, { data: jogos }, { data: pjs }, { data: pc }] = await Promise.all([
         supabase.from("estatisticas_agregadas").select("*").eq("jogador_id", jogador.id).maybeSingle(),
         supabase.from("estatisticas_por_colete").select("*").eq("jogador_id", jogador.id).maybeSingle(),
         supabase.from("titulos").select("id, titulo").eq("jogador_id", jogador.id).order("data_conquista", { ascending: false }),
@@ -328,12 +341,33 @@ function ModalJogadorDetalhes({
           .from("partida_jogadores")
           .select("lado, partidas(gols_a, gols_b)")
           .eq("jogador_id", jogador.id),
+        supabase
+          .from("parcerias")
+          .select("jogador_a, jogador_b, vezes_juntos")
+          .or(`jogador_a.eq.${jogador.id},jogador_b.eq.${jogador.id}`),
       ]);
       const agg = (ag as Agregado) || null;
       setStats(agg);
       setColete((cs as ColeteStats) || null);
       setTitulos((tt as { id: string; titulo: string }[]) || []);
       setConquistas(calcularConquistas(jogador, agg, (jogos as any[]) || [], (pjs as any[]) || [], (tt as any[] || []).length));
+
+      // Parcerias
+      const mapaJog = new Map(todos.map((t) => [t.id, t]));
+      const vezesMap = new Map<string, number>();
+      ((pc as any[]) || []).forEach((p) => {
+        const outro = p.jogador_a === jogador.id ? p.jogador_b : p.jogador_a;
+        vezesMap.set(outro, Number(p.vezes_juntos));
+      });
+      const lista: Parceiro[] = [];
+      vezesMap.forEach((vezes, id) => {
+        const j = mapaJog.get(id);
+        if (j) lista.push({ jogador: j, vezes });
+      });
+      lista.sort((a, b) => b.vezes - a.vezes);
+      setParceiros(lista);
+      setNuncaJogou(todos.filter((t) => t.id !== jogador.id && !vezesMap.has(t.id)));
+
       setLoading(false);
     })();
   }, [jogador.id]);
@@ -572,6 +606,50 @@ function ModalJogadorDetalhes({
               </>
             );
           })()}
+
+          {/* PARCEIROS */}
+          {!loading && (parceiros.length > 0 || nuncaJogou.length > 0) && (
+            <>
+              <p className="text-[10px] tracking-[0.18em] text-white/40 mb-3 mt-6">
+                🤝 PARCERIAS
+              </p>
+              {parceiros.length > 0 && (
+                <div className="mb-3">
+                  <p className="text-[9px] tracking-[0.18em] text-[#22ff88] mb-1.5">JOGOU MAIS COM</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {parceiros.slice(0, 6).map((p) => (
+                      <span
+                        key={p.jogador.id}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-[#22ff88]/25 bg-[#22ff88]/[0.06] text-xs"
+                      >
+                        {p.jogador.apelido || p.jogador.nome}
+                        <span className="text-[#22ff88] font-bold tabular-nums">{p.vezes}x</span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div>
+                <p className="text-[9px] tracking-[0.18em] text-white/40 mb-1.5">
+                  NUNCA JOGOU JUNTO · {nuncaJogou.length}
+                </p>
+                {nuncaJogou.length === 0 ? (
+                  <p className="text-white/30 text-xs">Já jogou com todo mundo! 🤝</p>
+                ) : (
+                  <div className="flex flex-wrap gap-1.5">
+                    {nuncaJogou.map((j) => (
+                      <span
+                        key={j.id}
+                        className="px-2.5 py-1 rounded-full border border-white/10 bg-white/[0.03] text-xs text-white/55"
+                      >
+                        {j.apelido || j.nome}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
