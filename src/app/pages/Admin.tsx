@@ -863,15 +863,17 @@ type StatRow = {
 
 function calcularPontos(r: StatRow): number {
   const v = r.vitorias_vermelho + r.vitorias_azul;
+  const e = r.empates_vermelho + r.empates_azul;
   const d = r.derrotas_vermelho + r.derrotas_azul;
   const p =
-    v * 0.3 -
+    v * 0.4 +
+    e * 0.1 -
     d * 0.1 +
     r.gols * 0.3 +
     r.assistencias * 0.2 +
     r.defesas * 0.1 -
     r.cartoes_vermelhos * 1 -
-    r.gols_contra * 1 +
+    r.gols_contra * 0.5 +
     (r.presente ? 5 : 0);
   return Math.round(p * 100) / 100;
 }
