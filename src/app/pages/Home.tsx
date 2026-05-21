@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
-import { ArrowRight, Shuffle, Target, ListChecks, Star, Calendar, X, UserPlus2, Trophy } from "lucide-react";
+import { ArrowRight, Shuffle, Target, ListChecks, Star, Calendar, X, UserPlus2, Trophy, Users, Flame } from "lucide-react";
+import { motion } from "motion/react";
 import { supabase } from "../lib/supabase";
 
 type Posicao = "goleiro" | "fixo" | "ala" | "meio" | "pivo";
@@ -101,70 +102,122 @@ export function Home() {
     return m;
   }, [jogadores]);
 
+  const totais = useMemo(() => {
+    return {
+      jogadores: jogadores.length,
+      gols: agregados.reduce((s, a) => s + (Number(a.gols) || 0), 0),
+      assists: agregados.reduce((s, a) => s + (Number(a.assistencias) || 0), 0),
+      mvps: agregados.reduce((s, a) => s + (Number(a.mvp_count) || 0), 0),
+    };
+  }, [jogadores, agregados]);
+
   return (
-    <div className="min-h-screen bg-[#0b0b0b] text-white">
-      {/* HERO com campo 3D ao lado */}
-      <section className="relative overflow-hidden border-b border-white/[0.04]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,255,136,0.12),transparent_60%)]" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-10 items-center">
-          <div>
-            <p className="font-['Roboto',sans-serif] text-[11px] tracking-[0.3em] text-[#22ff88] mb-4">
-              PELADA · MENSAL E DIÁRIA
-            </p>
-            <h1 className="font-['Roboto',sans-serif] font-bold text-5xl sm:text-6xl lg:text-7xl leading-[0.95] tracking-tight mb-6">
-              Idosos da<br />
-              <span className="text-[#22ff88]">Zona Norte</span>
+    <div className="min-h-screen bg-[#0b0b0b] text-white overflow-hidden">
+      {/* HERO */}
+      <section className="relative border-b border-white/[0.04]">
+        {/* Fundo animado */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <motion.div
+            className="absolute -top-40 -left-40 w-[500px] h-[500px] rounded-full bg-[#22ff88]/20 blur-[120px]"
+            animate={{ scale: [1, 1.25, 1], opacity: [0.5, 0.8, 0.5] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="absolute top-20 right-0 w-[400px] h-[400px] rounded-full bg-[#0a8a3f]/25 blur-[120px]"
+            animate={{ scale: [1.2, 1, 1.2], opacity: [0.4, 0.7, 0.4] }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <div
+            className="absolute inset-0 opacity-[0.15]"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(34,255,136,0.15) 1px,transparent 1px),linear-gradient(90deg,rgba(34,255,136,0.15) 1px,transparent 1px)",
+              backgroundSize: "60px 60px",
+              maskImage: "radial-gradient(circle at 30% 20%,black,transparent 70%)",
+            }}
+          />
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-12 items-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#22ff88]/30 bg-[#22ff88]/[0.07] mb-6"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-[#22ff88] animate-pulse" />
+              <span className="font-['Roboto',sans-serif] text-[10px] tracking-[0.3em] text-[#22ff88]">
+                PELADA · DIÁRIA E CAMPEONATO
+              </span>
+            </motion.div>
+
+            <h1 className="font-['Roboto',sans-serif] font-black text-6xl sm:text-7xl lg:text-8xl leading-[0.9] tracking-tighter mb-6">
+              Idosos da
+              <br />
+              <span className="bg-gradient-to-r from-[#22ff88] via-[#5cffaa] to-[#22ff88] bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(34,255,136,0.5)]">
+                Zona Norte
+              </span>
             </h1>
-            <p className="text-white/60 max-w-xl text-base sm:text-lg mb-8">
+            <p className="text-white/55 max-w-xl text-base sm:text-lg mb-8 leading-relaxed">
               Cadastro de jogadores, sorteio equilibrado, monte seu time ideal e
-              acompanhe estatísticas de quem realmente joga.
+              acompanhe as estatísticas de quem realmente joga.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
                 to="/sorteio"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#22ff88] text-[#0b0b0b] font-bold text-[11px] tracking-[0.2em] hover:bg-[#5cffaa] shadow-[0_0_24px_rgba(34,255,136,0.3)]"
+                className="group inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#22ff88] text-[#0b0b0b] font-bold text-[11px] tracking-[0.2em] hover:bg-[#5cffaa] shadow-[0_0_30px_rgba(34,255,136,0.45)] hover:shadow-[0_0_45px_rgba(34,255,136,0.7)] transition-all"
               >
-                <Shuffle size={14} /> SORTEAR TIMES
+                <Shuffle size={14} className="group-hover:rotate-180 transition-transform duration-500" /> SORTEAR TIMES
               </Link>
               <Link
                 to="/jogadores"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/15 text-white/80 font-bold text-[11px] tracking-[0.2em] hover:border-white/40 hover:text-white"
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full border border-white/15 text-white/80 font-bold text-[11px] tracking-[0.2em] hover:border-[#22ff88]/50 hover:text-white hover:bg-white/[0.03] transition-all"
               >
                 VER JOGADORES <ArrowRight size={14} />
               </Link>
             </div>
-          </div>
+
+            {/* Stats bar */}
+            <div className="grid grid-cols-4 gap-3 mt-10 max-w-lg">
+              <HeroStat icon={<Users size={14} />} valor={totais.jogadores} label="Jogadores" />
+              <HeroStat icon={<Target size={14} />} valor={totais.gols} label="Gols" />
+              <HeroStat icon={<ListChecks size={14} />} valor={totais.assists} label="Assists" />
+              <HeroStat icon={<Star size={14} />} valor={totais.mvps} label="MVPs" />
+            </div>
+          </motion.div>
 
           {/* Campo 3D do melhor time do mês */}
-          <CampoMelhorMes melhorMes={melhorMes} />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92, rotateY: -10 }}
+            animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+            transition={{ delay: 0.3, duration: 0.8, ease: "easeOut" }}
+          >
+            <CampoMelhorMes melhorMes={melhorMes} />
+          </motion.div>
         </div>
       </section>
 
       {/* DESTAQUES — carrossel auto-rotativo */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-        <div className="flex items-baseline justify-between mb-5 flex-wrap gap-2">
-          <div>
-            <p className="text-[10px] tracking-[0.3em] text-[#22ff88] mb-1">DESTAQUES</p>
-            <h2 className="font-bold text-2xl sm:text-3xl">Líderes da pelada</h2>
-          </div>
-          <Link to="/estatisticas" className="text-white/50 hover:text-[#22ff88] text-[10px] tracking-[0.2em] flex items-center gap-1">
-            VER TUDO <ArrowRight size={12} />
-          </Link>
-        </div>
+      <SectionWrapper>
+        <SectionHeader rotulo="DESTAQUES" titulo="Líderes da pelada" linkTo="/estatisticas" linkLabel="VER TUDO" />
         <CarrosselLideres agregados={agregados} fotosMap={fotosMap} />
-      </section>
+      </SectionWrapper>
 
       {/* 4 TIMES BUILDER */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 border-t border-white/[0.04]">
-        <div className="mb-5">
-          <p className="text-[10px] tracking-[0.3em] text-[#22ff88] mb-1">MONTE OS TIMES</p>
-          <h2 className="font-bold text-2xl sm:text-3xl">Os 4 times da pelada</h2>
+      <SectionWrapper borderTop>
+        <div className="mb-6">
+          <SectionHeader rotulo="MONTE OS TIMES" titulo="Os 4 times da pelada" />
           <p className="text-white/50 text-sm mt-1">
             Formação 1-2-2-1-1 (goleiro, 2 fixos, 2 alas, meio, pivô). Clica nas posições e escolhe os jogadores.
           </p>
         </div>
         {loading ? (
-          <p className="text-white/40">Carregando...</p>
+          <SkeletonBlock />
         ) : jogadores.length === 0 ? (
           <div className="p-8 rounded-2xl border border-white/[0.06] bg-white/[0.02] text-white/50">
             Cadastre jogadores na área Admin pra começar.
@@ -172,43 +225,124 @@ export function Home() {
         ) : (
           <Builder4Times jogadores={jogadores} />
         )}
-      </section>
+      </SectionWrapper>
 
       {/* JOGADORES CADASTRADOS */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 border-t border-white/[0.04]">
-        <div className="flex items-baseline justify-between mb-5 flex-wrap gap-2">
-          <div>
-            <p className="text-[10px] tracking-[0.3em] text-[#22ff88] mb-1">ELENCO</p>
-            <h2 className="font-bold text-2xl sm:text-3xl">Jogadores cadastrados</h2>
-          </div>
-          <Link to="/jogadores" className="text-white/50 hover:text-[#22ff88] text-[10px] tracking-[0.2em] flex items-center gap-1">
-            VER TODOS <ArrowRight size={12} />
-          </Link>
-        </div>
+      <SectionWrapper borderTop>
+        <SectionHeader rotulo="ELENCO" titulo="Jogadores cadastrados" linkTo="/jogadores" linkLabel="VER TODOS" />
         {loading ? (
-          <p className="text-white/40">Carregando...</p>
+          <SkeletonBlock />
         ) : (
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
-            {jogadores.slice(0, 16).map((j) => (
-              <Link
+            {jogadores.slice(0, 16).map((j, i) => (
+              <motion.div
                 key={j.id}
-                to="/jogadores"
-                className="group p-3 rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:border-[#22ff88]/30 hover:bg-[#22ff88]/[0.04] transition-all text-center"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: Math.min(i * 0.04, 0.5), duration: 0.4 }}
               >
-                <div className="mx-auto w-14 h-14 rounded-full bg-white/5 ring-1 ring-white/10 overflow-hidden flex items-center justify-center text-white/40 font-bold mb-2">
-                  {j.foto_url ? (
-                    <img src={j.foto_url} alt={j.nome} className="w-full h-full object-cover" />
-                  ) : (
-                    (j.apelido || j.nome).split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase()
-                  )}
-                </div>
-                <p className="text-xs font-bold truncate">{j.apelido || j.nome}</p>
-                <p className="text-[8px] tracking-wider text-white/40 uppercase">{POSICAO_LABEL[j.posicao]}</p>
-              </Link>
+                <Link
+                  to="/jogadores"
+                  className="group block p-3 rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:border-[#22ff88]/40 hover:bg-[#22ff88]/[0.05] hover:shadow-[0_0_24px_rgba(34,255,136,0.12)] transition-all text-center"
+                >
+                  <div className="mx-auto w-14 h-14 rounded-full bg-white/5 ring-1 ring-white/10 group-hover:ring-[#22ff88]/40 overflow-hidden flex items-center justify-center text-white/40 font-bold mb-2 transition-all">
+                    {j.foto_url ? (
+                      <img src={j.foto_url} alt={j.nome} className="w-full h-full object-cover" />
+                    ) : (
+                      (j.apelido || j.nome).split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase()
+                    )}
+                  </div>
+                  <p className="text-xs font-bold truncate">{j.apelido || j.nome}</p>
+                  <p className="text-[8px] tracking-wider text-white/40 uppercase">{POSICAO_LABEL[j.posicao]}</p>
+                </Link>
+              </motion.div>
             ))}
           </div>
         )}
+      </SectionWrapper>
+
+      {/* CTA final */}
+      <section className="relative border-t border-white/[0.04] overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(34,255,136,0.1),transparent_70%)]" />
+        <div className="relative max-w-3xl mx-auto px-4 py-20 text-center">
+          <Flame className="mx-auto text-[#22ff88] mb-4" size={28} />
+          <h2 className="font-black text-3xl sm:text-4xl mb-3">Bora pra pelada?</h2>
+          <p className="text-white/50 mb-8">Sorteia os times equilibrados e que vença o melhor.</p>
+          <Link
+            to="/sorteio"
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-[#22ff88] text-[#0b0b0b] font-bold text-[11px] tracking-[0.25em] hover:bg-[#5cffaa] shadow-[0_0_36px_rgba(34,255,136,0.5)] transition-all"
+          >
+            <Shuffle size={15} /> SORTEAR AGORA
+          </Link>
+        </div>
       </section>
+    </div>
+  );
+}
+
+function HeroStat({ icon, valor, label }: { icon: React.ReactNode; valor: number; label: string }) {
+  return (
+    <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] backdrop-blur p-3 text-center">
+      <div className="flex justify-center text-[#22ff88] mb-1">{icon}</div>
+      <p className="text-xl font-black tabular-nums leading-none">{valor}</p>
+      <p className="text-[8px] tracking-[0.18em] text-white/40 uppercase mt-1">{label}</p>
+    </div>
+  );
+}
+
+function SectionWrapper({ children, borderTop }: { children: React.ReactNode; borderTop?: boolean }) {
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 ${borderTop ? "border-t border-white/[0.04]" : ""}`}
+    >
+      {children}
+    </motion.section>
+  );
+}
+
+function SectionHeader({
+  rotulo,
+  titulo,
+  linkTo,
+  linkLabel,
+}: {
+  rotulo: string;
+  titulo: string;
+  linkTo?: string;
+  linkLabel?: string;
+}) {
+  return (
+    <div className="flex items-end justify-between mb-6 flex-wrap gap-2">
+      <div>
+        <div className="flex items-center gap-2 mb-1.5">
+          <span className="w-6 h-[2px] rounded-full bg-[#22ff88]" />
+          <p className="text-[10px] tracking-[0.3em] text-[#22ff88]">{rotulo}</p>
+        </div>
+        <h2 className="font-black text-3xl sm:text-4xl tracking-tight">{titulo}</h2>
+      </div>
+      {linkTo && (
+        <Link
+          to={linkTo}
+          className="text-white/50 hover:text-[#22ff88] text-[10px] tracking-[0.2em] flex items-center gap-1 transition-colors"
+        >
+          {linkLabel} <ArrowRight size={12} />
+        </Link>
+      )}
+    </div>
+  );
+}
+
+function SkeletonBlock() {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {[0, 1, 2, 3].map((i) => (
+        <div key={i} className="h-32 rounded-2xl bg-white/[0.03] border border-white/[0.05] animate-pulse" />
+      ))}
     </div>
   );
 }
@@ -272,8 +406,11 @@ function CarrosselLideres({
               const f = fotosMap[r.jogador_id];
               const podium = ["🥇", "🥈", "🥉"][i];
               return (
-                <div
+                <motion.div
                   key={`${modo.v}-${r.jogador_id}`}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.08, duration: 0.35 }}
                   className={`p-4 rounded-2xl border transition-all ${
                     i === 0
                       ? "border-[#22ff88]/40 bg-[#22ff88]/[0.06] shadow-[0_0_24px_rgba(34,255,136,0.12)]"
@@ -297,7 +434,7 @@ function CarrosselLideres({
                       </p>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>
