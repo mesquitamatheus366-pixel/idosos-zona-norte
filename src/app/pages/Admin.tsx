@@ -969,10 +969,30 @@ function ModalNovoJogo({ onClose, onSaved }: { onClose: () => void; onSaved: () 
             <input type="datetime-local" value={data} onChange={(e) => setData(e.target.value)} className={inputCls} />
           </Field>
           <Field label="Tipo">
-            <select value={tipo} onChange={(e) => setTipo(e.target.value as any)} className={inputCls}>
-              <option value="diaria">Diária</option>
-              <option value="mensal">Campeonato do Mês</option>
-            </select>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setTipo("diaria")}
+                className={`py-2.5 rounded-lg text-[11px] tracking-[0.15em] font-bold border transition-all ${
+                  tipo === "diaria"
+                    ? "bg-[#22ff88] text-[#0b0b0b] border-[#22ff88]"
+                    : "border-white/10 text-white/55 hover:border-white/30"
+                }`}
+              >
+                ⚽ PELADA
+              </button>
+              <button
+                type="button"
+                onClick={() => setTipo("mensal")}
+                className={`py-2.5 rounded-lg text-[11px] tracking-[0.15em] font-bold border transition-all ${
+                  tipo === "mensal"
+                    ? "bg-amber-400 text-[#0b0b0b] border-amber-400"
+                    : "border-white/10 text-white/55 hover:border-white/30"
+                }`}
+              >
+                🏆 CAMPEONATO
+              </button>
+            </div>
           </Field>
           <Field label="Local (opcional)">
             <input value={local} onChange={(e) => setLocal(e.target.value)} className={inputCls} />
