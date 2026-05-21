@@ -126,6 +126,32 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Archivo', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Seleção de texto verde neon */
+  ::selection {
+    background: rgba(34, 255, 136, 0.3);
+    color: #fff;
+  }
+
+  /* Scrollbar escura com pegada esportiva */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0b0b0b;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1c1c1c;
+    border-radius: 6px;
+    border: 2px solid #0b0b0b;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #2a2a2a;
   }
 
   /**

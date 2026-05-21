@@ -195,11 +195,11 @@ export function Sorteio() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex items-center gap-3 mb-2">
           <Shuffle className="text-[#22ff88]" size={20} />
-          <p className="font-['Roboto',sans-serif] text-[11px] tracking-[0.3em] text-[#22ff88]">
+          <p className="font-['Anton',sans-serif] text-[11px] tracking-[0.3em] text-[#22ff88]">
             EQUILIBRADO POR NÍVEL E POSIÇÃO
           </p>
         </div>
-        <h1 className="font-['Roboto',sans-serif] font-bold text-4xl sm:text-5xl mb-8">
+        <h1 className="font-['Anton',sans-serif] font-bold text-4xl sm:text-5xl mb-8">
           Sorteio de Times
         </h1>
 

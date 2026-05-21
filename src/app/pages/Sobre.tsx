@@ -2,10 +2,10 @@ export function Sobre() {
   return (
     <div className="min-h-screen bg-[#0b0b0b] text-white">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <p className="font-['Roboto',sans-serif] text-[11px] tracking-[0.3em] text-[#22ff88] mb-3">
+        <p className="font-['Anton',sans-serif] text-[11px] tracking-[0.3em] text-[#22ff88] mb-3">
           A PELADA
         </p>
-        <h1 className="font-['Roboto',sans-serif] font-bold text-4xl sm:text-5xl mb-8">
+        <h1 className="font-['Anton',sans-serif] font-bold text-4xl sm:text-5xl mb-8">
           Sobre os Idosos
         </h1>
 
@@ -34,7 +34,7 @@ export function Sobre() {
         </div>
 
         <div className="mt-12 p-6 rounded-2xl border border-white/[0.06] bg-white/[0.02]">
-          <h3 className="font-['Roboto',sans-serif] font-bold text-lg mb-2">Tipos de pelada</h3>
+          <h3 className="font-['Anton',sans-serif] font-bold text-lg mb-2">Tipos de pelada</h3>
           <ul className="space-y-2 text-white/60 text-sm">
             <li>
               <span className="text-[#22ff88] font-bold">Mensal:</span> o racha grande do
