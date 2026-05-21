@@ -66,17 +66,28 @@ export function Jogadores() {
 
   return (
     <div className="min-h-screen bg-[#0b0b0b] text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="flex items-center gap-3 mb-2">
-          <Users className="text-[#22ff88]" size={20} />
-          <p className="font-['Archivo',sans-serif] font-extrabold text-[11px] tracking-[0.3em] text-[#22ff88]">
-            ELENCO
-          </p>
+      {/* HEADER */}
+      <div className="relative border-b border-white/[0.05] overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,255,136,0.1),transparent_60%)]" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="w-6 h-[2px] rounded-full bg-[#22ff88]" />
+            <p className="font-['Archivo',sans-serif] text-[11px] tracking-[0.3em] text-[#22ff88]">
+              ELENCO
+            </p>
+          </div>
+          <h1 className="font-['Archivo',sans-serif] font-black text-5xl sm:text-6xl tracking-tight flex items-center gap-3">
+            Jogadores
+            {!loading && (
+              <span className="text-base font-bold text-white/30 tabular-nums">
+                {jogadores.length}
+              </span>
+            )}
+          </h1>
         </div>
-        <h1 className="font-['Archivo',sans-serif] font-extrabold text-4xl sm:text-5xl mb-8">
-          Jogadores
-        </h1>
+      </div>
 
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {loading && <p className="text-white/40">Carregando...</p>}
 
         {!loading && jogadores.length === 0 && (

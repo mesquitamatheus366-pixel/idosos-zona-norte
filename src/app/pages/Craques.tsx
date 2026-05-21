@@ -127,27 +127,33 @@ export function Craques() {
 
   return (
     <div className="min-h-screen bg-[#0b0b0b] text-white">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="flex items-center gap-3 mb-2">
-          <Award className="text-[#22ff88]" size={20} />
-          <p className="font-['Archivo',sans-serif] text-[11px] tracking-[0.3em] text-[#22ff88]">
-            VOTAÇÃO POPULAR
-          </p>
+      {/* HEADER */}
+      <div className="relative border-b border-white/[0.05] overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,255,136,0.12),transparent_60%)]" />
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="w-6 h-[2px] rounded-full bg-[#22ff88]" />
+            <p className="font-['Archivo',sans-serif] text-[11px] tracking-[0.3em] text-[#22ff88]">
+              VOTAÇÃO POPULAR
+            </p>
+          </div>
+          <h1 className="font-['Archivo',sans-serif] font-black text-5xl sm:text-6xl tracking-tight">
+            Craques do Mês
+          </h1>
+          {votacao && (
+            <p className="text-white/50 mt-3">
+              {mesLabel} ·{" "}
+              {votacao.aberta ? (
+                <span className="text-[#22ff88]">Votação aberta — escolha 1 por posição</span>
+              ) : (
+                <span className="text-amber-400">Votação encerrada — resultado final</span>
+              )}
+            </p>
+          )}
         </div>
-        <h1 className="font-['Archivo',sans-serif] font-extrabold text-4xl sm:text-5xl mb-2">
-          Craques do Mês
-        </h1>
-        {votacao && (
-          <p className="text-white/50 mb-8">
-            {mesLabel} ·{" "}
-            {votacao.aberta ? (
-              <span className="text-[#22ff88]">Votação aberta — escolha 1 por posição</span>
-            ) : (
-              <span className="text-amber-400">Votação encerrada — resultado final</span>
-            )}
-          </p>
-        )}
+      </div>
 
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {loading && <p className="text-white/40">Carregando...</p>}
 
         {!loading && !votacao && (
