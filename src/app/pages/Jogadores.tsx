@@ -211,16 +211,19 @@ function ModalJogadorDetalhes({
 }) {
   const [stats, setStats] = useState<Agregado | null>(null);
   const [colete, setColete] = useState<ColeteStats | null>(null);
+  const [titulos, setTitulos] = useState<{ id: string; titulo: string }[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
-      const [{ data: ag }, { data: cs }] = await Promise.all([
+      const [{ data: ag }, { data: cs }, { data: tt }] = await Promise.all([
         supabase.from("estatisticas_agregadas").select("*").eq("jogador_id", jogador.id).maybeSingle(),
         supabase.from("estatisticas_por_colete").select("*").eq("jogador_id", jogador.id).maybeSingle(),
+        supabase.from("titulos").select("id, titulo").eq("jogador_id", jogador.id).order("data_conquista", { ascending: false }),
       ]);
       setStats((ag as Agregado) || null);
       setColete((cs as ColeteStats) || null);
+      setTitulos((tt as { id: string; titulo: string }[]) || []);
       setLoading(false);
     })();
   }, [jogador.id]);
@@ -364,6 +367,26 @@ function ModalJogadorDetalhes({
                   </div>
                 </>
               )}
+            </>
+          )}
+
+          {/* TÍTULOS / CAMPEONATOS */}
+          {titulos.length > 0 && (
+            <>
+              <p className="text-[10px] tracking-[0.18em] text-white/40 mb-3 mt-6">
+                🏆 TÍTULOS · {titulos.length}
+              </p>
+              <div className="space-y-1.5">
+                {titulos.map((t) => (
+                  <div
+                    key={t.id}
+                    className="flex items-center gap-2 p-2.5 rounded-xl border border-[#22ff88]/25 bg-gradient-to-r from-[#22ff88]/[0.08] to-transparent"
+                  >
+                    <span className="text-lg">🏆</span>
+                    <span className="text-sm text-white/90">{t.titulo}</span>
+                  </div>
+                ))}
+              </div>
             </>
           )}
         </div>

@@ -463,6 +463,9 @@ function ModalJogador({
               />
             </div>
           </button>
+
+          {/* TÍTULOS — só para jogador já cadastrado */}
+          {jogador && <SecaoTitulos jogadorId={jogador.id} />}
         </div>
 
         <div className="flex justify-end gap-2 mt-7">
@@ -478,6 +481,119 @@ function ModalJogador({
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ---------------- TÍTULOS ---------------- */
+type Titulo = { id: string; jogador_id: string; titulo: string; data_conquista: string | null };
+
+const MESES = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+];
+
+function SecaoTitulos({ jogadorId }: { jogadorId: string }) {
+  const [titulos, setTitulos] = useState<Titulo[]>([]);
+  const [loading, setLoading] = useState(true);
+  const agora = new Date();
+  const [mes, setMes] = useState(agora.getMonth());
+  const [ano, setAno] = useState(agora.getFullYear());
+  const [salvando, setSalvando] = useState(false);
+
+  async function carregar() {
+    setLoading(true);
+    const { data } = await supabase
+      .from("titulos")
+      .select("*")
+      .eq("jogador_id", jogadorId)
+      .order("data_conquista", { ascending: false });
+    setTitulos((data as Titulo[]) || []);
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    carregar();
+  }, [jogadorId]);
+
+  async function adicionar() {
+    setSalvando(true);
+    const titulo = `Campeão do torneio · ${MESES[mes]} ${ano}`;
+    const { error } = await supabase.from("titulos").insert({
+      jogador_id: jogadorId,
+      titulo,
+      data_conquista: `${ano}-${String(mes + 1).padStart(2, "0")}-01`,
+    });
+    setSalvando(false);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Título adicionado");
+      carregar();
+    }
+  }
+
+  async function remover(id: string) {
+    const { error } = await supabase.from("titulos").delete().eq("id", id);
+    if (error) toast.error(error.message);
+    else carregar();
+  }
+
+  return (
+    <div className="pt-1">
+      <p className="text-[10px] tracking-[0.18em] text-white/40 mb-2">🏆 TÍTULOS / CAMPEONATOS</p>
+
+      <div className="flex gap-2 mb-2">
+        <select
+          value={mes}
+          onChange={(e) => setMes(Number(e.target.value))}
+          className={inputCls + " flex-1"}
+        >
+          {MESES.map((m, i) => (
+            <option key={i} value={i}>{m}</option>
+          ))}
+        </select>
+        <input
+          type="number"
+          value={ano}
+          onChange={(e) => setAno(Number(e.target.value))}
+          className={inputCls + " w-24"}
+        />
+        <button
+          type="button"
+          onClick={adicionar}
+          disabled={salvando}
+          className="px-4 rounded-lg bg-[#22ff88] text-[#0b0b0b] font-bold text-[10px] tracking-[0.15em] disabled:opacity-50"
+        >
+          + ADICIONAR
+        </button>
+      </div>
+
+      {loading ? (
+        <p className="text-white/30 text-xs">Carregando...</p>
+      ) : titulos.length === 0 ? (
+        <p className="text-white/30 text-xs py-2">Nenhum título ainda.</p>
+      ) : (
+        <div className="space-y-1.5">
+          {titulos.map((t) => (
+            <div
+              key={t.id}
+              className="flex items-center justify-between gap-2 p-2.5 rounded-lg border border-[#22ff88]/20 bg-[#22ff88]/[0.04]"
+            >
+              <span className="text-sm flex items-center gap-2">
+                <span>🏆</span>
+                <span>{t.titulo}</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => remover(t.id)}
+                className="text-white/40 hover:text-rose-400 shrink-0"
+              >
+                <Trash2 size={13} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
