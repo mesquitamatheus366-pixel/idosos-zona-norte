@@ -14,15 +14,15 @@ function LogoIZN() {
   return (
     <Link to="/" className="flex items-center gap-2.5 group shrink-0">
       <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-[#22ff88] to-[#0a8a3f] flex items-center justify-center shadow-[0_0_18px_rgba(34,255,136,0.35)] group-hover:shadow-[0_0_28px_rgba(34,255,136,0.5)] transition-shadow">
-        <span className="font-['Anton',sans-serif] font-black text-[#0b0b0b] text-[13px] tracking-tighter">
+        <span className="font-['Archivo',sans-serif] font-black text-[#0b0b0b] text-[13px] tracking-tighter">
           IZN
         </span>
       </div>
       <div className="hidden sm:flex flex-col leading-none">
-        <span className="font-['Anton',sans-serif] font-bold text-[13px] tracking-[0.18em] text-white">
+        <span className="font-['Archivo',sans-serif] font-extrabold text-[13px] tracking-[0.18em] text-white">
           IDOSOS
         </span>
-        <span className="font-['Anton',sans-serif] text-[9px] tracking-[0.32em] text-[#22ff88]">
+        <span className="font-['Archivo',sans-serif] font-extrabold text-[9px] tracking-[0.32em] text-[#22ff88]">
           DA ZONA NORTE
         </span>
       </div>
@@ -50,7 +50,7 @@ export function Navbar() {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`relative mx-1 px-4 py-1.5 font-['Anton',sans-serif] text-[10px] tracking-[0.18em] transition-all rounded-full border flex items-center gap-1.5 ${
+                  className={`relative mx-1 px-4 py-1.5 font-['Archivo',sans-serif] font-extrabold text-[10px] tracking-[0.18em] transition-all rounded-full border flex items-center gap-1.5 ${
                     active
                       ? "text-[#0b0b0b] bg-[#22ff88] border-[#22ff88] shadow-[0_0_14px_rgba(34,255,136,0.4)]"
                       : "text-[#22ff88] bg-[#22ff88]/[0.06] border-[#22ff88]/30 hover:bg-[#22ff88]/[0.12] hover:border-[#22ff88]/50 hover:shadow-[0_0_12px_rgba(34,255,136,0.2)]"
@@ -66,7 +66,7 @@ export function Navbar() {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`relative px-3 py-2 font-['Anton',sans-serif] text-[10px] tracking-[0.18em] transition-all rounded-lg ${
+                className={`relative px-3 py-2 font-['Archivo',sans-serif] font-extrabold text-[10px] tracking-[0.18em] transition-all rounded-lg ${
                   active
                     ? "text-[#22ff88] bg-[#22ff88]/[0.08]"
                     : "text-white/55 hover:text-white hover:bg-white/[0.04]"
@@ -107,7 +107,7 @@ export function Navbar() {
                 key={link.path}
                 to={link.path}
                 onClick={() => setOpen(false)}
-                className={`block py-3 font-['Anton',sans-serif] text-[11px] tracking-[0.2em] border-b border-white/[0.04] ${
+                className={`block py-3 font-['Archivo',sans-serif] font-extrabold text-[11px] tracking-[0.2em] border-b border-white/[0.04] ${
                   isSorteio
                     ? active
                       ? "text-[#0b0b0b] bg-[#22ff88] px-3 rounded-lg border-transparent font-bold"

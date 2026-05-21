@@ -69,11 +69,11 @@ export function Jogadores() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="flex items-center gap-3 mb-2">
           <Users className="text-[#22ff88]" size={20} />
-          <p className="font-['Anton',sans-serif] text-[11px] tracking-[0.3em] text-[#22ff88]">
+          <p className="font-['Archivo',sans-serif] font-extrabold text-[11px] tracking-[0.3em] text-[#22ff88]">
             ELENCO
           </p>
         </div>
-        <h1 className="font-['Anton',sans-serif] font-bold text-4xl sm:text-5xl mb-8">
+        <h1 className="font-['Archivo',sans-serif] font-extrabold text-4xl sm:text-5xl mb-8">
           Jogadores
         </h1>
 
@@ -123,7 +123,7 @@ export function Jogadores() {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-['Anton',sans-serif] font-bold truncate text-lg">
+                        <h3 className="font-['Archivo',sans-serif] font-extrabold truncate text-lg">
                           {j.apelido || j.nome}
                         </h3>
                         {j.apelido && j.nome !== j.apelido && (
@@ -264,7 +264,7 @@ function ModalJogadorDetalhes({
             )}
           </div>
           <div className="mt-3">
-            <h2 className="font-['Anton',sans-serif] font-bold text-3xl">{jogador.apelido || jogador.nome}</h2>
+            <h2 className="font-['Archivo',sans-serif] font-extrabold text-3xl">{jogador.apelido || jogador.nome}</h2>
             {jogador.apelido && jogador.nome !== jogador.apelido && (
               <p className="text-white/40 text-sm">{jogador.nome}</p>
             )}

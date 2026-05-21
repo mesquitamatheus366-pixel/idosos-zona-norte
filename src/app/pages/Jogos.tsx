@@ -136,11 +136,11 @@ export function Jogos() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="flex items-center gap-3 mb-2">
           <Calendar className="text-[#22ff88]" size={20} />
-          <p className="font-['Anton',sans-serif] text-[11px] tracking-[0.3em] text-[#22ff88]">
+          <p className="font-['Archivo',sans-serif] font-extrabold text-[11px] tracking-[0.3em] text-[#22ff88]">
             HISTÓRICO
           </p>
         </div>
-        <h1 className="font-['Anton',sans-serif] font-bold text-4xl sm:text-5xl mb-8">Jogos</h1>
+        <h1 className="font-['Archivo',sans-serif] font-extrabold text-4xl sm:text-5xl mb-8">Jogos</h1>
 
         <div className="flex gap-2 mb-6">
           {(["todos", "diaria", "mensal"] as Filtro[]).map((f) => (

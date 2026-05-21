@@ -82,11 +82,11 @@ export function Admin() {
           <div>
             <div className="flex items-center gap-3 mb-1">
               <Settings className="text-[#22ff88]" size={18} />
-              <p className="font-['Anton',sans-serif] text-[10px] tracking-[0.3em] text-[#22ff88]">
+              <p className="font-['Archivo',sans-serif] font-extrabold text-[10px] tracking-[0.3em] text-[#22ff88]">
                 ADMIN
               </p>
             </div>
-            <h1 className="font-['Anton',sans-serif] font-bold text-3xl">
+            <h1 className="font-['Archivo',sans-serif] font-extrabold text-3xl">
               Painel da Pelada
             </h1>
             <p className="text-white/40 text-xs mt-1">{user.email}</p>
@@ -135,7 +135,7 @@ function TabBtn({
   return (
     <button
       onClick={onClick}
-      className={`inline-flex items-center gap-2 px-4 py-3 font-['Anton',sans-serif] text-[11px] tracking-[0.18em] border-b-2 transition-colors -mb-px ${
+      className={`inline-flex items-center gap-2 px-4 py-3 font-['Archivo',sans-serif] font-extrabold text-[11px] tracking-[0.18em] border-b-2 transition-colors -mb-px ${
         active
           ? "text-[#22ff88] border-[#22ff88]"
           : "text-white/40 border-transparent hover:text-white/80"
@@ -182,7 +182,7 @@ function AbaJogadores() {
         <p className="text-white/50 text-sm">{lista.length} jogador(es)</p>
         <button
           onClick={() => setCriando(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#22ff88] text-[#0b0b0b] font-['Anton',sans-serif] text-[11px] tracking-[0.18em] font-bold hover:bg-[#5cffaa]"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#22ff88] text-[#0b0b0b] font-['Archivo',sans-serif] font-extrabold text-[11px] tracking-[0.18em] font-bold hover:bg-[#5cffaa]"
         >
           <Plus size={14} /> NOVO JOGADOR
         </button>

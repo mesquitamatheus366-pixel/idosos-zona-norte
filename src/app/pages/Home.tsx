@@ -151,12 +151,12 @@ export function Home() {
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#22ff88]/30 bg-[#22ff88]/[0.07] mb-6"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-[#22ff88] animate-pulse" />
-              <span className="font-['Anton',sans-serif] text-[10px] tracking-[0.3em] text-[#22ff88]">
+              <span className="font-['Archivo',sans-serif] font-extrabold text-[10px] tracking-[0.3em] text-[#22ff88]">
                 PELADA · DIÁRIA E CAMPEONATO
               </span>
             </motion.div>
 
-            <h1 className="font-['Anton',sans-serif] font-black text-6xl sm:text-7xl lg:text-8xl leading-[0.9] tracking-tighter mb-6">
+            <h1 className="font-['Archivo',sans-serif] font-black text-6xl sm:text-7xl lg:text-8xl leading-[0.9] tracking-tighter mb-6">
               Idosos da
               <br />
               <span className="bg-gradient-to-r from-[#22ff88] via-[#5cffaa] to-[#22ff88] bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(34,255,136,0.5)]">

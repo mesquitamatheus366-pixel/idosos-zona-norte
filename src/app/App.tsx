@@ -24,11 +24,11 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
       return (
         <div className="min-h-screen bg-[#0b0b0b] flex items-center justify-center p-8">
           <div className="max-w-md text-center">
-            <h1 className="font-['Anton',sans-serif] text-[#22ff88] text-4xl mb-4">ERRO</h1>
-            <p className="text-white/60 font-['Anton',sans-serif] text-sm mb-4">
+            <h1 className="font-['Archivo',sans-serif] font-extrabold text-[#22ff88] text-4xl mb-4">ERRO</h1>
+            <p className="text-white/60 font-['Archivo',sans-serif] font-extrabold text-sm mb-4">
               Algo deu errado ao carregar a pagina.
             </p>
-            <p className="text-white/30 font-['Anton',sans-serif] text-xs mb-6 bg-[#151515] p-3 rounded-lg border border-[#222]">
+            <p className="text-white/30 font-['Archivo',sans-serif] font-extrabold text-xs mb-6 bg-[#151515] p-3 rounded-lg border border-[#222]">
               {this.state.error}
             </p>
             <button
@@ -36,7 +36,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
                 this.setState({ hasError: false, error: "" });
                 window.location.reload();
               }}
-              className="px-6 py-2.5 bg-[#22ff88] text-[#0b0b0b] font-['Anton',sans-serif] text-sm rounded-lg hover:bg-[#c4a265] transition-colors"
+              className="px-6 py-2.5 bg-[#22ff88] text-[#0b0b0b] font-['Archivo',sans-serif] font-extrabold text-sm rounded-lg hover:bg-[#c4a265] transition-colors"
             >
               Recarregar
             </button>
