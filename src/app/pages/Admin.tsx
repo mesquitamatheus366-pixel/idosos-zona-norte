@@ -539,39 +539,69 @@ function SecaoTitulos({ jogadorId }: { jogadorId: string }) {
   }
 
   return (
-    <div className="pt-1">
-      <p className="text-[10px] tracking-[0.18em] text-white/40 mb-2">🏆 TÍTULOS / CAMPEONATOS</p>
+    <div className="pt-2 border-t border-white/[0.06]">
+      <p className="text-[10px] tracking-[0.18em] text-white/40 mb-3">🏆 TÍTULOS / CAMPEONATOS</p>
 
-      <div className="flex gap-2 mb-2">
-        <select
-          value={mes}
-          onChange={(e) => setMes(Number(e.target.value))}
-          className={inputCls + " flex-1"}
-        >
+      <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 mb-3">
+        {/* Seletor de mês — grid de botões */}
+        <p className="text-[9px] tracking-[0.18em] text-white/40 mb-1.5">MÊS DO TORNEIO</p>
+        <div className="grid grid-cols-6 gap-1 mb-3">
           {MESES.map((m, i) => (
-            <option key={i} value={i}>{m}</option>
+            <button
+              key={i}
+              type="button"
+              onClick={() => setMes(i)}
+              className={`py-1.5 rounded-md text-[10px] font-bold transition-colors ${
+                mes === i
+                  ? "bg-[#22ff88] text-[#0b0b0b]"
+                  : "bg-white/[0.04] text-white/50 hover:bg-white/[0.08]"
+              }`}
+            >
+              {m.slice(0, 3)}
+            </button>
           ))}
-        </select>
-        <input
-          type="number"
-          value={ano}
-          onChange={(e) => setAno(Number(e.target.value))}
-          className={inputCls + " w-24"}
-        />
-        <button
-          type="button"
-          onClick={adicionar}
-          disabled={salvando}
-          className="px-4 rounded-lg bg-[#22ff88] text-[#0b0b0b] font-bold text-[10px] tracking-[0.15em] disabled:opacity-50"
-        >
-          + ADICIONAR
-        </button>
+        </div>
+
+        {/* Ano + adicionar */}
+        <div className="flex items-end gap-2">
+          <div className="flex-1">
+            <p className="text-[9px] tracking-[0.18em] text-white/40 mb-1">ANO</p>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setAno((a) => a - 1)}
+                className="w-8 h-9 rounded-lg bg-white/[0.04] text-white/60 hover:bg-white/[0.08] text-lg leading-none"
+              >
+                −
+              </button>
+              <span className="flex-1 text-center font-bold tabular-nums text-lg">{ano}</span>
+              <button
+                type="button"
+                onClick={() => setAno((a) => a + 1)}
+                className="w-8 h-9 rounded-lg bg-white/[0.04] text-white/60 hover:bg-white/[0.08] text-lg leading-none"
+              >
+                +
+              </button>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={adicionar}
+            disabled={salvando}
+            className="h-9 px-4 rounded-lg bg-[#22ff88] text-[#0b0b0b] font-bold text-[10px] tracking-[0.15em] disabled:opacity-50 hover:bg-[#5cffaa]"
+          >
+            + ADICIONAR
+          </button>
+        </div>
+        <p className="text-[10px] text-white/40 mt-2">
+          Vai criar: <span className="text-[#22ff88]">Campeão do torneio · {MESES[mes]} {ano}</span>
+        </p>
       </div>
 
       {loading ? (
         <p className="text-white/30 text-xs">Carregando...</p>
       ) : titulos.length === 0 ? (
-        <p className="text-white/30 text-xs py-2">Nenhum título ainda.</p>
+        <p className="text-white/30 text-xs py-1">Nenhum título ainda.</p>
       ) : (
         <div className="space-y-1.5">
           {titulos.map((t) => (
