@@ -5,6 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { toast } from "sonner";
 
 type Posicao = "goleiro" | "fixo" | "ala" | "meio" | "pivo";
+type Tipo = "mensal" | "diarista" | "sem_registro";
 
 type Jogador = {
   id: string;
@@ -13,11 +14,15 @@ type Jogador = {
   posicao: Posicao;
   nivel: number;
   foto_url: string | null;
+  tipo: Tipo;
 };
 
 type Time = { numero: number; jogadores: Jogador[]; soma: number };
+type Resultado = { times: Time[]; reservas: Jogador[] };
 
 type CorBase = "vermelho" | "azul";
+
+const MAX_POR_TIME = 7; // 1 goleiro + 6 linha
 
 const POSICAO_LABEL: Record<Posicao, string> = {
   goleiro: "Goleiro",
@@ -28,7 +33,6 @@ const POSICAO_LABEL: Record<Posicao, string> = {
 };
 
 function rotuloTime(numero: number, base: CorBase, total: number): { label: string; cor: string; bg: string } {
-  // numero 1..total: metade vermelha + metade azul (alternando se total for ímpar)
   const meio = Math.ceil(total / 2);
   const isVermelho = base === "vermelho" ? numero <= meio : numero > meio;
   const grupo = isVermelho ? "vermelho" : "azul";
@@ -48,20 +52,36 @@ export function Sorteio() {
   const [jogadores, setJogadores] = useState<Jogador[]>([]);
   const [selecionados, setSelecionados] = useState<Set<string>>(new Set());
   const [numTimes, setNumTimes] = useState(2);
-  const [resultado, setResultado] = useState<Time[] | null>(null);
+  const [filtroTipo, setFiltroTipo] = useState<"todos" | "mensal" | "diarista">("todos");
+  const [resultado, setResultado] = useState<Resultado | null>(null);
   const [corBase, setCorBase] = useState<CorBase>("vermelho");
   const [salvandoJogo, setSalvandoJogo] = useState(false);
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
-        .from("jogadores")
-        .select("id, nome, apelido, posicao, nivel, foto_url")
-        .eq("ativo", true)
-        .order("nome");
-      setJogadores((data as Jogador[]) || []);
+      const [{ data: jg }, { data: st }] = await Promise.all([
+        supabase
+          .from("jogadores")
+          .select("id, nome, apelido, posicao, nivel, foto_url")
+          .eq("ativo", true)
+          .order("nome"),
+        supabase.from("jogador_status").select("jogador_id, tipo_atual"),
+      ]);
+      const tipoMap = new Map<string, Tipo>();
+      ((st as any[]) || []).forEach((s) => tipoMap.set(s.jogador_id, s.tipo_atual));
+      setJogadores(
+        ((jg as any[]) || []).map((j) => ({
+          ...j,
+          tipo: (tipoMap.get(j.id) || "sem_registro") as Tipo,
+        }))
+      );
     })();
   }, []);
+
+  const visiveis = useMemo(() => {
+    if (filtroTipo === "todos") return jogadores;
+    return jogadores.filter((j) => j.tipo === filtroTipo);
+  }, [jogadores, filtroTipo]);
 
   function toggle(id: string) {
     const next = new Set(selecionados);
@@ -70,7 +90,10 @@ export function Sorteio() {
   }
 
   function marcarTodos() {
-    setSelecionados(new Set(jogadores.map((j) => j.id)));
+    // marca todos os visíveis (respeitando o filtro)
+    const next = new Set(selecionados);
+    visiveis.forEach((j) => next.add(j.id));
+    setSelecionados(next);
   }
 
   function limpar() {
@@ -84,7 +107,11 @@ export function Sorteio() {
       toast.error(`Mínimo ${numTimes * 2} jogadores para ${numTimes} times`);
       return;
     }
-    setResultado(distribuirEquilibrado(presentes, numTimes));
+    const res = distribuirEquilibrado(presentes, numTimes);
+    setResultado(res);
+    if (res.reservas.length > 0) {
+      toast.info(`${res.reservas.length} jogador(es) ficaram de reserva (times cheios — máx ${MAX_POR_TIME} por time)`);
+    }
   }
 
   async function salvarJogo() {
@@ -104,7 +131,7 @@ export function Sorteio() {
       setSalvandoJogo(false);
       return;
     }
-    const rows = resultado.flatMap((t) =>
+    const rows = resultado.times.flatMap((t) =>
       t.jogadores.map((p) => ({
         jogo_id: jogo.id,
         jogador_id: p.id,
@@ -117,6 +144,7 @@ export function Sorteio() {
     else toast.success("Sorteio salvo como jogo!");
   }
 
+  const selVisiveis = visiveis.filter((j) => selecionados.has(j.id)).length;
   const goleirosCount = useMemo(
     () => jogadores.filter((j) => selecionados.has(j.id) && j.posicao === "goleiro").length,
     [jogadores, selecionados]
@@ -143,16 +171,43 @@ export function Sorteio() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* COLUNA DE SELEÇÃO */}
             <div className="lg:col-span-2">
+              {/* Filtro tipo */}
+              <div className="flex gap-2 mb-3 flex-wrap">
+                {([
+                  { v: "todos", label: "TODOS" },
+                  { v: "mensal", label: "MENSALISTAS" },
+                  { v: "diarista", label: "DIARISTAS" },
+                ] as const).map((f) => {
+                  const n =
+                    f.v === "todos"
+                      ? jogadores.length
+                      : jogadores.filter((j) => j.tipo === f.v).length;
+                  return (
+                    <button
+                      key={f.v}
+                      onClick={() => setFiltroTipo(f.v)}
+                      className={`px-3.5 py-1.5 rounded-full text-[10px] tracking-[0.18em] font-bold border transition-all ${
+                        filtroTipo === f.v
+                          ? "bg-[#22ff88] text-[#0b0b0b] border-[#22ff88] shadow-[0_0_14px_rgba(34,255,136,0.3)]"
+                          : "border-white/10 text-white/60 hover:border-white/30 hover:text-white"
+                      }`}
+                    >
+                      {f.label} · {n}
+                    </button>
+                  );
+                })}
+              </div>
+
               <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
                 <p className="text-white/60 text-sm">
-                  {selecionados.size}/{jogadores.length} marcados · {goleirosCount} goleiro(s)
+                  {selecionados.size} marcados ({selVisiveis} nesse filtro) · {goleirosCount} goleiro(s)
                 </p>
                 <div className="flex gap-1">
                   <button
                     onClick={marcarTodos}
                     className="px-3 py-1.5 rounded-full border border-white/15 text-white/60 hover:text-white hover:border-white/40 text-[10px] tracking-[0.18em]"
                   >
-                    MARCAR TODOS
+                    MARCAR FILTRO
                   </button>
                   <button
                     onClick={limpar}
@@ -163,36 +218,53 @@ export function Sorteio() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {jogadores.map((j) => {
-                  const sel = selecionados.has(j.id);
-                  return (
-                    <button
-                      key={j.id}
-                      onClick={() => toggle(j.id)}
-                      className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-colors ${
-                        sel
-                          ? "border-[#22ff88]/50 bg-[#22ff88]/[0.06]"
-                          : "border-white/[0.06] bg-white/[0.02] hover:border-white/[0.15]"
-                      }`}
-                    >
-                      <div
-                        className={`w-5 h-5 rounded-md flex items-center justify-center border ${
-                          sel ? "bg-[#22ff88] border-[#22ff88] text-[#0b0b0b]" : "border-white/20"
+              {visiveis.length === 0 ? (
+                <p className="text-white/40 text-sm py-6 text-center">
+                  Nenhum jogador {filtroTipo === "mensal" ? "mensalista" : "diarista"} neste mês.
+                </p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {visiveis.map((j) => {
+                    const sel = selecionados.has(j.id);
+                    return (
+                      <button
+                        key={j.id}
+                        onClick={() => toggle(j.id)}
+                        className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-colors ${
+                          sel
+                            ? "border-[#22ff88]/50 bg-[#22ff88]/[0.06]"
+                            : "border-white/[0.06] bg-white/[0.02] hover:border-white/[0.15]"
                         }`}
                       >
-                        {sel && <Check size={12} />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate text-sm">{j.apelido || j.nome}</p>
-                        <p className="text-white/40 text-[10px] tracking-wider uppercase">
-                          {POSICAO_LABEL[j.posicao]} · nível {j.nivel}
-                        </p>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+                        <div
+                          className={`w-5 h-5 rounded-md flex items-center justify-center border shrink-0 ${
+                            sel ? "bg-[#22ff88] border-[#22ff88] text-[#0b0b0b]" : "border-white/20"
+                          }`}
+                        >
+                          {sel && <Check size={12} />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate text-sm">{j.apelido || j.nome}</p>
+                          <p className="text-white/40 text-[10px] tracking-wider uppercase">
+                            {POSICAO_LABEL[j.posicao]} · nível {j.nivel}
+                          </p>
+                        </div>
+                        <span
+                          className={`text-[8px] tracking-[0.15em] font-bold px-1.5 py-0.5 rounded shrink-0 ${
+                            j.tipo === "mensal"
+                              ? "text-[#22ff88] bg-[#22ff88]/10"
+                              : j.tipo === "diarista"
+                              ? "text-white/60 bg-white/[0.06]"
+                              : "text-white/30"
+                          }`}
+                        >
+                          {j.tipo === "mensal" ? "MEN" : j.tipo === "diarista" ? "DIA" : "—"}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* COLUNA DE CONTROLES + RESULTADO */}
@@ -201,7 +273,7 @@ export function Sorteio() {
                 <p className="text-[10px] tracking-[0.18em] text-white/40 mb-2">
                   QUANTIDADE DE TIMES
                 </p>
-                <div className="flex gap-2 mb-4">
+                <div className="flex gap-2 mb-2">
                   {[2, 3, 4].map((n) => (
                     <button
                       key={n}
@@ -216,6 +288,9 @@ export function Sorteio() {
                     </button>
                   ))}
                 </div>
+                <p className="text-[10px] text-white/40 mb-4">
+                  Máx {MAX_POR_TIME} por time (1 goleiro + 6 linha). Capacidade: {numTimes * MAX_POR_TIME} jogadores.
+                </p>
                 <button
                   onClick={sortear}
                   className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-[#22ff88] text-[#0b0b0b] font-bold text-[11px] tracking-[0.2em]"
@@ -257,17 +332,14 @@ export function Sorteio() {
               </button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {resultado.map((t) => {
-                const r = rotuloTime(t.numero, corBase, resultado.length);
+              {resultado.times.map((t) => {
+                const r = rotuloTime(t.numero, corBase, resultado.times.length);
                 return (
-                  <div
-                    key={t.numero}
-                    className={`p-5 rounded-2xl border ${r.bg}`}
-                  >
+                  <div key={t.numero} className={`p-5 rounded-2xl border ${r.bg}`}>
                     <div className="flex items-baseline justify-between mb-3">
                       <h3 className={`font-bold text-xl ${r.cor}`}>{r.label}</h3>
                       <p className="text-[10px] tracking-[0.15em] text-white/40">
-                        SOMA {t.soma}
+                        {t.jogadores.length}/{MAX_POR_TIME} · SOMA {t.soma}
                       </p>
                     </div>
                     <ul className="space-y-1 text-sm">
@@ -290,6 +362,28 @@ export function Sorteio() {
                 );
               })}
             </div>
+
+            {resultado.reservas.length > 0 && (
+              <div className="mt-4 p-5 rounded-2xl border border-amber-500/25 bg-amber-500/[0.04]">
+                <p className="text-[10px] tracking-[0.3em] text-amber-400 mb-2">
+                  RESERVAS ({resultado.reservas.length})
+                </p>
+                <p className="text-white/40 text-xs mb-3">
+                  Times cheios ({MAX_POR_TIME} por time). Esses ficaram de fora — aumente o nº de times ou desmarque alguém.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {resultado.reservas.map((p) => (
+                    <span
+                      key={p.id}
+                      className="px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/10 text-xs text-white/70"
+                    >
+                      {p.posicao === "goleiro" && "🧤 "}
+                      {p.apelido || p.nome}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -297,18 +391,19 @@ export function Sorteio() {
   );
 }
 
-/* Algoritmo: 1 goleiro por time + linha equilibrada por nível (greedy descending) */
-function distribuirEquilibrado(jogadores: Jogador[], n: number): Time[] {
+/* Algoritmo: 1 goleiro por time + linha equilibrada por nível, máx 7 por time */
+function distribuirEquilibrado(jogadores: Jogador[], n: number): Resultado {
   const times: Time[] = Array.from({ length: n }, (_, i) => ({
     numero: i + 1,
     jogadores: [],
     soma: 0,
   }));
+  const reservas: Jogador[] = [];
 
   const goleiros = shuffle(jogadores.filter((j) => j.posicao === "goleiro"));
   const linha = jogadores.filter((j) => j.posicao !== "goleiro");
 
-  // 1 goleiro por time; sobras viram linha
+  // 1 goleiro por time; goleiros extras viram linha
   goleiros.forEach((g, i) => {
     if (i < n) {
       times[i].jogadores.push(g);
@@ -321,16 +416,22 @@ function distribuirEquilibrado(jogadores: Jogador[], n: number): Time[] {
   // ordena linha por nível desc, com tie-break aleatório
   const linhaOrd = shuffle(linha).sort((a, b) => b.nivel - a.nivel);
 
-  // greedy: cada jogador vai pro time de menor soma (com menos jogadores em caso de empate)
   for (const j of linhaOrd) {
-    const idx = times
+    // só times com vaga (< MAX_POR_TIME)
+    const candidatos = times
       .map((t, i) => ({ i, soma: t.soma, count: t.jogadores.length }))
-      .sort((a, b) => a.soma - b.soma || a.count - b.count)[0].i;
+      .filter((t) => t.count < MAX_POR_TIME)
+      .sort((a, b) => a.soma - b.soma || a.count - b.count);
+    if (candidatos.length === 0) {
+      reservas.push(j); // todos os times cheios
+      continue;
+    }
+    const idx = candidatos[0].i;
     times[idx].jogadores.push(j);
     times[idx].soma += j.nivel;
   }
 
-  return times;
+  return { times, reservas };
 }
 
 function shuffle<T>(arr: T[]): T[] {
