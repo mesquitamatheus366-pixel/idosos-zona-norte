@@ -8,6 +8,7 @@ const navLinks = [
   { label: "JOGOS", path: "/jogos" },
   { label: "SORTEIO", path: "/sorteio" },
   { label: "ESTATÍSTICAS", path: "/estatisticas" },
+  { label: "CRAQUES", path: "/craques" },
 ];
 
 function LogoIZN() {

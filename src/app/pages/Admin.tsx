@@ -62,7 +62,7 @@ type Jogo = {
   observacoes: string | null;
 };
 
-type Tab = "jogadores" | "pagamentos" | "jogos";
+type Tab = "jogadores" | "pagamentos" | "jogos" | "craques";
 
 export function Admin() {
   const { user, signOut } = useAuth();
@@ -111,11 +111,13 @@ export function Admin() {
           <TabBtn active={tab === "jogadores"} onClick={() => setTab("jogadores")} icon={<Users size={14} />} label="JOGADORES" />
           <TabBtn active={tab === "pagamentos"} onClick={() => setTab("pagamentos")} icon={<DollarSign size={14} />} label="PAGAMENTOS" />
           <TabBtn active={tab === "jogos"} onClick={() => setTab("jogos")} icon={<Calendar size={14} />} label="JOGOS" />
+          <TabBtn active={tab === "craques"} onClick={() => setTab("craques")} icon={<Trophy size={14} />} label="CRAQUES" />
         </div>
 
         {tab === "jogadores" && <AbaJogadores />}
         {tab === "pagamentos" && <AbaPagamentos />}
         {tab === "jogos" && <AbaJogos />}
+        {tab === "craques" && <AbaCraques />}
       </div>
     </div>
   );
@@ -1907,6 +1909,158 @@ function ModalPartida({
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ---------------- CRAQUES (votação) ---------------- */
+const MESES_CRAQUES = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+];
+
+function AbaCraques() {
+  const [votacoes, setVotacoes] = useState<any[]>([]);
+  const [totais, setTotais] = useState<Record<string, number>>({});
+  const [loading, setLoading] = useState(true);
+  const agora = new Date();
+  const [mes, setMes] = useState(agora.getMonth());
+  const [ano, setAno] = useState(agora.getFullYear());
+
+  async function carregar() {
+    setLoading(true);
+    const { data } = await supabase
+      .from("votacao_craques")
+      .select("*")
+      .order("mes_referencia", { ascending: false });
+    const lista = (data as any[]) || [];
+    setVotacoes(lista);
+    if (lista.length) {
+      const { data: votos } = await supabase
+        .from("votos_craques")
+        .select("votacao_id")
+        .in("votacao_id", lista.map((v) => v.id));
+      const cont: Record<string, number> = {};
+      ((votos as any[]) || []).forEach((v) => {
+        cont[v.votacao_id] = (cont[v.votacao_id] || 0) + 1;
+      });
+      setTotais(cont);
+    }
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    carregar();
+  }, []);
+
+  async function abrirVotacao() {
+    const mesRef = `${ano}-${String(mes + 1).padStart(2, "0")}-01`;
+    const { error } = await supabase
+      .from("votacao_craques")
+      .insert({ mes_referencia: mesRef, aberta: true });
+    if (error) {
+      toast.error(error.code === "23505" ? "Já existe votação desse mês." : error.message);
+    } else {
+      toast.success("Votação aberta!");
+      carregar();
+    }
+  }
+
+  async function toggleAberta(v: any) {
+    const { error } = await supabase
+      .from("votacao_craques")
+      .update({ aberta: !v.aberta })
+      .eq("id", v.id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success(v.aberta ? "Votação encerrada" : "Votação reaberta");
+      carregar();
+    }
+  }
+
+  async function excluir(v: any) {
+    if (!confirm("Excluir essa votação e todos os votos?")) return;
+    const { error } = await supabase.from("votacao_craques").delete().eq("id", v.id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Votação excluída");
+      carregar();
+    }
+  }
+
+  return (
+    <div>
+      <div className="mb-6 p-5 rounded-2xl border border-[#22ff88]/15 bg-gradient-to-br from-[#0e1612] to-white/[0.02]">
+        <p className="text-[10px] tracking-[0.3em] text-[#22ff88] mb-1">NOVA VOTAÇÃO</p>
+        <p className="text-white/50 text-xs mb-3">
+          Abra a votação dos craques de um mês — o pessoal vota por posição na página Craques.
+        </p>
+        <div className="grid grid-cols-6 gap-1 mb-3">
+          {MESES_CRAQUES.map((m, i) => (
+            <button
+              key={i}
+              onClick={() => setMes(i)}
+              className={`py-1.5 rounded-md text-[10px] font-bold transition-colors ${
+                mes === i ? "bg-[#22ff88] text-[#0b0b0b]" : "bg-white/[0.04] text-white/50 hover:bg-white/[0.08]"
+              }`}
+            >
+              {m.slice(0, 3)}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <button onClick={() => setAno((a) => a - 1)} className="w-8 h-9 rounded-lg bg-white/[0.04] text-white/60 text-lg">−</button>
+            <span className="w-16 text-center font-bold tabular-nums">{ano}</span>
+            <button onClick={() => setAno((a) => a + 1)} className="w-8 h-9 rounded-lg bg-white/[0.04] text-white/60 text-lg">+</button>
+          </div>
+          <button
+            onClick={abrirVotacao}
+            className="h-9 px-4 rounded-lg bg-[#22ff88] text-[#0b0b0b] font-bold text-[10px] tracking-[0.15em] hover:bg-[#5cffaa]"
+          >
+            ABRIR VOTAÇÃO · {MESES_CRAQUES[mes]} {ano}
+          </button>
+        </div>
+      </div>
+
+      {loading ? (
+        <p className="text-white/40">Carregando...</p>
+      ) : votacoes.length === 0 ? (
+        <p className="text-white/30 text-sm">Nenhuma votação criada ainda.</p>
+      ) : (
+        <div className="space-y-2">
+          {votacoes.map((v) => {
+            const [a, m] = v.mes_referencia.split("-").map(Number);
+            return (
+              <div key={v.id} className="flex items-center justify-between gap-3 p-4 rounded-xl border border-white/[0.06] bg-white/[0.02]">
+                <div>
+                  <p className="font-bold">{MESES_CRAQUES[m - 1]} {a}</p>
+                  <p className="text-white/40 text-xs">
+                    {totais[v.id] || 0} voto(s) ·{" "}
+                    <span className={v.aberta ? "text-[#22ff88]" : "text-amber-400"}>
+                      {v.aberta ? "aberta" : "encerrada"}
+                    </span>
+                  </p>
+                </div>
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => toggleAberta(v)}
+                    className="px-3 py-1.5 rounded-full border border-white/15 text-white/70 text-[10px] tracking-[0.18em] hover:border-white/40"
+                  >
+                    {v.aberta ? "ENCERRAR" : "REABRIR"}
+                  </button>
+                  <button
+                    onClick={() => excluir(v)}
+                    className="p-2 rounded-lg text-white/50 hover:text-rose-400 hover:bg-white/[0.04]"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

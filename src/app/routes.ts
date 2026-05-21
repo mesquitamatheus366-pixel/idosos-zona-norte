@@ -5,6 +5,7 @@ import { Jogadores } from "./pages/Jogadores";
 import { Jogos } from "./pages/Jogos";
 import { Estatisticas } from "./pages/Estatisticas";
 import { Sorteio } from "./pages/Sorteio";
+import { Craques } from "./pages/Craques";
 import { Sobre } from "./pages/Sobre";
 import { Login } from "./pages/Login";
 import { Admin } from "./pages/Admin";
@@ -27,6 +28,7 @@ export const router = createBrowserRouter([
       { path: "jogos", Component: Jogos },
       { path: "sorteio", Component: Sorteio },
       { path: "estatisticas", Component: Estatisticas },
+      { path: "craques", Component: Craques },
       { path: "sobre", Component: Sobre },
     ],
   },
