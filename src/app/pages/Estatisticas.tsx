@@ -30,20 +30,28 @@ const MODOS: { v: Modo; label: string; icon: React.ReactNode; sufixo: string }[]
   { v: "mvp_count", label: "MVPs", icon: <Star size={12} />, sufixo: "MVPs" },
 ];
 
+type SnapRow = {
+  jogador_id: string;
+  nota_total: number;
+  gols: number;
+  assistencias: number;
+  jogos_disputados: number;
+  mvp_count: number;
+};
+
 export function Estatisticas() {
   const { user } = useAuth();
   const [rows, setRows] = useState<Agregado[]>([]);
   const [fotos, setFotos] = useState<Record<string, Foto>>({});
-  const [variacao, setVariacao] = useState<Record<string, number | null>>({});
-  const [temSnapshot, setTemSnapshot] = useState(false);
+  const [snapshot, setSnapshot] = useState<SnapRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [modo, setModo] = useState<Modo>("nota_total");
 
   async function carregar() {
-    const [{ data: ag }, { data: jg }, { data: pr }] = await Promise.all([
+    const [{ data: ag }, { data: jg }, { data: sn }] = await Promise.all([
       supabase.from("estatisticas_agregadas").select("*"),
       supabase.from("jogadores").select("id, nome, apelido, foto_url"),
-      supabase.from("power_ranking").select("jogador_id, variacao, rank_anterior"),
+      supabase.from("ranking_snapshots").select("*").order("data_snapshot", { ascending: false }),
     ]);
     setRows(((ag as any[]) || []).map((r) => ({
       jogador_id: r.jogador_id,
@@ -60,14 +68,21 @@ export function Estatisticas() {
     const fmap: Record<string, Foto> = {};
     ((jg as Foto[]) || []).forEach((f) => (fmap[f.id] = f));
     setFotos(fmap);
-    const vmap: Record<string, number | null> = {};
-    let snap = false;
-    ((pr as any[]) || []).forEach((p) => {
-      vmap[p.jogador_id] = p.variacao === null ? null : Number(p.variacao);
-      if (p.rank_anterior !== null) snap = true;
-    });
-    setVariacao(vmap);
-    setTemSnapshot(snap);
+    // pega só as linhas do snapshot mais recente
+    const todasSnaps = (sn as any[]) || [];
+    const ultimaData = todasSnaps[0]?.data_snapshot;
+    setSnapshot(
+      todasSnaps
+        .filter((s) => s.data_snapshot === ultimaData)
+        .map((s) => ({
+          jogador_id: s.jogador_id,
+          nota_total: Number(s.nota_total) || 0,
+          gols: Number(s.gols) || 0,
+          assistencias: Number(s.assistencias) || 0,
+          jogos_disputados: Number(s.jogos_disputados) || 0,
+          mvp_count: Number(s.mvp_count) || 0,
+        }))
+    );
     setLoading(false);
   }
 
@@ -92,6 +107,26 @@ export function Estatisticas() {
   const ordenado = useMemo(() => {
     return [...rows].sort((a, b) => (Number(b[modo]) || 0) - (Number(a[modo]) || 0));
   }, [rows, modo]);
+
+  // variação de posição NO MODO ATUAL (compara ranking de agora com o do snapshot)
+  const temSnapshot = snapshot.length > 0;
+  const variacao = useMemo(() => {
+    const v: Record<string, number | null> = {};
+    if (snapshot.length === 0) {
+      ordenado.forEach((r) => (v[r.jogador_id] = null));
+      return v;
+    }
+    const snapOrd = [...snapshot].sort(
+      (a, b) => (Number(b[modo]) || 0) - (Number(a[modo]) || 0)
+    );
+    const rankThen: Record<string, number> = {};
+    snapOrd.forEach((s, i) => (rankThen[s.jogador_id] = i + 1));
+    ordenado.forEach((r, i) => {
+      const then = rankThen[r.jogador_id];
+      v[r.jogador_id] = then === undefined ? null : then - (i + 1);
+    });
+    return v;
+  }, [ordenado, snapshot, modo]);
 
   const modoAtual = MODOS.find((m) => m.v === modo)!;
 
@@ -210,7 +245,7 @@ export function Estatisticas() {
             </div>
 
             {/* POWER RANKING — mexidas */}
-            {modo === "nota_total" && temSnapshot && (() => {
+            {temSnapshot && (() => {
               const subiram = ordenado
                 .filter((r) => (variacao[r.jogador_id] ?? 0) > 0)
                 .sort((a, b) => (variacao[b.jogador_id] || 0) - (variacao[a.jogador_id] || 0))
@@ -273,7 +308,7 @@ export function Estatisticas() {
                 <thead>
                   <tr className="text-left text-[10px] tracking-[0.18em] text-white/40 uppercase border-b border-white/[0.07] bg-white/[0.02]">
                     <th className="px-4 py-3.5 w-12 text-center">#</th>
-                    {modo === "nota_total" && <th className="px-1 py-3.5 w-10 text-center">Mov</th>}
+                    {temSnapshot && <th className="px-1 py-3.5 w-10 text-center">Mov</th>}
                     <th className="px-2 py-3.5">Jogador</th>
                     <th className={`px-3 py-3.5 text-center ${modo === "nota_total" ? "text-[#22ff88]" : ""}`}>Nota</th>
                     <th className="px-3 py-3.5 text-center">J</th>
@@ -309,7 +344,7 @@ export function Estatisticas() {
                             {i + 1}
                           </span>
                         </td>
-                        {modo === "nota_total" && (
+                        {temSnapshot && (
                           <td className="px-1 py-3 text-center">
                             <VariacaoBadge v={variacao[r.jogador_id]} />
                           </td>
