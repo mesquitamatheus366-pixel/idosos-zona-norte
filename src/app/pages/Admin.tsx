@@ -67,7 +67,7 @@ type Tab = "jogadores" | "pagamentos" | "jogos" | "craques";
 export function Admin() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [tab, setTab] = useState<Tab>("jogadores");
+  const [tab, setTab] = useState<Tab>("jogos");
 
   useEffect(() => {
     if (!user) navigate("/login");
@@ -108,9 +108,9 @@ export function Admin() {
         </div>
 
         <div className="flex gap-2 mb-6 border-b border-white/[0.06]">
+          <TabBtn active={tab === "jogos"} onClick={() => setTab("jogos")} icon={<Calendar size={14} />} label="JOGOS" />
           <TabBtn active={tab === "jogadores"} onClick={() => setTab("jogadores")} icon={<Users size={14} />} label="JOGADORES" />
           <TabBtn active={tab === "pagamentos"} onClick={() => setTab("pagamentos")} icon={<DollarSign size={14} />} label="PAGAMENTOS" />
-          <TabBtn active={tab === "jogos"} onClick={() => setTab("jogos")} icon={<Calendar size={14} />} label="JOGOS" />
           <TabBtn active={tab === "craques"} onClick={() => setTab("craques")} icon={<Trophy size={14} />} label="CRAQUES" />
         </div>
 
