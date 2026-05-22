@@ -96,9 +96,7 @@ export function Estatisticas() {
   const modoAtual = MODOS.find((m) => m.v === modo)!;
 
   const valorExibido = (r: Agregado) =>
-    modo === "nota_total"
-      ? Math.min(10, Math.max(0, Number(r[modo]))).toFixed(1)
-      : String(r[modo]);
+    modo === "nota_total" ? Number(r[modo]).toFixed(1) : String(r[modo]);
 
   return (
     <div className="min-h-screen bg-[#0b0b0b] text-white">
@@ -329,7 +327,7 @@ export function Estatisticas() {
                           </div>
                         </td>
                         <td className={`px-3 py-3 text-center tabular-nums font-bold ${modo === "nota_total" ? "text-[#22ff88]" : "text-[#22ff88]/70"}`}>
-                          {Math.min(10, Math.max(0, Number(r.nota_total || 0))).toFixed(1)}
+                          {Number(r.nota_total || 0).toFixed(1)}
                         </td>
                         <td className="px-3 py-3 text-center text-white/55 tabular-nums">{r.jogos_disputados}</td>
                         <td className={`px-3 py-3 text-center tabular-nums ${modo === "gols" ? "text-[#22ff88] font-bold" : "text-white/80"}`}>{r.gols}</td>
