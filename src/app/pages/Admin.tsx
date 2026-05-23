@@ -1042,7 +1042,7 @@ function calcularPontos(r: StatRow): number {
     r.defesas * 0.1 -
     r.cartoes_vermelhos * 1 -
     r.gols_contra * 0.5 +
-    (r.presente ? 5 : 0);
+    (r.presente ? 3.5 : 0);
   return Math.round(p * 100) / 100;
 }
 
