@@ -105,7 +105,14 @@ export function Estatisticas() {
   }, []);
 
   const ordenado = useMemo(() => {
-    return [...rows].sort((a, b) => (Number(b[modo]) || 0) - (Number(a[modo]) || 0));
+    return [...rows].sort((a, b) => {
+      const diff = (Number(b[modo]) || 0) - (Number(a[modo]) || 0);
+      if (diff !== 0) return diff;
+      // Desempate: gols + assistências (somados)
+      const gaA = (Number(a.gols) || 0) + (Number(a.assistencias) || 0);
+      const gaB = (Number(b.gols) || 0) + (Number(b.assistencias) || 0);
+      return gaB - gaA;
+    });
   }, [rows, modo]);
 
   // variação de posição NO MODO ATUAL (compara ranking de agora com o do snapshot)
@@ -116,9 +123,13 @@ export function Estatisticas() {
       ordenado.forEach((r) => (v[r.jogador_id] = null));
       return v;
     }
-    const snapOrd = [...snapshot].sort(
-      (a, b) => (Number(b[modo]) || 0) - (Number(a[modo]) || 0)
-    );
+    const snapOrd = [...snapshot].sort((a, b) => {
+      const diff = (Number(b[modo]) || 0) - (Number(a[modo]) || 0);
+      if (diff !== 0) return diff;
+      const gaA = (Number(a.gols) || 0) + (Number(a.assistencias) || 0);
+      const gaB = (Number(b.gols) || 0) + (Number(b.assistencias) || 0);
+      return gaB - gaA;
+    });
     const rankThen: Record<string, number> = {};
     snapOrd.forEach((s, i) => (rankThen[s.jogador_id] = i + 1));
     ordenado.forEach((r, i) => {

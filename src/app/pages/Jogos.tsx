@@ -239,9 +239,14 @@ export function Jogos() {
             const grupos = agruparPorTime(ts);
             const ptsDoJogo = pontosMap[j.id] || {};
 
-            const mvp = es
-              .filter((e) => (ptsDoJogo[e.jogador_id] || 0) > 0)
-              .sort((a, b) => (ptsDoJogo[b.jogador_id] || 0) - (ptsDoJogo[a.jogador_id] || 0))[0];
+            // MVP(s) do dia — empate desempata por gols+assists; se persistir, todos MVP
+            const candMvp = es.filter((e) => (ptsDoJogo[e.jogador_id] || 0) > 0);
+            const maxP = candMvp.reduce((m, e) => Math.max(m, ptsDoJogo[e.jogador_id] || 0), 0);
+            const topP = candMvp.filter((e) => (ptsDoJogo[e.jogador_id] || 0) === maxP);
+            const maxGA = topP.reduce((m, e) => Math.max(m, (e.gols || 0) + (e.assistencias || 0)), 0);
+            const mvps = topP.filter((e) => (e.gols || 0) + (e.assistencias || 0) === maxGA);
+            const mvp = mvps[0];
+            const mvpIds = new Set(mvps.map((m) => m.jogador_id));
 
             const totalGols = es.reduce((s, e) => s + (e.gols || 0), 0);
 
@@ -307,11 +312,14 @@ export function Jogos() {
 
                   {/* MVP + chevron */}
                   <div className="flex items-center gap-3 shrink-0">
-                    {mvp?.jogadores && (
+                    {mvps.length > 0 && (
                       <div className="hidden sm:flex flex-col items-end">
-                        <span className="text-[9px] tracking-[0.18em] text-white/35">MVP DO DIA</span>
+                        <span className="text-[9px] tracking-[0.18em] text-white/35">
+                          MVP DO DIA{mvps.length > 1 ? "S" : ""}
+                        </span>
                         <span className="flex items-center gap-1 text-[#22ff88] text-sm font-bold">
-                          <Trophy size={12} /> {mvp.jogadores.apelido || mvp.jogadores.nome}
+                          <Trophy size={12} />
+                          {mvps.map((m) => m.jogadores?.apelido || m.jogadores?.nome).filter(Boolean).join(" · ")}
                         </span>
                       </div>
                     )}
@@ -397,7 +405,7 @@ export function Jogos() {
                                   const v = e.vitorias_vermelho + e.vitorias_azul;
                                   const emp = e.empates_vermelho + e.empates_azul;
                                   const d = e.derrotas_vermelho + e.derrotas_azul;
-                                  const isMvp = mvp?.jogador_id === e.jogador_id;
+                                  const isMvp = mvpIds.has(e.jogador_id);
                                   return (
                                     <tr key={e.jogador_id} className="border-t border-white/[0.04] hover:bg-white/[0.02]">
                                       <td className="px-3 py-2">

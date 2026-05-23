@@ -1149,11 +1149,15 @@ function ModalGerenciarJogo({
     onSaved();
   }
 
-  // Calcula MVP do dia (top pontos)
+  // Calcula MVP(s) do dia — desempate por gols+assists; se persistir, todos viram MVP
   const linhasComPontos = rows.map((r) => ({ ...r, pontos: calcularPontos(r) }));
-  const mvpDia = [...linhasComPontos]
-    .filter((r) => r.presente && r.pontos > 0)
-    .sort((a, b) => b.pontos - a.pontos)[0];
+  const candidatosMvp = linhasComPontos.filter((r) => r.presente && r.pontos > 0);
+  const maxPts = candidatosMvp.reduce((m, r) => Math.max(m, r.pontos), 0);
+  const topPts = candidatosMvp.filter((r) => r.pontos === maxPts);
+  const maxGa = topPts.reduce((m, r) => Math.max(m, r.gols + r.assistencias), 0);
+  const mvps = topPts.filter((r) => r.gols + r.assistencias === maxGa);
+  const mvpDia = mvps[0]; // pra retrocompat com display de "pontos do MVP"
+  const mvpIds = new Set(mvps.map((m) => m.jogador_id));
 
   const visiveis = linhasComPontos.filter((r) => {
     if (filtro === "presentes" && !r.presente) return false;
@@ -1176,7 +1180,8 @@ function ModalGerenciarJogo({
             </h2>
             <p className="text-white/40 text-xs mt-0.5">
               {jogo.tipo === "mensal" ? "Campeonato do Mês" : "Diária"}
-              {mvpDia && ` · MVP do dia: ${mvpDia.apelido || mvpDia.nome} (${clampNota(mvpDia.pontos).toFixed(1)} pts)`}
+              {mvps.length > 0 &&
+                ` · MVP do dia: ${mvps.map((m) => m.apelido || m.nome).join(" e ")} (${clampNota(mvpDia.pontos).toFixed(1)} pts)`}
             </p>
           </div>
           <button onClick={onClose} className="text-white/50 hover:text-white p-1">
@@ -1226,7 +1231,7 @@ function ModalGerenciarJogo({
           ) : (
             visiveis.map((r) => {
               const idx = rows.findIndex((x) => x.jogador_id === r.jogador_id);
-              const eMVP = mvpDia?.jogador_id === r.jogador_id;
+              const eMVP = mvpIds.has(r.jogador_id);
               return (
                 <div
                   key={r.jogador_id}
