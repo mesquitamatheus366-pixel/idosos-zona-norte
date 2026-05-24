@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../lib/supabase";
-import { Trophy, Target, ListChecks, Star, Calendar, Award, TrendingUp, TrendingDown, Minus, Camera, Crown } from "lucide-react";
+import { Trophy, Target, ListChecks, Star, Calendar, Award, TrendingUp, TrendingDown, Minus, Camera, Crown, ChevronDown, Filter } from "lucide-react";
 import { motion } from "motion/react";
 import { useAuth } from "../contexts/AuthContext";
 import { toast } from "sonner";
@@ -286,50 +286,55 @@ export function Estatisticas() {
             Estatísticas
           </h1>
 
-          {/* Seletor de MÊS */}
-          <div className="flex gap-2 flex-wrap items-center mb-3">
-            <span className="text-[10px] tracking-[0.25em] text-white/40 mr-1">PERÍODO:</span>
-            <button
-              onClick={() => setMes("total")}
-              className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[10px] tracking-[0.18em] font-bold border transition-all ${
-                mes === "total"
-                  ? "bg-white text-[#0b0b0b] border-white"
-                  : "border-white/10 text-white/55 hover:border-white/30 hover:text-white"
-              }`}
-            >
-              TEMPORADA
-            </button>
-            {mesesDisponiveis.map((mk) => (
-              <button
-                key={mk}
-                onClick={() => setMes(mk)}
-                className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[10px] tracking-[0.18em] font-bold border transition-all ${
-                  mes === mk
-                    ? "bg-white text-[#0b0b0b] border-white"
-                    : "border-white/10 text-white/55 hover:border-white/30 hover:text-white"
-                }`}
+          {/* Filtros (período + posição) */}
+          <div className="mb-4 p-3 rounded-2xl border border-white/[0.07] bg-white/[0.02] backdrop-blur-sm">
+            <div className="flex items-center gap-2 mb-2.5 px-1">
+              <Filter size={11} className="text-white/40" />
+              <span className="text-[10px] tracking-[0.25em] text-white/40 font-bold">FILTROS</span>
+              {(mes !== "total" || posicao !== "todas") && (
+                <button
+                  onClick={() => { setMes("total"); setPosicao("todas"); }}
+                  className="ml-auto text-[10px] tracking-wider text-white/40 hover:text-[#22ff88] transition-colors"
+                >
+                  limpar
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <SelectField
+                icon={<Calendar size={13} />}
+                label="PERÍODO"
+                value={mes === "total" ? "Temporada inteira" : mesLabel(mes)}
+                active={mes !== "total"}
               >
-                {mesLabel(mk)}
-              </button>
-            ))}
-          </div>
-
-          {/* Seletor de POSIÇÃO */}
-          <div className="flex gap-2 flex-wrap items-center mb-3">
-            <span className="text-[10px] tracking-[0.25em] text-white/40 mr-1">POSIÇÃO:</span>
-            {POSICOES.map((p) => (
-              <button
-                key={p.v}
-                onClick={() => setPosicao(p.v)}
-                className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[10px] tracking-[0.18em] font-bold border transition-all ${
-                  posicao === p.v
-                    ? "bg-[#22ff88]/15 text-[#22ff88] border-[#22ff88]/40"
-                    : "border-white/10 text-white/55 hover:border-white/30 hover:text-white"
-                }`}
+                <select
+                  value={mes}
+                  onChange={(e) => setMes(e.target.value)}
+                  className="absolute inset-0 opacity-0 cursor-pointer bg-[#0b0b0b] text-white"
+                >
+                  <option value="total">Temporada inteira</option>
+                  {mesesDisponiveis.map((mk) => (
+                    <option key={mk} value={mk}>{mesLabel(mk)}</option>
+                  ))}
+                </select>
+              </SelectField>
+              <SelectField
+                icon={<Crown size={13} />}
+                label="POSIÇÃO"
+                value={POSICOES.find((p) => p.v === posicao)?.label || "TODAS"}
+                active={posicao !== "todas"}
               >
-                {p.label}
-              </button>
-            ))}
+                <select
+                  value={posicao}
+                  onChange={(e) => setPosicao(e.target.value)}
+                  className="absolute inset-0 opacity-0 cursor-pointer bg-[#0b0b0b] text-white"
+                >
+                  {POSICOES.map((p) => (
+                    <option key={p.v} value={p.v}>{p.label}</option>
+                  ))}
+                </select>
+              </SelectField>
+            </div>
           </div>
 
           {/* Modos */}
@@ -613,6 +618,42 @@ export function Estatisticas() {
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+function SelectField({
+  icon,
+  label,
+  value,
+  active,
+  children,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  active: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-all ${
+        active
+          ? "border-[#22ff88]/40 bg-[#22ff88]/[0.06]"
+          : "border-white/10 bg-white/[0.02] hover:border-white/20"
+      }`}
+    >
+      <div className={`shrink-0 ${active ? "text-[#22ff88]" : "text-white/40"}`}>{icon}</div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[9px] tracking-[0.22em] text-white/40 font-bold leading-none mb-1">
+          {label}
+        </p>
+        <p className={`text-sm font-bold truncate leading-tight ${active ? "text-[#22ff88]" : "text-white"}`}>
+          {value}
+        </p>
+      </div>
+      <ChevronDown size={14} className="shrink-0 text-white/30" />
+      {children}
     </div>
   );
 }
