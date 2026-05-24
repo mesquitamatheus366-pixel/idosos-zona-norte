@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../lib/supabase";
-import { Trophy, Target, ListChecks, Star, Calendar, Award, TrendingUp, TrendingDown, Minus, Camera } from "lucide-react";
+import { Trophy, Target, ListChecks, Star, Calendar, Award, TrendingUp, TrendingDown, Minus, Camera, Crown } from "lucide-react";
 import { motion } from "motion/react";
 import { useAuth } from "../contexts/AuthContext";
 import { toast } from "sonner";
@@ -18,7 +18,7 @@ type Agregado = {
   nota_total: number;
 };
 
-type Foto = { id: string; foto_url: string | null; apelido: string | null; nome: string };
+type Foto = { id: string; foto_url: string | null; apelido: string | null; nome: string; posicao?: string | null };
 
 type Modo = "nota_total" | "gols" | "assistencias" | "jogos_disputados" | "mvp_count";
 
@@ -30,6 +30,20 @@ const MODOS: { v: Modo; label: string; icon: React.ReactNode; sufixo: string }[]
   { v: "mvp_count", label: "MVPs", icon: <Star size={12} />, sufixo: "MVPs" },
 ];
 
+const POSICOES: { v: string; label: string }[] = [
+  { v: "todas", label: "TODAS" },
+  { v: "goleiro", label: "GOLEIRO" },
+  { v: "fixo", label: "FIXO" },
+  { v: "ala", label: "ALA" },
+  { v: "meio", label: "MEIO" },
+  { v: "pivo", label: "PIVÔ" },
+];
+
+const MESES_LABEL = [
+  "JAN", "FEV", "MAR", "ABR", "MAI", "JUN",
+  "JUL", "AGO", "SET", "OUT", "NOV", "DEZ",
+];
+
 type SnapRow = {
   jogador_id: string;
   nota_total: number;
@@ -39,19 +53,66 @@ type SnapRow = {
   mvp_count: number;
 };
 
+type LinhaMes = {
+  mes: string;
+  jogador_id: string;
+  nome: string;
+  apelido: string | null;
+  posicao: string;
+  foto_url: string | null;
+  jogos_disputados: number;
+  gols: number;
+  assistencias: number;
+  vitorias: number;
+  empates: number;
+  derrotas: number;
+  mvp_count: number;
+  nota_total: number;
+};
+
+type Craque = {
+  mes: string;
+  posicao: string;
+  jogador_id: string;
+  nome: string;
+  apelido: string | null;
+  foto_url: string | null;
+  jogos_disputados: number;
+  gols: number;
+  assistencias: number;
+  mvp_count: number;
+  nota_total: number;
+};
+
+function mesKey(d: string | Date) {
+  const dt = typeof d === "string" ? new Date(d) : d;
+  return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+function mesLabel(key: string) {
+  const [ano, mes] = key.split("-");
+  return `${MESES_LABEL[Number(mes) - 1]}/${ano}`;
+}
+
 export function Estatisticas() {
   const { user } = useAuth();
   const [rows, setRows] = useState<Agregado[]>([]);
   const [fotos, setFotos] = useState<Record<string, Foto>>({});
   const [snapshot, setSnapshot] = useState<SnapRow[]>([]);
+  const [linhasMes, setLinhasMes] = useState<LinhaMes[]>([]);
+  const [craques, setCraques] = useState<Craque[]>([]);
   const [loading, setLoading] = useState(true);
   const [modo, setModo] = useState<Modo>("nota_total");
+  const [posicao, setPosicao] = useState<string>("todas");
+  const [mes, setMes] = useState<string>("total"); // "total" = temporada inteira
 
   async function carregar() {
-    const [{ data: ag }, { data: jg }, { data: sn }] = await Promise.all([
+    const [{ data: ag }, { data: jg }, { data: sn }, { data: pm }, { data: cq }] = await Promise.all([
       supabase.from("estatisticas_agregadas").select("*"),
-      supabase.from("jogadores").select("id, nome, apelido, foto_url"),
+      supabase.from("jogadores").select("id, nome, apelido, foto_url, posicao"),
       supabase.from("ranking_snapshots").select("*").order("data_snapshot", { ascending: false }),
+      supabase.from("estatisticas_por_mes").select("*"),
+      supabase.from("craque_mes_por_posicao").select("*"),
     ]);
     setRows(((ag as any[]) || []).map((r) => ({
       jogador_id: r.jogador_id,
@@ -68,7 +129,6 @@ export function Estatisticas() {
     const fmap: Record<string, Foto> = {};
     ((jg as Foto[]) || []).forEach((f) => (fmap[f.id] = f));
     setFotos(fmap);
-    // pega só as linhas do snapshot mais recente
     const todasSnaps = (sn as any[]) || [];
     const ultimaData = todasSnaps[0]?.data_snapshot;
     setSnapshot(
@@ -83,6 +143,35 @@ export function Estatisticas() {
           mvp_count: Number(s.mvp_count) || 0,
         }))
     );
+    setLinhasMes(((pm as any[]) || []).map((r) => ({
+      mes: r.mes,
+      jogador_id: r.jogador_id,
+      nome: r.nome,
+      apelido: r.apelido,
+      posicao: r.posicao,
+      foto_url: r.foto_url,
+      jogos_disputados: Number(r.jogos_disputados) || 0,
+      gols: Number(r.gols) || 0,
+      assistencias: Number(r.assistencias) || 0,
+      vitorias: Number(r.vitorias) || 0,
+      empates: Number(r.empates) || 0,
+      derrotas: Number(r.derrotas) || 0,
+      mvp_count: Number(r.mvp_count) || 0,
+      nota_total: Number(r.nota_total) || 0,
+    })));
+    setCraques(((cq as any[]) || []).map((r) => ({
+      mes: r.mes,
+      posicao: r.posicao,
+      jogador_id: r.jogador_id,
+      nome: r.nome,
+      apelido: r.apelido,
+      foto_url: r.foto_url,
+      jogos_disputados: Number(r.jogos_disputados) || 0,
+      gols: Number(r.gols) || 0,
+      assistencias: Number(r.assistencias) || 0,
+      mvp_count: Number(r.mvp_count) || 0,
+      nota_total: Number(r.nota_total) || 0,
+    })));
     setLoading(false);
   }
 
@@ -104,22 +193,53 @@ export function Estatisticas() {
     return () => document.removeEventListener("visibilitychange", onVisible);
   }, []);
 
+  // lista de meses disponíveis (mais recente primeiro)
+  const mesesDisponiveis = useMemo(() => {
+    const set = new Set<string>();
+    linhasMes.forEach((l) => set.add(mesKey(l.mes)));
+    return Array.from(set).sort((a, b) => (a < b ? 1 : -1));
+  }, [linhasMes]);
+
+  // base de agregação: total da temporada OU do mês escolhido
+  const baseRows: Agregado[] = useMemo(() => {
+    if (mes === "total") return rows;
+    return linhasMes
+      .filter((l) => mesKey(l.mes) === mes)
+      .map((l) => ({
+        jogador_id: l.jogador_id,
+        nome: l.nome,
+        jogos_disputados: l.jogos_disputados,
+        gols: l.gols,
+        assistencias: l.assistencias,
+        vitorias: l.vitorias,
+        empates: l.empates,
+        derrotas: l.derrotas,
+        mvp_count: l.mvp_count,
+        nota_total: l.nota_total,
+      }));
+  }, [mes, rows, linhasMes]);
+
+  // filtra por posição (usando a posição do jogador no cadastro)
+  const filtradoPorPosicao = useMemo(() => {
+    if (posicao === "todas") return baseRows;
+    return baseRows.filter((r) => (fotos[r.jogador_id]?.posicao || "").toLowerCase() === posicao);
+  }, [baseRows, posicao, fotos]);
+
   const ordenado = useMemo(() => {
-    return [...rows].sort((a, b) => {
+    return [...filtradoPorPosicao].sort((a, b) => {
       const diff = (Number(b[modo]) || 0) - (Number(a[modo]) || 0);
       if (diff !== 0) return diff;
-      // Desempate: gols + assistências (somados)
       const gaA = (Number(a.gols) || 0) + (Number(a.assistencias) || 0);
       const gaB = (Number(b.gols) || 0) + (Number(b.assistencias) || 0);
       return gaB - gaA;
     });
-  }, [rows, modo]);
+  }, [filtradoPorPosicao, modo]);
 
-  // variação de posição NO MODO ATUAL (compara ranking de agora com o do snapshot)
-  const temSnapshot = snapshot.length > 0;
+  // variação só faz sentido na visão da temporada (snapshot é do agregado)
+  const temSnapshot = snapshot.length > 0 && mes === "total" && posicao === "todas";
   const variacao = useMemo(() => {
     const v: Record<string, number | null> = {};
-    if (snapshot.length === 0) {
+    if (!temSnapshot) {
       ordenado.forEach((r) => (v[r.jogador_id] = null));
       return v;
     }
@@ -137,7 +257,13 @@ export function Estatisticas() {
       v[r.jogador_id] = then === undefined ? null : then - (i + 1);
     });
     return v;
-  }, [ordenado, snapshot, modo]);
+  }, [ordenado, snapshot, modo, temSnapshot]);
+
+  // craques do mês escolhido (1 por posição)
+  const craquesDoMes = useMemo(() => {
+    if (mes === "total") return [];
+    return craques.filter((c) => mesKey(c.mes) === mes);
+  }, [craques, mes]);
 
   const modoAtual = MODOS.find((m) => m.v === modo)!;
 
@@ -159,6 +285,54 @@ export function Estatisticas() {
           <h1 className="font-['Archivo',sans-serif] font-black text-5xl sm:text-6xl tracking-tight mb-4">
             Estatísticas
           </h1>
+
+          {/* Seletor de MÊS */}
+          <div className="flex gap-2 flex-wrap items-center mb-3">
+            <span className="text-[10px] tracking-[0.25em] text-white/40 mr-1">PERÍODO:</span>
+            <button
+              onClick={() => setMes("total")}
+              className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[10px] tracking-[0.18em] font-bold border transition-all ${
+                mes === "total"
+                  ? "bg-white text-[#0b0b0b] border-white"
+                  : "border-white/10 text-white/55 hover:border-white/30 hover:text-white"
+              }`}
+            >
+              TEMPORADA
+            </button>
+            {mesesDisponiveis.map((mk) => (
+              <button
+                key={mk}
+                onClick={() => setMes(mk)}
+                className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[10px] tracking-[0.18em] font-bold border transition-all ${
+                  mes === mk
+                    ? "bg-white text-[#0b0b0b] border-white"
+                    : "border-white/10 text-white/55 hover:border-white/30 hover:text-white"
+                }`}
+              >
+                {mesLabel(mk)}
+              </button>
+            ))}
+          </div>
+
+          {/* Seletor de POSIÇÃO */}
+          <div className="flex gap-2 flex-wrap items-center mb-3">
+            <span className="text-[10px] tracking-[0.25em] text-white/40 mr-1">POSIÇÃO:</span>
+            {POSICOES.map((p) => (
+              <button
+                key={p.v}
+                onClick={() => setPosicao(p.v)}
+                className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[10px] tracking-[0.18em] font-bold border transition-all ${
+                  posicao === p.v
+                    ? "bg-[#22ff88]/15 text-[#22ff88] border-[#22ff88]/40"
+                    : "border-white/10 text-white/55 hover:border-white/30 hover:text-white"
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Modos */}
           <div className="flex gap-2 flex-wrap items-center">
             {MODOS.map((m) => (
               <button
@@ -191,10 +365,55 @@ export function Estatisticas() {
           <div className="h-64 rounded-2xl bg-white/[0.03] border border-white/[0.05] animate-pulse" />
         )}
 
+        {/* CRAQUES DO MÊS POR POSIÇÃO */}
+        {!loading && mes !== "total" && craquesDoMes.length > 0 && (
+          <div className="mb-8 p-5 rounded-2xl border border-[#22ff88]/20 bg-gradient-to-br from-[#22ff88]/[0.06] to-transparent">
+            <div className="flex items-center gap-2 mb-4">
+              <Crown size={16} className="text-[#22ff88]" />
+              <p className="text-[10px] tracking-[0.25em] text-[#22ff88] font-bold">
+                CRAQUES DE {mesLabel(mes)} · POR POSIÇÃO
+              </p>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              {POSICOES.filter((p) => p.v !== "todas").map((p) => {
+                const c = craquesDoMes.find((cq) => cq.posicao === p.v);
+                return (
+                  <div
+                    key={p.v}
+                    className="p-3 rounded-xl border border-white/[0.07] bg-white/[0.02] text-center"
+                  >
+                    <p className="text-[9px] tracking-[0.2em] text-white/40 mb-2">{p.label}</p>
+                    {c ? (
+                      <>
+                        <div className="w-14 h-14 mx-auto rounded-full overflow-hidden ring-2 ring-[#22ff88]/40 bg-white/5 flex items-center justify-center text-white/40 text-xs font-bold mb-2">
+                          {c.foto_url ? (
+                            <img src={c.foto_url} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            (c.apelido || c.nome).split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase()
+                          )}
+                        </div>
+                        <p className="font-bold text-xs truncate">{c.apelido || c.nome}</p>
+                        <p className="text-[#22ff88] font-['Archivo',sans-serif] font-black tabular-nums text-lg">
+                          {c.nota_total.toFixed(1)}
+                        </p>
+                        <p className="text-[9px] text-white/35 tracking-wider">
+                          {c.gols}G · {c.assistencias}A
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-white/25 text-xs py-6">sem dados</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {!loading && ordenado.length === 0 && (
           <div className="p-10 rounded-2xl border border-white/[0.06] bg-white/[0.02] text-white/50 text-center">
             <Trophy className="mx-auto mb-3 text-white/20" size={32} />
-            Sem jogos registrados ainda.
+            {mes === "total" ? "Sem jogos registrados ainda." : `Sem jogos no período (${mesLabel(mes)}).`}
           </div>
         )}
 
@@ -242,7 +461,6 @@ export function Estatisticas() {
                       {valorExibido(r)}
                     </p>
                     <p className="text-[9px] tracking-[0.18em] text-white/35 uppercase">{modoAtual.sufixo}</p>
-                    {/* base do pódio */}
                     <div
                       className={`mt-2 rounded-t-lg ${
                         ehPrimeiro
@@ -255,7 +473,7 @@ export function Estatisticas() {
               })}
             </div>
 
-            {/* POWER RANKING — mexidas */}
+            {/* POWER RANKING — mexidas (só na temporada) */}
             {temSnapshot && (() => {
               const subiram = ordenado
                 .filter((r) => (variacao[r.jogador_id] ?? 0) > 0)

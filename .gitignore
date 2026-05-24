@@ -10,3 +10,4 @@ dist
 .vercel
 .claude
 
+pnpm-lock.yaml
