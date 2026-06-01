@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../lib/supabase";
-import { Award, Check, Target, ListChecks, Star } from "lucide-react";
+import { Award, Check, Target, ListChecks, Star, Crown, Trophy } from "lucide-react";
 import { toast } from "sonner";
 
 type Posicao = "goleiro" | "fixo" | "ala" | "meio" | "pivo";
@@ -161,6 +161,77 @@ export function Craques() {
             Nenhuma votação aberta no momento. O admin libera a votação dos craques no fim do mês.
           </div>
         )}
+
+        {!loading && votacao && !votacao.aberta && (() => {
+          const vencedores = POSICOES.map((pos) => {
+            const cands = candidatos.filter((c) => c.posicao === pos.v);
+            const votosPos = resultados.filter((r) => r.posicao === pos.v);
+            const total = votosPos.reduce((s, r) => s + r.votos, 0);
+            if (total === 0) return { pos, lista: [] as { c: Candidato; votos: number; pct: number }[], total };
+            const maxVotos = Math.max(...votosPos.map((r) => r.votos));
+            const top = votosPos
+              .filter((r) => r.votos === maxVotos)
+              .map((r) => ({
+                c: cands.find((x) => x.jogador_id === r.jogador_id)!,
+                votos: r.votos,
+                pct: Math.round((r.votos / total) * 100),
+              }))
+              .filter((x) => x.c);
+            return { pos, lista: top, total };
+          });
+          return (
+            <div className="mb-10 p-5 sm:p-6 rounded-2xl border border-amber-400/25 bg-gradient-to-br from-amber-400/[0.08] via-[#22ff88]/[0.04] to-transparent">
+              <div className="flex items-center gap-2 mb-5">
+                <Trophy size={18} className="text-amber-400" />
+                <p className="text-[10px] sm:text-[11px] tracking-[0.28em] text-amber-400 font-bold">
+                  OS CRAQUES DE {mesLabel.toUpperCase()}
+                </p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                {vencedores.map(({ pos, lista, total }) => (
+                  <div
+                    key={pos.v}
+                    className="p-4 rounded-xl border border-white/[0.07] bg-[#0b0b0b]/40 text-center relative overflow-hidden"
+                  >
+                    <p className="text-[9px] tracking-[0.22em] text-white/40 font-bold mb-3">{pos.label.toUpperCase()}</p>
+                    {lista.length === 0 ? (
+                      <p className="text-white/25 text-xs py-8">sem votos</p>
+                    ) : (
+                      <>
+                        <div className="flex justify-center -space-x-3 mb-2">
+                          {lista.map(({ c }) => (
+                            <div
+                              key={c.jogador_id}
+                              className="w-16 h-16 rounded-full overflow-hidden ring-2 ring-amber-400/60 bg-white/5 flex items-center justify-center text-white/40 text-xs font-bold"
+                            >
+                              {c.foto_url ? (
+                                <img src={c.foto_url} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                (c.apelido || c.nome).split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase()
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        <Crown size={14} className="mx-auto text-amber-400 mb-1" />
+                        <p className="font-bold text-sm truncate">
+                          {lista.map((x) => x.c.apelido || x.c.nome).join(" · ")}
+                        </p>
+                        <p className="font-['Archivo',sans-serif] font-black text-2xl text-[#22ff88] tabular-nums mt-1 leading-none">
+                          {lista[0].pct}%
+                        </p>
+                        <p className="text-[9px] text-white/40 mt-1">
+                          {lista[0].votos} {lista[0].votos === 1 ? "voto" : "votos"}
+                          {lista.length > 1 ? " · empate" : ""}
+                          {" · de "}{total}
+                        </p>
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
         {!loading && votacao && (
           <div className="space-y-8">
