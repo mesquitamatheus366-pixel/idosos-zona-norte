@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
-import { ArrowRight, Shuffle, Target, ListChecks, Star, Calendar, X, UserPlus2, Trophy, Users, Flame } from "lucide-react";
+import { ArrowRight, Shuffle, Target, ListChecks, Star, Calendar, X, UserPlus2, Trophy, Users, Flame, Crown } from "lucide-react";
 import { motion } from "motion/react";
 import { supabase } from "../lib/supabase";
 
@@ -45,17 +45,34 @@ type MelhorMes = {
   pontos: number;
 };
 
+const MESES_NOMES = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+];
+
+type CraqueVencedor = {
+  posicao: Posicao;
+  jogador_id: string;
+  nome: string;
+  apelido: string | null;
+  foto_url: string | null;
+  votos: number;
+  pct: number;
+  empate: boolean;
+};
+
 export function Home() {
   const [jogadores, setJogadores] = useState<Jogador[]>([]);
   const [agregados, setAgregados] = useState<Agregado[]>([]);
   const [melhorMes, setMelhorMes] = useState<MelhorMes[]>([]);
+  const [craquesVotados, setCraquesVotados] = useState<{ mesRef: string; vencedores: CraqueVencedor[] } | null>(null);
   const [loading, setLoading] = useState(true);
   const [recarregando, setRecarregando] = useState(false);
 
   async function carregar(silencioso = false) {
     if (!silencioso) setLoading(true);
     if (silencioso) setRecarregando(true);
-    const [{ data: jg }, { data: ag }, { data: mm }] = await Promise.all([
+    const [{ data: jg }, { data: ag }, { data: mm }, { data: vt }] = await Promise.all([
       supabase
         .from("jogadores")
         .select("id, nome, apelido, posicao, nivel, foto_url")
@@ -63,6 +80,12 @@ export function Home() {
         .order("nome"),
       supabase.from("estatisticas_agregadas").select("*"),
       supabase.from("melhor_time_mes").select("*").order("pontos", { ascending: false }),
+      supabase
+        .from("votacao_craques")
+        .select("id, mes_referencia, aberta")
+        .eq("aberta", false)
+        .order("mes_referencia", { ascending: false })
+        .limit(1),
     ]);
     setJogadores((jg as Jogador[]) || []);
     setAgregados(((ag as Agregado[]) || []).map((a) => ({
@@ -79,6 +102,48 @@ export function Home() {
       assistencias: Number(m.assistencias),
       mvps: Number(m.mvps),
     })));
+
+    const votacao = ((vt as any[]) || [])[0];
+    if (votacao) {
+      const [{ data: res }, { data: cand }] = await Promise.all([
+        supabase
+          .from("resultado_craques")
+          .select("posicao, jogador_id, votos")
+          .eq("votacao_id", votacao.id),
+        supabase
+          .from("melhor_time_mes")
+          .select("jogador_id, nome, apelido, posicao, foto_url"),
+      ]);
+      const candMap: Record<string, any> = {};
+      ((cand as any[]) || []).forEach((c) => (candMap[c.jogador_id] = c));
+      const posicoes: Posicao[] = ["goleiro", "fixo", "ala", "meio", "pivo"];
+      const vencedores: CraqueVencedor[] = [];
+      posicoes.forEach((pos) => {
+        const linhas = ((res as any[]) || []).filter((r) => r.posicao === pos);
+        const total = linhas.reduce((s, r) => s + Number(r.votos || 0), 0);
+        if (total === 0) return;
+        const max = Math.max(...linhas.map((r) => Number(r.votos)));
+        const empatados = linhas.filter((r) => Number(r.votos) === max);
+        empatados.forEach((r) => {
+          const c = candMap[r.jogador_id];
+          if (!c) return;
+          vencedores.push({
+            posicao: pos,
+            jogador_id: r.jogador_id,
+            nome: c.nome,
+            apelido: c.apelido,
+            foto_url: c.foto_url,
+            votos: Number(r.votos),
+            pct: Math.round((Number(r.votos) / total) * 100),
+            empate: empatados.length > 1,
+          });
+        });
+      });
+      setCraquesVotados({ mesRef: votacao.mes_referencia, vencedores });
+    } else {
+      setCraquesVotados(null);
+    }
+
     setLoading(false);
     setRecarregando(false);
   }
@@ -202,8 +267,21 @@ export function Home() {
         </div>
       </section>
 
+      {/* CRAQUES DO MÊS — vencedores da última votação encerrada */}
+      {craquesVotados && craquesVotados.vencedores.length > 0 && (
+        <SectionWrapper borderTop>
+          <SectionHeader
+            rotulo="VOTAÇÃO POPULAR"
+            titulo={`Craques de ${mesLabelFromRef(craquesVotados.mesRef)}`}
+            linkTo="/craques"
+            linkLabel="VER VOTAÇÃO"
+          />
+          <CraquesDoMesPainel vencedores={craquesVotados.vencedores} />
+        </SectionWrapper>
+      )}
+
       {/* DESTAQUES — carrossel auto-rotativo */}
-      <SectionWrapper>
+      <SectionWrapper borderTop>
         <SectionHeader rotulo="DESTAQUES" titulo="Líderes da pelada" linkTo="/estatisticas" linkLabel="VER TUDO" />
         <CarrosselLideres agregados={agregados} fotosMap={fotosMap} />
       </SectionWrapper>
@@ -277,6 +355,77 @@ export function Home() {
           </Link>
         </div>
       </section>
+    </div>
+  );
+}
+
+function mesLabelFromRef(ref: string) {
+  const [ano, mes] = ref.split("-").map(Number);
+  return `${MESES_NOMES[mes - 1]} ${ano}`;
+}
+
+function CraquesDoMesPainel({ vencedores }: { vencedores: CraqueVencedor[] }) {
+  const POS_LABEL: Record<Posicao, string> = {
+    goleiro: "Goleiro",
+    fixo: "Fixo",
+    ala: "Ala",
+    meio: "Meio",
+    pivo: "Pivô",
+  };
+  const porPos: Record<string, CraqueVencedor[]> = {};
+  vencedores.forEach((v) => {
+    (porPos[v.posicao] ||= []).push(v);
+  });
+  const ordem: Posicao[] = ["goleiro", "fixo", "ala", "meio", "pivo"];
+  return (
+    <div className="relative rounded-3xl border border-amber-400/25 bg-gradient-to-br from-amber-400/[0.08] via-[#22ff88]/[0.04] to-transparent p-5 sm:p-6 overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.1),transparent_60%)] pointer-events-none" />
+      <div className="relative grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        {ordem.map((pos) => {
+          const lista = porPos[pos] || [];
+          if (lista.length === 0) return null;
+          const principal = lista[0];
+          return (
+            <motion.div
+              key={pos}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4 }}
+              className="p-4 rounded-2xl border border-white/[0.07] bg-[#0b0b0b]/40 text-center"
+            >
+              <p className="text-[9px] tracking-[0.22em] text-white/40 font-bold mb-3 uppercase">
+                {POS_LABEL[pos]}
+              </p>
+              <div className="flex justify-center -space-x-3 mb-2">
+                {lista.map((v) => (
+                  <div
+                    key={v.jogador_id}
+                    className="w-16 h-16 rounded-full overflow-hidden ring-2 ring-amber-400/70 bg-white/5 flex items-center justify-center text-white/40 text-xs font-bold shadow-[0_0_18px_rgba(251,191,36,0.25)]"
+                  >
+                    {v.foto_url ? (
+                      <img src={v.foto_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      (v.apelido || v.nome).split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase()
+                    )}
+                  </div>
+                ))}
+              </div>
+              <Crown size={14} className="mx-auto text-amber-400 mb-1" />
+              <p className="font-bold text-sm truncate">
+                {lista.map((v) => v.apelido || v.nome).join(" · ")}
+              </p>
+              <p className="font-['Archivo',sans-serif] font-black text-2xl text-[#22ff88] tabular-nums mt-1 leading-none">
+                {principal.pct}%
+              </p>
+              <p className="text-[9px] text-white/40 mt-1">
+                {principal.votos} {principal.votos === 1 ? "voto" : "votos"}
+                {principal.empate ? " · empate" : ""}
+              </p>
+            </motion.div>
+          );
+        })}
+      </div>
     </div>
   );
 }
