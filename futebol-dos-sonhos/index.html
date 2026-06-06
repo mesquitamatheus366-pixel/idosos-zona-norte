@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Futebol dos Sonhos · Copa & Brasileirão</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=VT323&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#06140d;
+    --bg-2:#0a1f14;
+    --line:rgba(255,255,255,.08);
+    --grass:#0e2a1b;
+    --grass-2:#0a2114;
+    --green:#3ef07c;
+    --green-soft:#7df7a8;
+    --yellow:#ffcc1a;
+    --yellow-soft:#ffe16b;
+    --red:#e63946;
+    --red-2:#ff4d57;
+    --white:#f6fff7;
+    --muted:#7fa896;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--white);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
+  body{
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(62,240,124,.08), transparent 60%),
+      radial-gradient(900px 500px at -10% 30%, rgba(255,204,26,.06), transparent 60%),
+      var(--bg);
+  }
+
+  /* NAV */
+  nav{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:24px 56px;border-bottom:1px solid var(--line);
+  }
+  .logo{display:flex;align-items:center;gap:10px;font-family:'Bebas Neue';letter-spacing:2px;font-size:22px}
+  .logo .ball{width:28px;height:28px;border-radius:50%;background:
+    radial-gradient(circle at 30% 30%, #fff 0 6px, transparent 7px),
+    conic-gradient(from 0deg,#0b1f14 0 20%,#fff 20% 25%,#0b1f14 25% 45%,#fff 45% 50%,#0b1f14 50% 70%,#fff 70% 75%,#0b1f14 75% 95%,#fff 95% 100%);
+    box-shadow:0 0 18px rgba(62,240,124,.4)}
+  .nav-right{display:flex;gap:12px;align-items:center}
+  .pill{
+    padding:8px 16px;border:1px solid var(--yellow);color:var(--yellow);
+    border-radius:999px;font-size:12px;letter-spacing:1px;font-weight:600;
+    background:transparent;cursor:pointer;transition:.2s;
+  }
+  .pill:hover{background:var(--yellow);color:#000}
+
+  /* HERO */
+  .hero{
+    display:grid;grid-template-columns:1.1fr .9fr;gap:48px;
+    padding:64px 56px 32px;align-items:center;max-width:1500px;margin:0 auto;
+  }
+  .eyebrow{
+    font-family:'VT323',monospace;letter-spacing:6px;font-size:14px;color:var(--muted);
+    text-transform:uppercase;margin-bottom:24px;
+  }
+  .scoreboard{
+    font-family:'Bebas Neue';font-size:220px;line-height:.85;display:flex;align-items:center;gap:24px;
+    margin-bottom:32px;
+  }
+  .scoreboard .digit{
+    color:var(--yellow);text-shadow:0 0 24px rgba(255,204,26,.6), 0 0 60px rgba(255,204,26,.25);
+  }
+  .scoreboard .digit.green{color:var(--green);text-shadow:0 0 24px rgba(62,240,124,.6),0 0 60px rgba(62,240,124,.25)}
+  .scoreboard .dots{display:flex;flex-direction:column;gap:18px}
+  .scoreboard .dot{width:18px;height:18px;background:var(--green);box-shadow:0 0 20px var(--green)}
+  h1{
+    font-family:'Bebas Neue';font-size:74px;line-height:.95;letter-spacing:1px;
+    color:#fff;margin-bottom:18px;
+  }
+  h1 .accent{color:var(--green)}
+  .lead{color:#cfe5d8;max-width:520px;line-height:1.55;margin-bottom:32px;font-size:16px}
+  .cta-row{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .btn-primary{
+    background:var(--red);color:#fff;border:none;padding:18px 28px;font-weight:700;
+    font-size:15px;letter-spacing:2px;cursor:pointer;border-left:6px solid var(--yellow);
+    display:inline-flex;align-items:center;gap:14px;text-transform:uppercase;
+    box-shadow:0 8px 30px rgba(230,57,70,.35);transition:.2s;
+  }
+  .btn-primary:hover{transform:translateY(-2px);background:var(--red-2)}
+  .btn-primary .arrow{transition:.2s}
+  .btn-primary:hover .arrow{transform:translateX(6px)}
+  .mode-switch{display:flex;align-items:center;gap:14px;margin-top:28px;color:var(--muted);font-size:11px;letter-spacing:2px}
+  .seg{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .seg button{
+    background:transparent;color:#cfe5d8;border:none;padding:10px 16px;font-size:12px;font-weight:600;
+    letter-spacing:1px;cursor:pointer;text-transform:uppercase;
+  }
+  .seg button.active{background:var(--red);color:#fff}
+
+  /* PITCH */
+  .pitch-wrap{display:flex;justify-content:center;align-items:center;position:relative}
+  .pitch{
+    position:relative;width:430px;height:560px;border-radius:14px;border:2px solid rgba(62,240,124,.4);
+    background:
+      repeating-linear-gradient(0deg,var(--grass) 0 56px, var(--grass-2) 56px 112px);
+    overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.45), inset 0 0 60px rgba(0,0,0,.5);
+  }
+  .pitch::before,.pitch::after{
+    content:"";position:absolute;left:50%;transform:translateX(-50%);
+    width:160px;height:90px;border:2px solid rgba(62,240,124,.4);
+  }
+  .pitch::before{top:-2px;border-top:none}
+  .pitch::after{bottom:-2px;border-bottom:none}
+  .mid-line{position:absolute;top:50%;left:0;right:0;height:2px;background:rgba(62,240,124,.4)}
+  .mid-circle{
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    width:120px;height:120px;border-radius:50%;border:2px solid rgba(62,240,124,.4);
+  }
+  .mid-dot{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:6px;height:6px;background:var(--green);border-radius:50%;box-shadow:0 0 12px var(--green)}
+
+  .player{position:absolute;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;transition:.2s}
+  .player:hover{transform:translate(-50%,-50%) scale(1.08)}
+  .player .num{
+    width:44px;height:44px;border-radius:50%;border:2px solid var(--yellow);
+    color:var(--yellow);font-family:'Bebas Neue';font-size:22px;display:flex;align-items:center;justify-content:center;
+    background:rgba(8,28,18,.7);backdrop-filter:blur(2px);
+    box-shadow:0 0 12px rgba(255,204,26,.35);
+  }
+  .player .name{font-size:11px;color:var(--yellow-soft);font-weight:600;letter-spacing:.3px;text-shadow:0 1px 4px #000}
+
+  /* 4-3-3 layout */
+  .p1 { left:50%; top:88%; transform:translate(-50%,-50%) }
+  .p2 { left:14%; top:70%; transform:translate(-50%,-50%) }
+  .p3 { left:36%; top:73%; transform:translate(-50%,-50%) }
+  .p4 { left:64%; top:73%; transform:translate(-50%,-50%) }
+  .p5 { left:86%; top:70%; transform:translate(-50%,-50%) }
+  .p6 { left:25%; top:50%; transform:translate(-50%,-50%) }
+  .p7 { left:50%; top:53%; transform:translate(-50%,-50%) }
+  .p8 { left:75%; top:50%; transform:translate(-50%,-50%) }
+  .p9 { left:18%; top:25%; transform:translate(-50%,-50%) }
+  .p10{ left:50%; top:18%; transform:translate(-50%,-50%) }
+  .p11{ left:82%; top:25%; transform:translate(-50%,-50%) }
+
+  /* PANEL: roll the dice */
+  .panel-wrap{padding:0 56px 80px;max-width:1500px;margin:0 auto}
+  .panel-title{font-family:'Bebas Neue';font-size:42px;letter-spacing:2px;margin-bottom:8px}
+  .panel-sub{color:var(--muted);margin-bottom:32px;font-size:14px}
+  .dice-grid{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:20px;
+  }
+  .card{
+    background:linear-gradient(180deg, rgba(14,42,27,.6), rgba(8,24,16,.6));
+    border:1px solid var(--line);border-radius:14px;padding:24px;position:relative;overflow:hidden;
+    transition:.25s;
+  }
+  .card:hover{border-color:rgba(62,240,124,.4);transform:translateY(-2px)}
+  .card .tag{
+    font-family:'VT323',monospace;letter-spacing:3px;font-size:12px;color:var(--green);text-transform:uppercase;margin-bottom:14px;
+  }
+  .card h3{font-family:'Bebas Neue';font-size:32px;letter-spacing:1px;margin-bottom:6px}
+  .card p{color:#b8d5c6;font-size:13px;line-height:1.5;margin-bottom:16px}
+  .badge-row{display:flex;flex-wrap:wrap;gap:8px}
+  .badge{
+    font-size:11px;padding:5px 10px;border-radius:999px;border:1px solid var(--line);
+    color:#d6efe1;background:rgba(0,0,0,.25);font-weight:600;letter-spacing:.3px;
+  }
+  .badge.gold{border-color:var(--yellow);color:var(--yellow)}
+  .badge.green{border-color:var(--green);color:var(--green)}
+
+  .dice-icon{
+    position:absolute;right:-10px;top:-10px;font-size:120px;opacity:.06;
+    transform:rotate(-12deg);pointer-events:none;
+  }
+
+  /* SECTION TIMELINE */
+  .timeline{padding:40px 56px 80px;max-width:1500px;margin:0 auto}
+  .tl-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:24px}
+  .scroll-row{display:flex;gap:14px;overflow-x:auto;padding-bottom:12px}
+  .scroll-row::-webkit-scrollbar{height:6px}
+  .scroll-row::-webkit-scrollbar-thumb{background:var(--line);border-radius:99px}
+  .chip{
+    min-width:180px;padding:14px 16px;border-radius:10px;border:1px solid var(--line);
+    background:rgba(10,30,20,.6);cursor:pointer;transition:.2s;
+  }
+  .chip:hover{border-color:var(--green)}
+  .chip .year{font-family:'Bebas Neue';font-size:26px;color:var(--yellow)}
+  .chip .where{font-size:12px;color:#cfe5d8;margin-top:4px}
+  .chip .champ{font-size:11px;color:var(--green);font-weight:700;letter-spacing:1px;margin-top:6px;text-transform:uppercase}
+
+  /* BRASILEIRÃO TEAMS */
+  .clubs{padding:0 56px 100px;max-width:1500px;margin:0 auto}
+  .tabs{display:flex;gap:8px;border-bottom:1px solid var(--line);margin-bottom:24px}
+  .tab{
+    background:transparent;color:#cfe5d8;border:none;padding:14px 20px;font-weight:600;font-size:13px;
+    letter-spacing:1px;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;
+  }
+  .tab.active{color:var(--yellow);border-color:var(--yellow)}
+  .clubs-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
+  .club{
+    aspect-ratio:1;border-radius:12px;border:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(14,42,27,.5), rgba(8,24,16,.6));
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+    cursor:pointer;transition:.2s;padding:14px;text-align:center;
+  }
+  .club:hover{border-color:var(--green);transform:translateY(-3px)}
+  .crest{
+    width:54px;height:54px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+    font-family:'Bebas Neue';font-size:22px;color:#fff;
+  }
+  .club .nm{font-size:12px;color:#d6efe1;font-weight:600}
+  /* crest colors */
+  .c-flamengo{background:linear-gradient(135deg,#c8102e,#000)}
+  .c-palmeiras{background:linear-gradient(135deg,#0a5b30,#013a1d)}
+  .c-corinthians{background:linear-gradient(135deg,#0b0b0b,#3a3a3a)}
+  .c-saopaulo{background:linear-gradient(135deg,#c8102e,#fff 50%,#000 50%)}
+  .c-fluminense{background:linear-gradient(135deg,#7a1c2f,#0b5135,#fff)}
+  .c-vasco{background:linear-gradient(135deg,#000,#fff)}
+  .c-santos{background:linear-gradient(135deg,#000,#fff)}
+  .c-gremio{background:linear-gradient(135deg,#0a4ea2,#000,#fff)}
+  .c-inter{background:linear-gradient(135deg,#c8102e,#7a0c1d)}
+  .c-cruzeiro{background:linear-gradient(135deg,#0a4ea2,#072e63)}
+  .c-galo{background:linear-gradient(135deg,#0b0b0b,#fff)}
+  .c-botafogo{background:linear-gradient(135deg,#0b0b0b,#fff)}
+
+  /* FOOTER */
+  footer{
+    border-top:1px solid var(--line);padding:32px 56px;display:flex;justify-content:space-between;
+    color:var(--muted);font-size:12px;letter-spacing:1px;
+  }
+
+  @media (max-width:980px){
+    .hero{grid-template-columns:1fr;padding:32px 24px}
+    nav,.panel-wrap,.timeline,.clubs,footer{padding-left:24px;padding-right:24px}
+    .scoreboard{font-size:140px}
+    h1{font-size:48px}
+    .pitch{width:320px;height:440px}
+    .dice-grid{grid-template-columns:1fr}
+    .clubs-grid{grid-template-columns:repeat(3,1fr)}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><div class="ball"></div> FUTEBOL DOS SONHOS</div>
+  <div class="nav-right">
+    <button class="pill">PT ▾</button>
+    <button class="pill">ESCURO</button>
+    <button class="pill" style="background:var(--yellow);color:#000">ENTRAR</button>
+  </div>
+</nav>
+
+<section class="hero">
+  <div>
+    <div class="eyebrow">Copa do Mundo · 1930 — 2026 · Brasileirão · 1959 — 2026</div>
+    <div class="scoreboard">
+      <span class="digit">7</span>
+      <div class="dots"><div class="dot"></div><div class="dot"></div></div>
+      <span class="digit green">0</span>
+    </div>
+    <h1>Role o dado. <br/>Monte sua <span class="accent">seleção</span> ou <span class="accent">clube</span> dos sonhos</h1>
+    <p class="lead">
+      Role o dado: sai uma Copa do Mundo <strong>ou</strong> um campeonato Brasileiro, uma era e um time histórico.
+      Escale 11 craques que estiveram lá — de Pelé a Vini Jr., de Garrincha a Raphinha, de Zico a Gabigol — e simule:
+      seu time faz 7 a 0?
+    </p>
+    <div class="cta-row">
+      <button class="btn-primary">JOGAR AGORA <span class="arrow">→</span></button>
+      <button class="pill">VER REGRAS</button>
+    </div>
+    <div class="mode-switch">
+      <span>MODO · DIFICULDADE</span>
+      <div class="seg">
+        <button class="active">Clássico</button>
+        <button>De almanaque</button>
+        <button>Lenda</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="pitch-wrap">
+    <div class="pitch">
+      <div class="mid-line"></div>
+      <div class="mid-circle"></div>
+      <div class="mid-dot"></div>
+
+      <!-- 4-3-3 Brasil eterno -->
+      <div class="player p1"><div class="num">1</div><div class="name">Taffarel</div></div>
+      <div class="player p2"><div class="num">6</div><div class="name">R. Carlos</div></div>
+      <div class="player p3"><div class="num">3</div><div class="name">Lúcio</div></div>
+      <div class="player p4"><div class="num">4</div><div class="name">Thiago Silva</div></div>
+      <div class="player p5"><div class="num">2</div><div class="name">Cafu</div></div>
+      <div class="player p6"><div class="num">5</div><div class="name">Dunga</div></div>
+      <div class="player p7"><div class="num">8</div><div class="name">Zico</div></div>
+      <div class="player p8"><div class="num">10</div><div class="name">Pelé</div></div>
+      <div class="player p9"><div class="num">7</div><div class="name">Garrincha</div></div>
+      <div class="player p10"><div class="num">9</div><div class="name">Ronaldo</div></div>
+      <div class="player p11"><div class="num">11</div><div class="name">Romário</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="panel-wrap">
+  <div class="panel-title">ROLE O DADO 🎲</div>
+  <div class="panel-sub">3 cartas saem aleatórias — competição, era e time. Aceita o desafio?</div>
+  <div class="dice-grid">
+    <div class="card">
+      <div class="dice-icon">🏆</div>
+      <div class="tag">CARTA 01 · COMPETIÇÃO</div>
+      <h3>Copa do Mundo 1970</h3>
+      <p>México. O futebol-arte na sua melhor versão. Defenda a tricampeã com Pelé, Tostão, Rivelino, Gérson e Jairzinho.</p>
+      <div class="badge-row">
+        <span class="badge gold">Lendária</span>
+        <span class="badge">Brasil 🇧🇷</span>
+        <span class="badge green">+3 estrelas</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="dice-icon">⚽</div>
+      <div class="tag">CARTA 02 · TIME</div>
+      <h3>Santos FC 1962</h3>
+      <p>O Santos de Pelé, Pepe, Coutinho e Zito. Bi mundial e tricampeão brasileiro — o time mais temido do planeta.</p>
+      <div class="badge-row">
+        <span class="badge gold">Histórico</span>
+        <span class="badge">Vila Belmiro</span>
+        <span class="badge green">Mundial</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="dice-icon">🎯</div>
+      <div class="tag">CARTA 03 · DESAFIO</div>
+      <h3>Faça 7 a 0</h3>
+      <p>Escale os 11 titulares respeitando as posições. Simule a partida e veja se sua seleção entra para a história.</p>
+      <div class="badge-row">
+        <span class="badge">90 minutos</span>
+        <span class="badge gold">Bônus craque</span>
+        <span class="badge green">Multiplicador x3</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="timeline">
+  <div class="tl-head">
+    <div>
+      <div class="panel-title">COPAS DO MUNDO</div>
+      <div class="panel-sub">Toque para escolher uma edição manualmente.</div>
+    </div>
+    <button class="pill">VER TODAS →</button>
+  </div>
+  <div class="scroll-row">
+    <div class="chip"><div class="year">1958</div><div class="where">Suécia</div><div class="champ">★ Brasil</div></div>
+    <div class="chip"><div class="year">1962</div><div class="where">Chile</div><div class="champ">★★ Brasil</div></div>
+    <div class="chip"><div class="year">1970</div><div class="where">México</div><div class="champ">★★★ Brasil</div></div>
+    <div class="chip"><div class="year">1982</div><div class="where">Espanha</div><div class="champ" style="color:var(--muted)">Itália</div></div>
+    <div class="chip"><div class="year">1994</div><div class="where">EUA</div><div class="champ">★★★★ Brasil</div></div>
+    <div class="chip"><div class="year">2002</div><div class="where">Coreia/Japão</div><div class="champ">★★★★★ Brasil</div></div>
+    <div class="chip"><div class="year">2014</div><div class="where">Brasil</div><div class="champ" style="color:var(--red-2)">Alemanha</div></div>
+    <div class="chip"><div class="year">2022</div><div class="where">Catar</div><div class="champ" style="color:var(--muted)">Argentina</div></div>
+    <div class="chip"><div class="year">2026</div><div class="where">EUA/MEX/CAN</div><div class="champ" style="color:var(--yellow)">A vir</div></div>
+  </div>
+</section>
+
+<section class="clubs">
+  <div class="tl-head">
+    <div>
+      <div class="panel-title">CLUBES BRASILEIROS</div>
+      <div class="panel-sub">Históricos e atuais — escolha a era e monte a escalação.</div>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab active">Série A 2026</button>
+    <button class="tab">Esquadrões históricos</button>
+    <button class="tab">Anos 80/90</button>
+    <button class="tab">Mundiais</button>
+  </div>
+  <div class="clubs-grid">
+    <div class="club"><div class="crest c-flamengo">FLA</div><div class="nm">Flamengo</div></div>
+    <div class="club"><div class="crest c-palmeiras">PAL</div><div class="nm">Palmeiras</div></div>
+    <div class="club"><div class="crest c-corinthians">COR</div><div class="nm">Corinthians</div></div>
+    <div class="club"><div class="crest c-saopaulo">SPFC</div><div class="nm">São Paulo</div></div>
+    <div class="club"><div class="crest c-fluminense">FLU</div><div class="nm">Fluminense</div></div>
+    <div class="club"><div class="crest c-vasco">VAS</div><div class="nm">Vasco</div></div>
+    <div class="club"><div class="crest c-santos">SAN</div><div class="nm">Santos</div></div>
+    <div class="club"><div class="crest c-gremio">GRE</div><div class="nm">Grêmio</div></div>
+    <div class="club"><div class="crest c-inter">INT</div><div class="nm">Internacional</div></div>
+    <div class="club"><div class="crest c-cruzeiro">CRU</div><div class="nm">Cruzeiro</div></div>
+    <div class="club"><div class="crest c-galo">CAM</div><div class="nm">Atlético-MG</div></div>
+    <div class="club"><div class="crest c-botafogo">BOT</div><div class="nm">Botafogo</div></div>
+  </div>
+</section>
+
+<footer>
+  <div>© 2026 · FUTEBOL DOS SONHOS · Um jogo de almanaque.</div>
+  <div>v0.1 · MOCKUP</div>
+</footer>
+
+<script>
+  // tabs interactivity
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.addEventListener('click',()=>{
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+    });
+  });
+  document.querySelectorAll('.seg button').forEach(t=>{
+    t.addEventListener('click',()=>{
+      document.querySelectorAll('.seg button').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
