@@ -151,6 +151,17 @@
 
   .toast{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:#1a1f2e;border:1px solid var(--line);color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:300;animation:pop .25s}
 
+  .mode-seg{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .mode-seg button{background:transparent;color:var(--muted);border:none;padding:6px 12px;font-size:11px;font-weight:700;letter-spacing:1.5px;cursor:pointer;font-family:inherit}
+  .mode-seg button.active{background:var(--neon);color:#031620}
+
+  .pl.locked{opacity:.45;cursor:not-allowed;background:#0d1019}
+  .pl.locked:hover{transform:none;border-color:var(--line)}
+  .pl .rt.hidden{color:var(--muted);font-family:'VT323';font-size:18px}
+  .pl-pos{font-size:9px;padding:2px 6px;border-radius:99px;background:#0a1018;color:var(--neon);font-weight:800;letter-spacing:1px;border:1px solid var(--line)}
+  .roster-head{font-family:'VT323';letter-spacing:3px;color:var(--muted);font-size:12px;text-transform:uppercase;margin:14px 0 6px;padding-top:10px;border-top:1px dashed var(--line)}
+  .roster-head b{color:var(--neon)}
+
   @media (max-width:1100px){
     .game{grid-template-columns:1fr;padding:16px}
     .field-wrap{min-height:auto}
@@ -162,6 +173,10 @@
 <header class="topbar">
   <div class="brand"><div class="dot"></div> XI DOS SONHOS <small>· role o dado · monte sua escalação</small></div>
   <div class="stats">
+    <div class="mode-seg" id="mode-seg">
+      <button class="active" data-mode="classico">CLÁSSICO</button>
+      <button data-mode="pro">PRO</button>
+    </div>
     <div><b id="stat-filled">0</b>/11 escalados</div>
     <div><b id="stat-rolls">0</b>dados rolados</div>
     <button class="btn-reset" id="btn-reset">RECOMEÇAR</button>
@@ -314,7 +329,7 @@ const SLOTS = [
   {idx:10,pos:'ATA', label:'Ponta Dir.',  num:11, cls:'p11'},
 ];
 
-const state = { lineup: Array(11).fill(null), rolls:0, currentSlot:null };
+const state = { lineup: Array(11).fill(null), rolls:0, currentSlot:null, mode:'classico' };
 const $ = s=>document.querySelector(s);
 const $$= s=>document.querySelectorAll(s);
 const pick = a=>a[Math.floor(Math.random()*a.length)];
@@ -394,17 +409,25 @@ function rollDice(){
       $('#reveal-name').textContent = team.nome;
       $('#reveal-year').textContent = team.era;
       $('#reveal').classList.add('shown');
-      const players = team.jogadores.filter(j=>j.pos===slot.pos);
-      $('#player-list').innerHTML = players.map((p,i)=>`
-        <div class="pl" data-i="${i}">
-          <div class="av">${slot.num}</div>
-          <div class="info"><div class="nm">${p.n}</div><div class="mt">${team.nome} · ${p.pos}</div></div>
-          <div class="rt">${p.r}</div>
-        </div>`).join('');
+      const all = team.jogadores;
+      const isPro = state.mode==='pro';
+      const head = `<div class="roster-head">ELENCO COMPLETO · jogadores de <b>${slot.pos}</b> podem entrar nesta vaga</div>`;
+      $('#player-list').innerHTML = head + all.map((p,i)=>{
+        const ok = p.pos===slot.pos;
+        const rating = isPro?'<span class="rt hidden">??</span>':`<div class="rt">${p.r}</div>`;
+        return `<div class="pl ${ok?'':'locked'}" data-i="${i}">
+          <div class="av">${ok?slot.num:'·'}</div>
+          <div class="info"><div class="nm">${p.n}</div><div class="mt">${team.nome}</div></div>
+          <div class="pl-pos">${p.pos}</div>
+          ${rating}
+        </div>`;
+      }).join('');
       $$('#player-list .pl').forEach(el=>{
+        if(el.classList.contains('locked')) return;
         el.onclick = ()=>{
-          const p = players[+el.dataset.i];
+          const p = all[+el.dataset.i];
           state.lineup[state.currentSlot] = {...p, team:team.nome, teamShort:team.id.toUpperCase()};
+          if(isPro) toast(`${p.n} revelado · OVER ${p.r}`);
           closeModal(); renderPitch();
           if(state.lineup.filter(Boolean).length===11) toast('Escalação completa! Hora de simular ⚽');
         };
@@ -474,6 +497,13 @@ $('#btn-keep').onclick = ()=>$('#match').classList.remove('open');
 $('#btn-new-match').onclick = ()=>{$('#btn-sim').click()};
 $('#btn-restart').onclick = ()=>{state.lineup=Array(11).fill(null);state.rolls=0;renderPitch();$('#match').classList.remove('open')};
 
+document.querySelector('#mode-seg').addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON') return;
+  document.querySelectorAll('#mode-seg button').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active');
+  state.mode = e.target.dataset.mode;
+  toast('Modo: '+(state.mode==='pro'?'PRO (overs ocultos)':'CLÁSSICO'));
+});
 renderPitch();
 </script>
 </body>
