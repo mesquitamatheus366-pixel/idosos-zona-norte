@@ -111,14 +111,16 @@
   .reveal-team .nm{font-family:'Anton';font-size:24px;letter-spacing:1px}
   .reveal-team .yr{color:var(--muted);font-size:12px;margin-top:2px}
 
-  .player-list{display:flex;flex-direction:column;gap:8px;margin-top:14px}
-  .pl{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2);cursor:pointer;transition:.15s}
-  .pl:hover{border-color:var(--gold);transform:translateX(3px)}
-  .pl .av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#243047,#101725);display:flex;align-items:center;justify-content:center;font-family:'Anton';font-size:14px;color:var(--gold);border:1px solid var(--line)}
-  .pl .info{flex:1}
-  .pl .nm{font-weight:700;font-size:14px}
-  .pl .mt{color:var(--muted);font-size:11px;font-family:'VT323';letter-spacing:1px}
-  .pl .rt{font-family:'Anton';font-size:22px;color:var(--gold);letter-spacing:1px}
+  .player-list{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:10px}
+  .pl{display:flex;align-items:center;gap:6px;padding:5px 7px;border:1px solid var(--line);border-radius:6px;background:var(--panel-2);cursor:pointer;transition:.12s;min-width:0}
+  .pl:hover{border-color:var(--gold)}
+  .pl .av{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#243047,#101725);display:flex;align-items:center;justify-content:center;font-family:'Anton';font-size:10px;color:var(--gold);border:1px solid var(--line);flex-shrink:0}
+  .pl .info{flex:1;min-width:0;overflow:hidden}
+  .pl .nm{font-weight:700;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pl .mt{display:none}
+  .pl .pl-pos{font-size:8px;padding:1px 4px;letter-spacing:.5px;flex-shrink:0}
+  .pl .rt{font-family:'Anton';font-size:14px;color:var(--gold);letter-spacing:0;flex-shrink:0;min-width:18px;text-align:right}
+  .pl .rt.hidden{font-family:'VT323';font-size:14px;color:var(--muted)}
 
   .match-overlay{position:fixed;inset:0;background:rgba(5,6,10,.95);display:none;align-items:center;justify-content:center;z-index:200;padding:20px}
   .match-overlay.open{display:flex}
@@ -169,6 +171,11 @@
     box-shadow:0 14px 32px rgba(0,0,0,.55),inset 0 -8px 0 rgba(0,0,0,.08);transition:transform .15s}
   .dice-inline.rolling{animation:dice .08s infinite}
   .roll-btn.full{width:100%;display:block}
+  .mode-seg.full{width:100%;margin-bottom:12px}
+  .mode-seg.full button{flex:1;padding:8px 4px;font-size:10px}
+  .team-name-input{width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:var(--gold);font-family:'Anton';font-size:18px;letter-spacing:1.5px;margin:8px 0 12px;text-transform:uppercase;outline:none;transition:.15s}
+  .team-name-input:focus{border-color:var(--neon);background:#0d1018}
+  .slot.filled .disc.col-team{background:var(--col1,#0c2a1a);border-color:var(--col2,var(--gold));color:var(--col-text,#fff);box-shadow:0 0 14px var(--col-glow,rgba(245,200,66,.3)),inset 0 -8px 0 rgba(0,0,0,.25)}
 
   @media (max-width:1100px){
     .game{grid-template-columns:1fr;padding:16px}
@@ -194,7 +201,11 @@
 <main class="game">
   <aside class="panel dice-panel">
     <h2>DADO DO ELENCO</h2>
-    <div class="sub" id="dice-sub">Role o dado para sortear um time. Depois escolha um jogador do elenco para entrar no seu XI.</div>
+    <div class="mode-seg full" id="tipo-seg">
+      <button class="active" data-tipo="todos">TODOS</button>
+      <button data-tipo="selecao">SELEÇÕES</button>
+      <button data-tipo="brasileiro">BRASILEIROS</button>
+    </div>
     <div class="dice-inline" id="dice">🎲</div>
     <button class="roll-btn full" id="btn-roll">ROLAR O DADO</button>
     <div class="reveal-team" id="reveal">
@@ -217,7 +228,7 @@
 
   <aside class="panel">
     <h2>SEU XI</h2>
-    <div class="sub">Mescla de eras — quanto mais variado, mais lenda.</div>
+    <input type="text" id="team-name" class="team-name-input" placeholder="Nome do seu time" maxlength="32" value="XI DOS SONHOS"/>
     <div class="lineup-list" id="lineup-list"></div>
     <button class="sim-btn" id="btn-sim" disabled>SIMULAR PARTIDA</button>
   </aside>
@@ -227,7 +238,7 @@
 <div class="match-overlay" id="match">
   <div class="match-box">
     <div class="match-teams">
-      <div><div class="tn">XI DOS SONHOS</div></div>
+      <div><div class="tn" id="m-team-a">XI DOS SONHOS</div></div>
       <div class="vs">VS</div>
       <div><div class="tn foe" id="foe-name">ADVERSÁRIO</div></div>
     </div>
@@ -248,62 +259,153 @@
 
 <script>
 const TIMES = [
-  { id:'br58', nome:'Brasil 1958', era:'Copa do Mundo · Suécia', jogadores:[
+  // ===================== SELEÇÕES =====================
+  { id:'br58', tipo:'selecao', nome:'Brasil 1958', era:'Copa do Mundo · Suécia', cores:['#fde047','#16a34a'], jogadores:[
     {n:'Gilmar',pos:'GOL',r:88},{n:'Bellini',pos:'DEF',r:87},{n:'Nilton Santos',pos:'DEF',r:91},{n:'Djalma Santos',pos:'DEF',r:89},{n:'Orlando',pos:'DEF',r:84},
     {n:'Didi',pos:'MEI',r:93},{n:'Zito',pos:'MEI',r:86},{n:'Zagallo',pos:'MEI',r:88},
     {n:'Garrincha',pos:'ATA',r:96},{n:'Pelé',pos:'ATA',r:96},{n:'Vavá',pos:'ATA',r:90}]},
-  { id:'br70', nome:'Brasil 1970', era:'Copa do Mundo · México', jogadores:[
+  { id:'br62', tipo:'selecao', nome:'Brasil 1962', era:'Copa do Mundo · Chile', cores:['#fde047','#16a34a'], jogadores:[
+    {n:'Gilmar',pos:'GOL',r:88},{n:'Mauro',pos:'DEF',r:89},{n:'Zózimo',pos:'DEF',r:84},{n:'N. Santos',pos:'DEF',r:91},{n:'D. Santos',pos:'DEF',r:89},
+    {n:'Zito',pos:'MEI',r:88},{n:'Didi',pos:'MEI',r:93},{n:'Zagallo',pos:'MEI',r:88},
+    {n:'Garrincha',pos:'ATA',r:97},{n:'Vavá',pos:'ATA',r:90},{n:'Amarildo',pos:'ATA',r:88}]},
+  { id:'br70', tipo:'selecao', nome:'Brasil 1970', era:'Copa do Mundo · México', cores:['#fde047','#16a34a'], jogadores:[
     {n:'Félix',pos:'GOL',r:82},{n:'Carlos Alberto',pos:'DEF',r:94},{n:'Brito',pos:'DEF',r:86},{n:'Piazza',pos:'DEF',r:85},{n:'Everaldo',pos:'DEF',r:84},
     {n:'Clodoaldo',pos:'MEI',r:88},{n:'Gérson',pos:'MEI',r:93},{n:'Rivelino',pos:'MEI',r:94},
     {n:'Jairzinho',pos:'ATA',r:94},{n:'Pelé',pos:'ATA',r:99},{n:'Tostão',pos:'ATA',r:93}]},
-  { id:'br82', nome:'Brasil 1982', era:'Copa do Mundo · Espanha', jogadores:[
-    {n:'Waldir Peres',pos:'GOL',r:80},{n:'Leandro',pos:'DEF',r:91},{n:'Oscar',pos:'DEF',r:89},{n:'Luizinho',pos:'DEF',r:86},{n:'Júnior',pos:'DEF',r:92},
+  { id:'br82', tipo:'selecao', nome:'Brasil 1982', era:'Copa do Mundo · Espanha', cores:['#fde047','#16a34a'], jogadores:[
+    {n:'W. Peres',pos:'GOL',r:80},{n:'Leandro',pos:'DEF',r:91},{n:'Oscar',pos:'DEF',r:89},{n:'Luizinho',pos:'DEF',r:86},{n:'Júnior',pos:'DEF',r:92},
     {n:'Cerezo',pos:'MEI',r:88},{n:'Falcão',pos:'MEI',r:94},{n:'Sócrates',pos:'MEI',r:95},{n:'Zico',pos:'MEI',r:96},
     {n:'Éder',pos:'ATA',r:90},{n:'Serginho',pos:'ATA',r:82}]},
-  { id:'br94', nome:'Brasil 1994', era:'Copa do Mundo · EUA', jogadores:[
-    {n:'Taffarel',pos:'GOL',r:88},{n:'Jorginho',pos:'DEF',r:86},{n:'Aldair',pos:'DEF',r:90},{n:'Márcio Santos',pos:'DEF',r:85},{n:'Branco',pos:'DEF',r:88},
-    {n:'Mauro Silva',pos:'MEI',r:90},{n:'Dunga',pos:'MEI',r:91},{n:'Mazinho',pos:'MEI',r:85},{n:'Zinho',pos:'MEI',r:86},
+  { id:'br94', tipo:'selecao', nome:'Brasil 1994', era:'Copa do Mundo · EUA', cores:['#fde047','#16a34a'], jogadores:[
+    {n:'Taffarel',pos:'GOL',r:88},{n:'Jorginho',pos:'DEF',r:86},{n:'Aldair',pos:'DEF',r:90},{n:'M. Santos',pos:'DEF',r:85},{n:'Branco',pos:'DEF',r:88},
+    {n:'M. Silva',pos:'MEI',r:90},{n:'Dunga',pos:'MEI',r:91},{n:'Mazinho',pos:'MEI',r:85},{n:'Zinho',pos:'MEI',r:86},
     {n:'Bebeto',pos:'ATA',r:92},{n:'Romário',pos:'ATA',r:97}]},
-  { id:'br02', nome:'Brasil 2002', era:'Copa do Mundo · Coreia/Japão', jogadores:[
+  { id:'br02', tipo:'selecao', nome:'Brasil 2002', era:'Copa do Mundo · Coreia/Japão', cores:['#fde047','#16a34a'], jogadores:[
     {n:'Marcos',pos:'GOL',r:88},{n:'Cafu',pos:'DEF',r:94},{n:'Lúcio',pos:'DEF',r:91},{n:'Edmílson',pos:'DEF',r:87},{n:'R. Carlos',pos:'DEF',r:95},
-    {n:'Gilberto Silva',pos:'MEI',r:88},{n:'Kléberson',pos:'MEI',r:82},{n:'Juninho P.',pos:'MEI',r:84},
+    {n:'G. Silva',pos:'MEI',r:88},{n:'Kléberson',pos:'MEI',r:82},{n:'Juninho P.',pos:'MEI',r:84},
     {n:'Ronaldinho',pos:'ATA',r:96},{n:'Rivaldo',pos:'ATA',r:95},{n:'Ronaldo',pos:'ATA',r:98}]},
-  { id:'br22', nome:'Brasil 2022', era:'Copa do Mundo · Catar', jogadores:[
-    {n:'Alisson',pos:'GOL',r:93},{n:'Danilo',pos:'DEF',r:84},{n:'Marquinhos',pos:'DEF',r:91},{n:'Thiago Silva',pos:'DEF',r:90},{n:'Alex Sandro',pos:'DEF',r:84},
-    {n:'Casemiro',pos:'MEI',r:91},{n:'Lucas Paquetá',pos:'MEI',r:85},{n:'Bruno G.',pos:'MEI',r:86},
+  { id:'br22', tipo:'selecao', nome:'Brasil 2022', era:'Copa do Mundo · Catar', cores:['#fde047','#16a34a'], jogadores:[
+    {n:'Alisson',pos:'GOL',r:93},{n:'Danilo',pos:'DEF',r:84},{n:'Marquinhos',pos:'DEF',r:91},{n:'T. Silva',pos:'DEF',r:90},{n:'A. Sandro',pos:'DEF',r:84},
+    {n:'Casemiro',pos:'MEI',r:91},{n:'Paquetá',pos:'MEI',r:85},{n:'Bruno G.',pos:'MEI',r:86},
     {n:'Neymar',pos:'ATA',r:95},{n:'Vini Jr.',pos:'ATA',r:92},{n:'Raphinha',pos:'ATA',r:87}]},
-  { id:'san62', nome:'Santos 1962', era:'Mundial · Vila Belmiro', jogadores:[
-    {n:'Gilmar',pos:'GOL',r:88},{n:'Mauro',pos:'DEF',r:89},{n:'Calvet',pos:'DEF',r:80},{n:'Mauro Ramos',pos:'DEF',r:85},{n:'Dalmo',pos:'DEF',r:82},
+  { id:'arg86', tipo:'selecao', nome:'Argentina 1986', era:'Copa do Mundo · México', cores:['#7dd3fc','#fff'], jogadores:[
+    {n:'Pumpido',pos:'GOL',r:84},{n:'Cuciuffo',pos:'DEF',r:82},{n:'Brown',pos:'DEF',r:84},{n:'Ruggeri',pos:'DEF',r:87},{n:'Olarticoechea',pos:'DEF',r:83},
+    {n:'Batista',pos:'MEI',r:84},{n:'Giusti',pos:'MEI',r:83},{n:'Burruchaga',pos:'MEI',r:88},
+    {n:'Maradona',pos:'ATA',r:99},{n:'Valdano',pos:'ATA',r:87},{n:'Enrique',pos:'ATA',r:82}]},
+  { id:'arg22', tipo:'selecao', nome:'Argentina 2022', era:'Copa do Mundo · Catar', cores:['#7dd3fc','#fff'], jogadores:[
+    {n:'E. Martínez',pos:'GOL',r:91},{n:'Molina',pos:'DEF',r:85},{n:'Otamendi',pos:'DEF',r:86},{n:'Romero',pos:'DEF',r:88},{n:'Acuña',pos:'DEF',r:84},
+    {n:'De Paul',pos:'MEI',r:89},{n:'Fernández',pos:'MEI',r:86},{n:'Mac Allister',pos:'MEI',r:87},
+    {n:'Messi',pos:'ATA',r:98},{n:'J. Álvarez',pos:'ATA',r:88},{n:'Di María',pos:'ATA',r:89}]},
+  { id:'hol74', tipo:'selecao', nome:'Holanda 1974', era:'Carrossel · Copa Alemanha', cores:['#fb923c','#000'], jogadores:[
+    {n:'Jongbloed',pos:'GOL',r:82},{n:'Suurbier',pos:'DEF',r:84},{n:'Rijsbergen',pos:'DEF',r:83},{n:'Krol',pos:'DEF',r:90},{n:'Haan',pos:'DEF',r:85},
+    {n:'Jansen',pos:'MEI',r:84},{n:'Neeskens',pos:'MEI',r:92},{n:'Van Hanegem',pos:'MEI',r:88},
+    {n:'Rep',pos:'ATA',r:85},{n:'Cruyff',pos:'ATA',r:97},{n:'Rensenbrink',pos:'ATA',r:88}]},
+  { id:'ale90', tipo:'selecao', nome:'Alemanha 1990', era:'Copa do Mundo · Itália', cores:['#fff','#000'], jogadores:[
+    {n:'Illgner',pos:'GOL',r:85},{n:'Berthold',pos:'DEF',r:83},{n:'Augenthaler',pos:'DEF',r:87},{n:'Kohler',pos:'DEF',r:86},{n:'Brehme',pos:'DEF',r:90},
+    {n:'Buchwald',pos:'MEI',r:85},{n:'Matthäus',pos:'MEI',r:95},{n:'Hässler',pos:'MEI',r:86},{n:'Littbarski',pos:'MEI',r:87},
+    {n:'Klinsmann',pos:'ATA',r:91},{n:'Völler',pos:'ATA',r:88}]},
+  { id:'ale14', tipo:'selecao', nome:'Alemanha 2014', era:'Copa do Mundo · Brasil', cores:['#fff','#000'], jogadores:[
+    {n:'Neuer',pos:'GOL',r:95},{n:'Lahm',pos:'DEF',r:91},{n:'Boateng',pos:'DEF',r:88},{n:'Hummels',pos:'DEF',r:89},{n:'Höwedes',pos:'DEF',r:83},
+    {n:'Khedira',pos:'MEI',r:86},{n:'Schweinsteiger',pos:'MEI',r:91},{n:'Kroos',pos:'MEI',r:92},{n:'Özil',pos:'MEI',r:88},
+    {n:'Müller',pos:'ATA',r:90},{n:'Klose',pos:'ATA',r:88}]},
+  { id:'fra98', tipo:'selecao', nome:'França 1998', era:'Copa do Mundo · França', cores:['#1d4ed8','#fff'], jogadores:[
+    {n:'Barthez',pos:'GOL',r:88},{n:'Thuram',pos:'DEF',r:91},{n:'Blanc',pos:'DEF',r:88},{n:'Desailly',pos:'DEF',r:90},{n:'Lizarazu',pos:'DEF',r:87},
+    {n:'Deschamps',pos:'MEI',r:88},{n:'Petit',pos:'MEI',r:85},{n:'Zidane',pos:'MEI',r:96},
+    {n:'Djorkaeff',pos:'ATA',r:87},{n:'Guivarc’h',pos:'ATA',r:79},{n:'Henry',pos:'ATA',r:89}]},
+  { id:'fra18', tipo:'selecao', nome:'França 2018', era:'Copa do Mundo · Rússia', cores:['#1d4ed8','#fff'], jogadores:[
+    {n:'Lloris',pos:'GOL',r:90},{n:'Pavard',pos:'DEF',r:84},{n:'Varane',pos:'DEF',r:89},{n:'Umtiti',pos:'DEF',r:85},{n:'Lucas H.',pos:'DEF',r:84},
+    {n:'Kanté',pos:'MEI',r:91},{n:'Pogba',pos:'MEI',r:90},{n:'Matuidi',pos:'MEI',r:85},
+    {n:'Griezmann',pos:'ATA',r:92},{n:'Giroud',pos:'ATA',r:85},{n:'Mbappé',pos:'ATA',r:94}]},
+  { id:'ita82', tipo:'selecao', nome:'Itália 1982', era:'Copa do Mundo · Espanha', cores:['#1e3a8a','#fff'], jogadores:[
+    {n:'Zoff',pos:'GOL',r:92},{n:'Gentile',pos:'DEF',r:88},{n:'Collovati',pos:'DEF',r:83},{n:'Scirea',pos:'DEF',r:92},{n:'Cabrini',pos:'DEF',r:86},
+    {n:'Oriali',pos:'MEI',r:83},{n:'Tardelli',pos:'MEI',r:88},{n:'Antognoni',pos:'MEI',r:85},{n:'Conti',pos:'MEI',r:85},
+    {n:'Rossi',pos:'ATA',r:93},{n:'Graziani',pos:'ATA',r:82}]},
+  { id:'esp10', tipo:'selecao', nome:'Espanha 2010', era:'Copa do Mundo · África do Sul', cores:['#dc2626','#fde047'], jogadores:[
+    {n:'Casillas',pos:'GOL',r:94},{n:'Sergio Ramos',pos:'DEF',r:90},{n:'Piqué',pos:'DEF',r:90},{n:'Puyol',pos:'DEF',r:89},{n:'Capdevila',pos:'DEF',r:83},
+    {n:'Busquets',pos:'MEI',r:88},{n:'Xabi Alonso',pos:'MEI',r:89},{n:'Xavi',pos:'MEI',r:95},{n:'Iniesta',pos:'MEI',r:94},
+    {n:'Villa',pos:'ATA',r:92},{n:'Pedro',pos:'ATA',r:84}]},
+  { id:'ing66', tipo:'selecao', nome:'Inglaterra 1966', era:'Copa do Mundo · Inglaterra', cores:['#fff','#dc2626'], jogadores:[
+    {n:'Banks',pos:'GOL',r:92},{n:'Cohen',pos:'DEF',r:84},{n:'J. Charlton',pos:'DEF',r:88},{n:'Moore',pos:'DEF',r:95},{n:'Wilson',pos:'DEF',r:84},
+    {n:'Stiles',pos:'MEI',r:84},{n:'B. Charlton',pos:'MEI',r:94},{n:'Ball',pos:'MEI',r:87},{n:'Peters',pos:'MEI',r:85},
+    {n:'Hurst',pos:'ATA',r:88},{n:'Hunt',pos:'ATA',r:83}]},
+  { id:'uru50', tipo:'selecao', nome:'Uruguai 1950', era:'Copa do Mundo · Maracanazo', cores:['#0ea5e9','#fff'], jogadores:[
+    {n:'Máspoli',pos:'GOL',r:87},{n:'M. González',pos:'DEF',r:82},{n:'Tejera',pos:'DEF',r:83},{n:'Varela',pos:'DEF',r:91},{n:'Andrade',pos:'DEF',r:86},
+    {n:'Gambetta',pos:'MEI',r:84},{n:'Pérez',pos:'MEI',r:83},{n:'Míguez',pos:'MEI',r:84},
+    {n:'Ghiggia',pos:'ATA',r:88},{n:'Schiaffino',pos:'ATA',r:92},{n:'Morán',pos:'ATA',r:82}]},
+  { id:'por16', tipo:'selecao', nome:'Portugal 2016', era:'Eurocopa', cores:['#dc2626','#16a34a'], jogadores:[
+    {n:'R. Patrício',pos:'GOL',r:88},{n:'Cédric',pos:'DEF',r:82},{n:'Pepe',pos:'DEF',r:89},{n:'Fonte',pos:'DEF',r:84},{n:'R. Guerreiro',pos:'DEF',r:85},
+    {n:'W. Carvalho',pos:'MEI',r:84},{n:'João Mário',pos:'MEI',r:83},{n:'A. Gomes',pos:'MEI',r:83},
+    {n:'C. Ronaldo',pos:'ATA',r:96},{n:'Nani',pos:'ATA',r:85},{n:'Quaresma',pos:'ATA',r:84}]},
+
+  // ===================== TIMES BRASILEIROS =====================
+  { id:'san62', tipo:'brasileiro', nome:'Santos 1962', era:'Mundial · Vila Belmiro', cores:['#fff','#000'], jogadores:[
+    {n:'Gilmar',pos:'GOL',r:88},{n:'Mauro',pos:'DEF',r:89},{n:'Calvet',pos:'DEF',r:80},{n:'M. Ramos',pos:'DEF',r:85},{n:'Dalmo',pos:'DEF',r:82},
     {n:'Zito',pos:'MEI',r:86},{n:'Mengálvio',pos:'MEI',r:84},{n:'Coutinho',pos:'MEI',r:89},
     {n:'Dorval',pos:'ATA',r:84},{n:'Pelé',pos:'ATA',r:99},{n:'Pepe',pos:'ATA',r:91}]},
-  { id:'fla81', nome:'Flamengo 1981', era:'Mundial · Tóquio', jogadores:[
+  { id:'fla81', tipo:'brasileiro', nome:'Flamengo 1981', era:'Mundial · Tóquio', cores:['#dc2626','#000'], jogadores:[
     {n:'Raul',pos:'GOL',r:84},{n:'Leandro',pos:'DEF',r:92},{n:'Marinho',pos:'DEF',r:85},{n:'Mozer',pos:'DEF',r:86},{n:'Júnior',pos:'DEF',r:92},
     {n:'Adílio',pos:'MEI',r:87},{n:'Andrade',pos:'MEI',r:84},{n:'Zico',pos:'MEI',r:97},
     {n:'Tita',pos:'ATA',r:86},{n:'Nunes',pos:'ATA',r:88},{n:'Lico',pos:'ATA',r:83}]},
-  { id:'spfc92', nome:'São Paulo 1992-93', era:'Bicampeão Mundial', jogadores:[
+  { id:'fla19', tipo:'brasileiro', nome:'Flamengo 2019', era:'Libertadores + Brasileirão', cores:['#dc2626','#000'], jogadores:[
+    {n:'Diego Alves',pos:'GOL',r:88},{n:'Rafinha',pos:'DEF',r:86},{n:'P. Marí',pos:'DEF',r:84},{n:'R. Caio',pos:'DEF',r:85},{n:'Filipe Luís',pos:'DEF',r:89},
+    {n:'W. Arão',pos:'MEI',r:83},{n:'Gerson',pos:'MEI',r:87},{n:'Arrascaeta',pos:'MEI',r:91},{n:'É. Ribeiro',pos:'MEI',r:88},
+    {n:'B. Henrique',pos:'ATA',r:90},{n:'Gabigol',pos:'ATA',r:92}]},
+  { id:'spfc92', tipo:'brasileiro', nome:'São Paulo 1992-93', era:'Bicampeão Mundial', cores:['#dc2626','#fff'], jogadores:[
     {n:'Zetti',pos:'GOL',r:88},{n:'Cafu',pos:'DEF',r:92},{n:'Ronaldão',pos:'DEF',r:85},{n:'Válber',pos:'DEF',r:83},{n:'Leonardo',pos:'DEF',r:88},
     {n:'T. Cerezo',pos:'MEI',r:88},{n:'Raí',pos:'MEI',r:94},{n:'Palhinha',pos:'MEI',r:84},
     {n:'Müller',pos:'ATA',r:88},{n:'Macedo',pos:'ATA',r:82},{n:'Catê',pos:'ATA',r:80}]},
-  { id:'cor12', nome:'Corinthians 2012', era:'Mundial · Yokohama', jogadores:[
+  { id:'spfc05', tipo:'brasileiro', nome:'São Paulo 2005', era:'Tri Mundial', cores:['#dc2626','#fff'], jogadores:[
+    {n:'Rogério Ceni',pos:'GOL',r:92},{n:'Cicinho',pos:'DEF',r:85},{n:'Lugano',pos:'DEF',r:88},{n:'Edcarlos',pos:'DEF',r:82},{n:'Júnior',pos:'DEF',r:84},
+    {n:'Josué',pos:'MEI',r:84},{n:'Mineiro',pos:'MEI',r:85},{n:'Danilo',pos:'MEI',r:85},
+    {n:'Aloísio',pos:'ATA',r:84},{n:'Amoroso',pos:'ATA',r:87},{n:'Luizão',pos:'ATA',r:84}]},
+  { id:'cor12', tipo:'brasileiro', nome:'Corinthians 2012', era:'Mundial · Yokohama', cores:['#000','#fff'], jogadores:[
     {n:'Cássio',pos:'GOL',r:90},{n:'Alessandro',pos:'DEF',r:84},{n:'Chicão',pos:'DEF',r:85},{n:'L. Castán',pos:'DEF',r:86},{n:'F. Santos',pos:'DEF',r:84},
     {n:'Ralf',pos:'MEI',r:84},{n:'Paulinho',pos:'MEI',r:88},{n:'Douglas',pos:'MEI',r:82},
     {n:'J. Henrique',pos:'ATA',r:82},{n:'E. Sheik',pos:'ATA',r:85},{n:'Danilo',pos:'ATA',r:83}]},
-  { id:'fla19', nome:'Flamengo 2019', era:'Libertadores + Brasileirão', jogadores:[
-    {n:'Diego Alves',pos:'GOL',r:88},{n:'Rafinha',pos:'DEF',r:86},{n:'Pablo Marí',pos:'DEF',r:84},{n:'R. Caio',pos:'DEF',r:85},{n:'Filipe Luís',pos:'DEF',r:89},
-    {n:'W. Arão',pos:'MEI',r:83},{n:'Gerson',pos:'MEI',r:87},{n:'Arrascaeta',pos:'MEI',r:91},{n:'É. Ribeiro',pos:'MEI',r:88},
-    {n:'Bruno Henrique',pos:'ATA',r:90},{n:'Gabigol',pos:'ATA',r:92}]},
-  { id:'pal21', nome:'Palmeiras 2021', era:'Bi da Libertadores', jogadores:[
+  { id:'pal99', tipo:'brasileiro', nome:'Palmeiras 1999', era:'Libertadores · Parque Antártica', cores:['#16a34a','#fff'], jogadores:[
+    {n:'M. Carlos',pos:'GOL',r:84},{n:'Arce',pos:'DEF',r:84},{n:'Júnior',pos:'DEF',r:84},{n:'R. Gomes',pos:'DEF',r:86},{n:'Júnior B.',pos:'DEF',r:83},
+    {n:'César Sampaio',pos:'MEI',r:86},{n:'Galeano',pos:'MEI',r:84},{n:'Z. Roberto',pos:'MEI',r:89},
+    {n:'Alex',pos:'ATA',r:90},{n:'Oséas',pos:'ATA',r:82},{n:'Paulo Nunes',pos:'ATA',r:83}]},
+  { id:'pal21', tipo:'brasileiro', nome:'Palmeiras 2021', era:'Bi da Libertadores', cores:['#16a34a','#fff'], jogadores:[
     {n:'Weverton',pos:'GOL',r:87},{n:'M. Rocha',pos:'DEF',r:83},{n:'G. Gómez',pos:'DEF',r:88},{n:'Luan',pos:'DEF',r:83},{n:'Piquerez',pos:'DEF',r:85},
     {n:'Zé Rafael',pos:'MEI',r:84},{n:'Danilo',pos:'MEI',r:86},{n:'R. Veiga',pos:'MEI',r:88},
     {n:'Dudu',pos:'ATA',r:85},{n:'Rony',pos:'ATA',r:83},{n:'Deyverson',pos:'ATA',r:80}]},
-  { id:'bot24', nome:'Botafogo 2024', era:'Tri da América', jogadores:[
+  { id:'cru76', tipo:'brasileiro', nome:'Cruzeiro 1976', era:'Libertadores · Mineirão', cores:['#1d4ed8','#fff'], jogadores:[
+    {n:'Raul',pos:'GOL',r:84},{n:'Vanderlei',pos:'DEF',r:83},{n:'Darci Menezes',pos:'DEF',r:84},{n:'Osmar',pos:'DEF',r:84},{n:'Nelinho',pos:'DEF',r:90},
+    {n:'Piazza',pos:'MEI',r:86},{n:'Eduardo',pos:'MEI',r:84},{n:'Z. Bruno',pos:'MEI',r:83},
+    {n:'Palhinha',pos:'ATA',r:88},{n:'Joãozinho',pos:'ATA',r:85},{n:'Vaguinho',pos:'ATA',r:84}]},
+  { id:'cru03', tipo:'brasileiro', nome:'Cruzeiro 2003', era:'Tríplice Coroa', cores:['#1d4ed8','#fff'], jogadores:[
+    {n:'Gomes',pos:'GOL',r:86},{n:'Maicon',pos:'DEF',r:86},{n:'Cris',pos:'DEF',r:85},{n:'L. Inácio',pos:'DEF',r:83},{n:'Jorge Wagner',pos:'DEF',r:84},
+    {n:'Augusto Recife',pos:'MEI',r:83},{n:'Jussiê',pos:'MEI',r:84},{n:'Alex',pos:'MEI',r:90},
+    {n:'Aristizábal',pos:'ATA',r:84},{n:'Mota',pos:'ATA',r:83},{n:'Deivid',pos:'ATA',r:83}]},
+  { id:'gre83', tipo:'brasileiro', nome:'Grêmio 1983', era:'Mundial · Tóquio', cores:['#0284c7','#000'], jogadores:[
+    {n:'Mazarópi',pos:'GOL',r:84},{n:'Paulo Roberto',pos:'DEF',r:83},{n:'De León',pos:'DEF',r:88},{n:'Mauro Galvão',pos:'DEF',r:86},{n:'Casemiro',pos:'DEF',r:83},
+    {n:'Osvaldo',pos:'MEI',r:84},{n:'Caio',pos:'MEI',r:84},{n:'China',pos:'MEI',r:83},
+    {n:'Tarciso',pos:'ATA',r:85},{n:'Renato Gaúcho',pos:'ATA',r:91},{n:'Tita',pos:'ATA',r:84}]},
+  { id:'int06', tipo:'brasileiro', nome:'Internacional 2006', era:'Mundial · Yokohama', cores:['#dc2626','#fff'], jogadores:[
+    {n:'Clemer',pos:'GOL',r:84},{n:'Ceará',pos:'DEF',r:84},{n:'Fabiano Eller',pos:'DEF',r:83},{n:'Wilson',pos:'DEF',r:82},{n:'Adriano',pos:'DEF',r:83},
+    {n:'Edinho',pos:'MEI',r:84},{n:'Wellington Monteiro',pos:'MEI',r:83},{n:'Perdigão',pos:'MEI',r:82},
+    {n:'Iarley',pos:'ATA',r:85},{n:'Fernandão',pos:'ATA',r:87},{n:'Rafael Sóbis',pos:'ATA',r:84}]},
+  { id:'cam13', tipo:'brasileiro', nome:'Atlético-MG 2013', era:'Libertadores · Mineirão', cores:['#000','#fff'], jogadores:[
+    {n:'V. Giovanni',pos:'GOL',r:84},{n:'Marcos Rocha',pos:'DEF',r:85},{n:'Réver',pos:'DEF',r:85},{n:'Leonardo Silva',pos:'DEF',r:85},{n:'R. Dátolo',pos:'DEF',r:84},
+    {n:'Pierre',pos:'MEI',r:84},{n:'Josué',pos:'MEI',r:84},{n:'Bernard',pos:'MEI',r:88},
+    {n:'Diego Tardelli',pos:'ATA',r:86},{n:'Ronaldinho',pos:'ATA',r:91},{n:'Jô',pos:'ATA',r:85}]},
+  { id:'vas89', tipo:'brasileiro', nome:'Vasco 1989', era:'Brasileirão', cores:['#000','#fff'], jogadores:[
+    {n:'Acácio',pos:'GOL',r:84},{n:'Mazinho',pos:'DEF',r:85},{n:'R. Gaúcho',pos:'DEF',r:85},{n:'Geovani Silva',pos:'DEF',r:83},{n:'Luís Carlos',pos:'DEF',r:82},
+    {n:'Geovani',pos:'MEI',r:88},{n:'Bismarck',pos:'MEI',r:89},{n:'Sorato',pos:'MEI',r:83},
+    {n:'Romário',pos:'ATA',r:96},{n:'Cocada',pos:'ATA',r:83},{n:'Luís Fernando',pos:'ATA',r:82}]},
+  { id:'flu12', tipo:'brasileiro', nome:'Fluminense 2012', era:'Brasileirão · Tri', cores:['#0f766e','#7f1d1d'], jogadores:[
+    {n:'Diego Cavalieri',pos:'GOL',r:87},{n:'Mariano',pos:'DEF',r:85},{n:'Gum',pos:'DEF',r:84},{n:'Leandro Eusébio',pos:'DEF',r:83},{n:'C. Alberto',pos:'DEF',r:84},
+    {n:'Diguinho',pos:'MEI',r:84},{n:'Jean',pos:'MEI',r:83},{n:'Thiago Neves',pos:'MEI',r:88},{n:'Deco',pos:'MEI',r:88},
+    {n:'Fred',pos:'ATA',r:90},{n:'Wellington Nem',pos:'ATA',r:84}]},
+  { id:'flu23', tipo:'brasileiro', nome:'Fluminense 2023', era:'Libertadores · Maracanã', cores:['#0f766e','#7f1d1d'], jogadores:[
+    {n:'Fábio',pos:'GOL',r:89},{n:'Samuel Xavier',pos:'DEF',r:84},{n:'Nino',pos:'DEF',r:86},{n:'Marlon',pos:'DEF',r:84},{n:'Marcelo',pos:'DEF',r:88},
+    {n:'A. Vargas',pos:'MEI',r:85},{n:'Martinelli',pos:'MEI',r:84},{n:'P.H. Ganso',pos:'MEI',r:87},
+    {n:'Cano',pos:'ATA',r:88},{n:'Arias',pos:'ATA',r:85},{n:'Keno',pos:'ATA',r:84}]},
+  { id:'bot24', tipo:'brasileiro', nome:'Botafogo 2024', era:'Tri da América', cores:['#000','#fff'], jogadores:[
     {n:'John',pos:'GOL',r:85},{n:'Vitinho',pos:'DEF',r:82},{n:'Bastos',pos:'DEF',r:84},{n:'Barboza',pos:'DEF',r:85},{n:'A. Telles',pos:'DEF',r:83},
     {n:'M. Freitas',pos:'MEI',r:83},{n:'Gregore',pos:'MEI',r:82},{n:'Almada',pos:'MEI',r:88},
     {n:'Savarino',pos:'ATA',r:84},{n:'Igor Jesus',pos:'ATA',r:84},{n:'L. Henrique',pos:'ATA',r:87}]},
-  { id:'br25', nome:'Brasileirão 2025', era:'Era atual · Série A', jogadores:[
-    {n:'Rossi',pos:'GOL',r:86},{n:'Wesley',pos:'DEF',r:85},{n:'Léo Ortiz',pos:'DEF',r:84},{n:'Vitor Hugo',pos:'DEF',r:82},{n:'A. Sandro',pos:'DEF',r:84},
-    {n:'Gerson',pos:'MEI',r:88},{n:'Arrascaeta',pos:'MEI',r:91},{n:'Hulk',pos:'MEI',r:88},
-    {n:'Pedro',pos:'ATA',r:89},{n:'Estêvão',pos:'ATA',r:88},{n:'Vitor Roque',pos:'ATA',r:85}]},
 ];
 
 const SLOTS = [
@@ -320,7 +422,7 @@ const SLOTS = [
   {idx:10,pos:'ATA', label:'Ponta Dir.',  num:11, cls:'p11'},
 ];
 
-const state = { lineup: Array(11).fill(null), rolls:0, mode:'classico', currentTeam:null };
+const state = { lineup: Array(11).fill(null), rolls:0, mode:'classico', currentTeam:null, tipo:'todos', teamName:'XI DOS SONHOS' };
 const $ = s=>document.querySelector(s);
 const $$= s=>document.querySelectorAll(s);
 const pick = a=>a[Math.floor(Math.random()*a.length)];
@@ -332,8 +434,15 @@ function renderPitch(){
     const p = state.lineup[s.idx];
     const el = document.createElement('div');
     el.className = 'slot '+s.cls+' '+(p?'filled':'empty');
+    let discStyle='', discCls='';
+    if(p && p.cores){
+      const [c1,c2] = p.cores;
+      const textCol = isLight(c1)?'#0b0d12':'#fff';
+      discStyle = `--col1:${c1};--col2:${c2};--col-text:${textCol};--col-glow:${hexToRgba(c2,.4)}`;
+      discCls='col-team';
+    }
     el.innerHTML = `
-      <div class="disc">${p?s.num:'?'}</div>
+      <div class="disc ${discCls}" style="${discStyle}">${p?s.num:'?'}</div>
       <div class="pos-tag">${s.pos}</div>
       <div class="label">${p?p.n:s.label}</div>
       ${p?`<div class="team">${p.teamShort}</div>`:''}`;
@@ -384,7 +493,8 @@ function rollDice(){
       clearInterval(it);
       dice.classList.remove('rolling');
       dice.textContent = faces[Math.floor(Math.random()*6)];
-      const team = pick(TIMES);
+      const pool = state.tipo==='todos'?TIMES:TIMES.filter(x=>x.tipo===state.tipo);
+      const team = pick(pool);
       state.currentTeam = team;
       $('#reveal-name').textContent = team.nome;
       $('#reveal-year').textContent = team.era;
@@ -423,7 +533,7 @@ function renderRoster(){
       const p = team.jogadores[+el.dataset.i];
       const slotIdx = SLOTS.findIndex((s,i)=>s.pos===p.pos && !state.lineup[i]);
       if(slotIdx<0){ toast('Posição '+p.pos+' já está lotada'); return; }
-      state.lineup[slotIdx] = {...p, team:team.nome, teamShort:team.id.toUpperCase()};
+      state.lineup[slotIdx] = {...p, team:team.nome, teamShort:team.id.toUpperCase(), cores:team.cores};
       if(state.mode==='pro') toast(`${p.n} revelado · OVER ${p.r}`);
       else toast(`${p.n} entrou no XI`);
       renderPitch();
@@ -449,6 +559,7 @@ $('#btn-sim').onclick = ()=>{
   const foes = ['Alemanha 2014','Argentina 2022','Espanha 2010','França 1998','Itália 1982','Inglaterra 1966','Holanda 1974','Uruguai 1950'];
   const foe = pick(foes);
   $('#foe-name').textContent = foe.toUpperCase();
+  $('#m-team-a').textContent = state.teamName.toUpperCase();
   const teamR = state.lineup.reduce((s,p)=>s+p.r,0)/11;
   const foeR = 78 + Math.random()*12;
   const ourChance  = Math.max(.05, ((teamR-foeR)/100)*0.35 + 0.18);
@@ -496,6 +607,29 @@ document.querySelector('#mode-seg').addEventListener('click',e=>{
   toast('Modo: '+(state.mode==='pro'?'PRO (overs ocultos)':'CLÁSSICO'));
   renderRoster();
 });
+document.querySelector('#tipo-seg').addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON') return;
+  document.querySelectorAll('#tipo-seg button').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active');
+  state.tipo = e.target.dataset.tipo;
+  const labels = {todos:'Todos os times', selecao:'Seleções nacionais', brasileiro:'Times brasileiros'};
+  toast('Filtro: '+labels[state.tipo]);
+});
+document.querySelector('#team-name').addEventListener('input',e=>{
+  state.teamName = e.target.value.trim() || 'XI DOS SONHOS';
+});
+
+function isLight(hex){
+  const c = hex.replace('#','');
+  const r = parseInt(c.slice(0,2),16), g=parseInt(c.slice(2,4),16), b=parseInt(c.slice(4,6),16);
+  return (r*0.299 + g*0.587 + b*0.114) > 170;
+}
+function hexToRgba(hex,a){
+  const c = hex.replace('#','');
+  const r=parseInt(c.slice(0,2),16),g=parseInt(c.slice(2,4),16),b=parseInt(c.slice(4,6),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
 renderPitch();
 </script>
 </body>
