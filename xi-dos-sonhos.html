@@ -51,7 +51,9 @@
   .pitch{position:relative;width:100%;max-width:540px;aspect-ratio:3/4;margin:0 auto;border-radius:14px;border:2px solid rgba(34,211,238,.25);
     background:repeating-linear-gradient(0deg,var(--grass) 0 7%,var(--grass-2) 7% 14%);
     overflow:hidden;box-shadow:inset 0 0 80px rgba(0,0,0,.55), 0 30px 80px rgba(0,0,0,.5)}
-  .pitch::before,.pitch::after{content:"";position:absolute;left:50%;transform:translateX(-50%);width:38%;height:16%;border:2px solid rgba(255,255,255,.18)}
+  .pitch::before,.pitch::after{content:"";position:absolute;left:50%;transform:translateX(-50%);width:38%;height:16%;border:2px solid rgba(255,255,255,.18);pointer-events:none}
+  .pitch .mid,.pitch .circle{pointer-events:none}
+  .slot{z-index:5}
   .pitch::before{top:-2px;border-top:none}
   .pitch::after{bottom:-2px;border-bottom:none}
   .pitch .mid{position:absolute;top:50%;left:0;right:0;height:2px;background:rgba(255,255,255,.18)}
@@ -68,7 +70,7 @@
   .slot.empty .label{color:rgba(255,255,255,.5);font-weight:600}
   .slot .team{font-family:'VT323';font-size:11px;color:var(--gold-2);letter-spacing:1px}
 
-  .p1{left:50%;top:90%} .p2{left:14%;top:73%} .p3{left:36%;top:76%} .p4{left:64%;top:76%} .p5{left:86%;top:73%}
+  .p1{left:50%;top:86%} .p2{left:14%;top:73%} .p3{left:36%;top:76%} .p4{left:64%;top:76%} .p5{left:86%;top:73%}
   .p6{left:25%;top:52%} .p7{left:50%;top:55%} .p8{left:75%;top:52%}
   .p9{left:18%;top:25%} .p10{left:50%;top:18%} .p11{left:82%;top:25%}
 
