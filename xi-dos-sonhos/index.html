@@ -162,6 +162,14 @@
   .roster-head{font-family:'VT323';letter-spacing:3px;color:var(--muted);font-size:12px;text-transform:uppercase;margin:14px 0 6px;padding-top:10px;border-top:1px dashed var(--line)}
   .roster-head b{color:var(--neon)}
 
+  .dice-panel{position:sticky;top:80px;max-height:calc(100vh - 100px);overflow-y:auto}
+  .dice-panel::-webkit-scrollbar{width:6px}
+  .dice-panel::-webkit-scrollbar-thumb{background:var(--line);border-radius:99px}
+  .dice-inline{width:110px;height:110px;margin:8px auto 14px;border-radius:18px;background:linear-gradient(180deg,#fff,#e9eef7);color:#0b0d12;display:flex;align-items:center;justify-content:center;font-size:70px;
+    box-shadow:0 14px 32px rgba(0,0,0,.55),inset 0 -8px 0 rgba(0,0,0,.08);transition:transform .15s}
+  .dice-inline.rolling{animation:dice .08s infinite}
+  .roll-btn.full{width:100%;display:block}
+
   @media (max-width:1100px){
     .game{grid-template-columns:1fr;padding:16px}
     .field-wrap{min-height:auto}
@@ -184,13 +192,17 @@
 </header>
 
 <main class="game">
-  <aside class="panel">
-    <h2>COMO JOGAR</h2>
-    <div class="sub">Cada posição tem o <b>seu próprio dado</b>. A cada lançamento sai um time histórico ou atual — escolha um jogador daquele elenco e ele entra na sua escalação.</div>
-    <div class="step"><div class="n">1</div><div>Clique em qualquer <b>círculo vazio</b> do campo</div></div>
-    <div class="step"><div class="n">2</div><div>Role o dado para sortear o <b>elenco</b> daquela posição</div></div>
-    <div class="step"><div class="n">3</div><div>Escolha um <b>jogador</b> do time sorteado (ou role de novo)</div></div>
-    <div class="step"><div class="n">4</div><div>Preencha os <b>11</b> e simule o jogo contra um adversário</div></div>
+  <aside class="panel dice-panel">
+    <h2>DADO DO ELENCO</h2>
+    <div class="sub" id="dice-sub">Role o dado para sortear um time. Depois escolha um jogador do elenco para entrar no seu XI.</div>
+    <div class="dice-inline" id="dice">🎲</div>
+    <button class="roll-btn full" id="btn-roll">ROLAR O DADO</button>
+    <div class="reveal-team" id="reveal">
+      <div class="lab">ELENCO SORTEADO</div>
+      <div class="nm" id="reveal-name">—</div>
+      <div class="yr" id="reveal-year">—</div>
+    </div>
+    <div class="player-list" id="player-list"></div>
     <div class="meter"><div id="meter-fill"></div></div>
     <div class="meter-label"><span>PROGRESSO</span><span id="meter-pct">0%</span></div>
   </aside>
@@ -198,7 +210,7 @@
   <section class="field-wrap">
     <div class="field-head">
       <div class="title">CAMPO · 4-3-3</div>
-      <div class="hint">Toque nos discos para escalar</div>
+      <div class="hint">Clique num disco preenchido pra remover</div>
     </div>
     <div class="pitch" id="pitch"><div class="mid"></div><div class="circle"></div></div>
   </section>
@@ -211,27 +223,6 @@
   </aside>
 </main>
 
-<div class="modal-bg" id="modal">
-  <div class="modal">
-    <div class="modal-head">
-      <div class="ttl" id="modal-title">ESCALAR</div>
-      <button class="x" id="modal-close">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="roll-stage">
-        <div class="dice" id="dice">🎲</div>
-        <button class="roll-btn" id="btn-roll">ROLAR O DADO</button>
-        <button class="roll-btn alt" id="btn-reroll" style="display:none">ROLAR DE NOVO</button>
-      </div>
-      <div class="reveal-team" id="reveal">
-        <div class="lab">ELENCO SORTEADO</div>
-        <div class="nm" id="reveal-name">—</div>
-        <div class="yr" id="reveal-year">—</div>
-      </div>
-      <div class="player-list" id="player-list"></div>
-    </div>
-  </div>
-</div>
 
 <div class="match-overlay" id="match">
   <div class="match-box">
@@ -329,7 +320,7 @@ const SLOTS = [
   {idx:10,pos:'ATA', label:'Ponta Dir.',  num:11, cls:'p11'},
 ];
 
-const state = { lineup: Array(11).fill(null), rolls:0, currentSlot:null, mode:'classico' };
+const state = { lineup: Array(11).fill(null), rolls:0, mode:'classico', currentTeam:null };
 const $ = s=>document.querySelector(s);
 const $$= s=>document.querySelectorAll(s);
 const pick = a=>a[Math.floor(Math.random()*a.length)];
@@ -346,7 +337,13 @@ function renderPitch(){
       <div class="pos-tag">${s.pos}</div>
       <div class="label">${p?p.n:s.label}</div>
       ${p?`<div class="team">${p.teamShort}</div>`:''}`;
-    el.onclick = ()=>openSlot(s.idx);
+    el.onclick = ()=>{
+      if(state.lineup[s.idx]){
+        if(confirm('Remover '+state.lineup[s.idx].n+' do XI?')){
+          state.lineup[s.idx]=null; renderPitch();
+        }
+      }
+    };
     pitch.appendChild(el);
   });
   renderLineup();
@@ -371,33 +368,15 @@ function updateStats(){
   $('#btn-sim').disabled = n!==11;
 }
 
-function openSlot(idx){
-  state.currentSlot = idx;
-  const s = SLOTS[idx];
-  $('#modal-title').textContent = 'ESCALAR · '+s.label.toUpperCase()+' ('+s.pos+')';
-  $('#reveal').classList.remove('shown');
-  $('#player-list').innerHTML = '';
-  $('#btn-reroll').style.display='none';
-  $('#btn-roll').style.display='inline-block';
-  $('#btn-roll').textContent = state.lineup[idx]?'TROCAR (ROLAR DADO)':'ROLAR O DADO';
-  $('#dice').textContent='🎲';
-  $('#modal').classList.add('open');
-}
-function closeModal(){$('#modal').classList.remove('open')}
-$('#modal-close').onclick = closeModal;
-$('#modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});
-
 function rollDice(){
   state.rolls++;
   const dice = $('#dice');
   dice.classList.add('rolling');
-  $('#btn-roll').disabled = true; $('#btn-reroll').disabled = true;
+  $('#btn-roll').disabled = true;
   $('#reveal').classList.remove('shown');
   $('#player-list').innerHTML='';
   const faces = ['⚀','⚁','⚂','⚃','⚄','⚅'];
   let t=0;
-  const slot = SLOTS[state.currentSlot];
-  const eligible = TIMES.filter(tm=>tm.jogadores.some(j=>j.pos===slot.pos));
   const it = setInterval(()=>{
     dice.textContent = faces[Math.floor(Math.random()*6)];
     t++;
@@ -405,43 +384,55 @@ function rollDice(){
       clearInterval(it);
       dice.classList.remove('rolling');
       dice.textContent = faces[Math.floor(Math.random()*6)];
-      const team = pick(eligible);
+      const team = pick(TIMES);
+      state.currentTeam = team;
       $('#reveal-name').textContent = team.nome;
       $('#reveal-year').textContent = team.era;
       $('#reveal').classList.add('shown');
-      const all = team.jogadores;
-      const isPro = state.mode==='pro';
-      const head = `<div class="roster-head">ELENCO COMPLETO · jogadores de <b>${slot.pos}</b> podem entrar nesta vaga</div>`;
-      $('#player-list').innerHTML = head + all.map((p,i)=>{
-        const ok = p.pos===slot.pos;
-        const rating = isPro?'<span class="rt hidden">??</span>':`<div class="rt">${p.r}</div>`;
-        return `<div class="pl ${ok?'':'locked'}" data-i="${i}">
-          <div class="av">${ok?slot.num:'·'}</div>
-          <div class="info"><div class="nm">${p.n}</div><div class="mt">${team.nome}</div></div>
-          <div class="pl-pos">${p.pos}</div>
-          ${rating}
-        </div>`;
-      }).join('');
-      $$('#player-list .pl').forEach(el=>{
-        if(el.classList.contains('locked')) return;
-        el.onclick = ()=>{
-          const p = all[+el.dataset.i];
-          state.lineup[state.currentSlot] = {...p, team:team.nome, teamShort:team.id.toUpperCase()};
-          if(isPro) toast(`${p.n} revelado · OVER ${p.r}`);
-          closeModal(); renderPitch();
-          if(state.lineup.filter(Boolean).length===11) toast('Escalação completa! Hora de simular ⚽');
-        };
-      });
+      renderRoster();
       $('#btn-roll').disabled=false;
-      $('#btn-roll').style.display='none';
-      $('#btn-reroll').style.display='inline-block';
-      $('#btn-reroll').disabled=false;
+      $('#btn-roll').textContent='ROLAR DE NOVO';
       updateStats();
     }
   },70);
 }
+function renderRoster(){
+  const team = state.currentTeam;
+  if(!team){$('#player-list').innerHTML='';return;}
+  const isPro = state.mode==='pro';
+  // posições já preenchidas
+  const filledCount = pos => SLOTS.filter((s,i)=>s.pos===pos && state.lineup[i]).length;
+  const maxPos = {GOL:1, DEF:4, MEI:3, ATA:3};
+  const head = `<div class="roster-head">ELENCO · <b>${team.nome}</b> · clique no jogador pra mandar pro seu XI</div>`;
+  $('#player-list').innerHTML = head + team.jogadores.map((p,i)=>{
+    const cheia = filledCount(p.pos) >= maxPos[p.pos];
+    // já está no XI?
+    const jaNoXI = state.lineup.some(l=>l && l.n===p.n && l.team===team.nome);
+    const locked = cheia || jaNoXI;
+    const rating = isPro?'<span class="rt hidden">??</span>':`<div class="rt">${p.r}</div>`;
+    return `<div class="pl ${locked?'locked':''}" data-i="${i}" title="${jaNoXI?'já está no XI':(cheia?'vaga de '+p.pos+' lotada':'')}">
+      <div class="av">${p.pos==='GOL'?1:p.pos==='DEF'?'D':p.pos==='MEI'?'M':'A'}</div>
+      <div class="info"><div class="nm">${p.n}</div><div class="mt">${team.nome}</div></div>
+      <div class="pl-pos">${p.pos}</div>
+      ${rating}
+    </div>`;
+  }).join('');
+  $$('#player-list .pl').forEach(el=>{
+    if(el.classList.contains('locked')) return;
+    el.onclick = ()=>{
+      const p = team.jogadores[+el.dataset.i];
+      const slotIdx = SLOTS.findIndex((s,i)=>s.pos===p.pos && !state.lineup[i]);
+      if(slotIdx<0){ toast('Posição '+p.pos+' já está lotada'); return; }
+      state.lineup[slotIdx] = {...p, team:team.nome, teamShort:team.id.toUpperCase()};
+      if(state.mode==='pro') toast(`${p.n} revelado · OVER ${p.r}`);
+      else toast(`${p.n} entrou no XI`);
+      renderPitch();
+      renderRoster();
+      if(state.lineup.filter(Boolean).length===11) toast('Escalação completa! Hora de simular ⚽');
+    };
+  });
+}
 $('#btn-roll').onclick = rollDice;
-$('#btn-reroll').onclick = rollDice;
 
 function toast(t){const el=document.createElement('div');el.className='toast';el.textContent=t;document.body.appendChild(el);setTimeout(()=>el.remove(),1800)}
 
@@ -503,6 +494,7 @@ document.querySelector('#mode-seg').addEventListener('click',e=>{
   e.target.classList.add('active');
   state.mode = e.target.dataset.mode;
   toast('Modo: '+(state.mode==='pro'?'PRO (overs ocultos)':'CLÁSSICO'));
+  renderRoster();
 });
 renderPitch();
 </script>
