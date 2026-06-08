@@ -69,9 +69,6 @@
   .slot.empty .label{color:rgba(255,255,255,.5);font-weight:600}
   .slot .team{font-family:'VT323';font-size:11px;color:var(--gold-2);letter-spacing:1px}
 
-  .p1{left:50%;top:86%} .p2{left:14%;top:73%} .p3{left:36%;top:76%} .p4{left:64%;top:76%} .p5{left:86%;top:73%}
-  .p6{left:25%;top:52%} .p7{left:50%;top:55%} .p8{left:75%;top:52%}
-  .p9{left:18%;top:25%} .p10{left:50%;top:18%} .p11{left:82%;top:25%}
 
   .lineup-list{display:flex;flex-direction:column;gap:6px;margin-top:10px}
   .lineup-item{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;font-size:12px}
@@ -176,6 +173,34 @@
   .team-name-input:focus{border-color:var(--neon);background:#0d1018}
   .slot.filled .disc.col-team{background:var(--col1,#0c2a1a);border-color:var(--col2,var(--gold));color:var(--col-text,#fff);box-shadow:0 0 14px var(--col-glow,rgba(245,200,66,.3)),inset 0 -8px 0 rgba(0,0,0,.25)}
 
+  /* ============ SETUP OVERLAY ============ */
+  .setup-overlay{position:fixed;inset:0;background:linear-gradient(180deg,#0a0c12,#06090e);z-index:500;display:none;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto}
+  .setup-overlay.open{display:flex}
+  .setup-box{width:100%;max-width:740px;background:linear-gradient(180deg,#13161f,#0e111a);border:1px solid var(--line);border-radius:18px;padding:36px;box-shadow:0 40px 80px rgba(0,0,0,.6)}
+  .setup-head{text-align:center;margin-bottom:28px;padding-bottom:18px;border-bottom:1px dashed var(--line)}
+  .setup-head .brand{justify-content:center;font-size:30px}
+  .setup-sub{color:var(--muted);margin-top:8px;font-size:13px;letter-spacing:1px}
+  .setup-section{margin-bottom:22px}
+  .setup-label{font-family:'VT323';letter-spacing:3px;font-size:13px;color:var(--neon);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .setup-input{width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:14px 16px;color:var(--gold);font-family:'Anton';font-size:22px;letter-spacing:1.5px;text-transform:uppercase;outline:none;transition:.15s}
+  .setup-input:focus{border-color:var(--neon);background:#0d1018}
+  .setup-grid{display:grid;gap:10px}
+  .form-grid{grid-template-columns:repeat(3,1fr)}
+  .style-grid{grid-template-columns:repeat(3,1fr)}
+  .setup-card{background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:14px;cursor:pointer;text-align:left;color:var(--ink);font-family:inherit;transition:.15s}
+  .setup-card:hover{border-color:var(--gold);transform:translateY(-2px)}
+  .setup-card.active{border-color:var(--gold);background:rgba(245,200,66,.08);box-shadow:0 0 14px rgba(245,200,66,.18)}
+  .sc-icon{font-size:24px;margin-bottom:6px}
+  .sc-ttl{font-family:'Anton';font-size:18px;letter-spacing:1.5px;margin-bottom:4px;color:var(--gold)}
+  .sc-desc{font-size:11px;color:var(--muted);line-height:1.4}
+  .form-card{padding:12px;text-align:center}
+  .form-card .fm-name{font-family:'Anton';font-size:22px;letter-spacing:2px;color:var(--gold)}
+  .form-card .fm-desc{font-size:10px;color:var(--muted);margin-top:3px}
+  .form-mini{margin-top:8px;height:60px;position:relative;background:repeating-linear-gradient(0deg,var(--grass) 0 14%,var(--grass-2) 14% 28%);border-radius:4px;border:1px solid rgba(34,211,238,.15)}
+  .fm-dot{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--gold);transform:translate(-50%,-50%);box-shadow:0 0 4px rgba(245,200,66,.6)}
+  .setup-go{display:block;width:100%;margin-top:24px;background:linear-gradient(180deg,var(--gold),var(--gold-2));color:#1a1206;border:none;padding:18px;font-weight:800;font-size:15px;letter-spacing:4px;cursor:pointer;border-radius:12px;font-family:inherit;text-transform:uppercase;transition:.2s;box-shadow:0 10px 28px rgba(245,200,66,.3)}
+  .setup-go:hover{transform:translateY(-2px)}
+
   /* Escudo (crest) */
   .crest{width:34px;height:38px;border-radius:5px 5px 50% 50%/5px 5px 30% 30%;background:linear-gradient(135deg,var(--c1,#666) 0%,var(--c1,#666) 49%,var(--c2,#999) 50%,var(--c2,#999) 100%);
     display:inline-flex;align-items:center;justify-content:center;color:#fff;font-family:'Anton';font-size:11px;letter-spacing:1px;
@@ -243,8 +268,62 @@
 </head>
 <body>
 
+<!-- ============ TELA DE CONFIGURAÇÃO INICIAL ============ -->
+<div class="setup-overlay open" id="setup">
+  <div class="setup-box">
+    <div class="setup-head">
+      <div class="brand"><div class="dot"></div> XI DOS SONHOS</div>
+      <div class="setup-sub">Configure sua equipe antes de começar</div>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-label">1 · NOME DO SEU TIME</div>
+      <input id="setup-name" class="setup-input" maxlength="32" placeholder="Ex: Real Brasil FC" value=""/>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-label">2 · FORMAÇÃO</div>
+      <div class="setup-grid form-grid" id="setup-form"></div>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-label">3 · ESTILO DE JOGO</div>
+      <div class="setup-grid style-grid" id="setup-style">
+        <button class="setup-card" data-style="ofensivo">
+          <div class="sc-icon">⚔️</div><div class="sc-ttl">OFENSIVO</div>
+          <div class="sc-desc">Pressão alta, mais gols a favor — e contra.</div>
+        </button>
+        <button class="setup-card active" data-style="equilibrado">
+          <div class="sc-icon">⚖️</div><div class="sc-ttl">EQUILIBRADO</div>
+          <div class="sc-desc">Bom de bola e de marca. Padrão.</div>
+        </button>
+        <button class="setup-card" data-style="defensivo">
+          <div class="sc-icon">🛡️</div><div class="sc-ttl">DEFENSIVO</div>
+          <div class="sc-desc">Trinca atrás, sai no contra-ataque.</div>
+        </button>
+      </div>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-label">4 · MODO DE DIFICULDADE</div>
+      <div class="setup-grid style-grid" id="setup-mode">
+        <button class="setup-card active" data-md="classico">
+          <div class="sc-icon">🎯</div><div class="sc-ttl">CLÁSSICO</div>
+          <div class="sc-desc">Mostra o over de cada jogador. Você sabe quem está escalando.</div>
+        </button>
+        <button class="setup-card" data-md="pro">
+          <div class="sc-icon">🎲</div><div class="sc-ttl">PRO</div>
+          <div class="sc-desc">Over oculto até escolher. Confia no nome — o over só aparece depois.</div>
+        </button>
+      </div>
+    </div>
+
+    <button class="setup-go" id="setup-go">COMEÇAR A MONTAR →</button>
+  </div>
+</div>
+
 <header class="topbar">
-  <div class="brand"><div class="dot"></div> XI DOS SONHOS <small>· role o dado · monte sua escalação</small></div>
+  <div class="brand"><div class="dot"></div> XI DOS SONHOS <small id="brand-setup">· editar configuração</small></div>
   <div class="stats">
     <div class="mode-seg" id="mode-seg">
       <button class="active" data-mode="classico">CLÁSSICO</button>
@@ -494,21 +573,91 @@ const TIMES = [
     {n:'Savarino',pos:'ATA',r:84},{n:'Igor Jesus',pos:'ATA',r:84},{n:'L. Henrique',pos:'ATA',r:87}]},
 ];
 
-const SLOTS = [
-  {idx:0, pos:'GOL', label:'Goleiro',     num:1,  cls:'p1'},
-  {idx:1, pos:'DEF', label:'Lat. Esq.',   num:6,  cls:'p2'},
-  {idx:2, pos:'DEF', label:'Zagueiro',    num:3,  cls:'p3'},
-  {idx:3, pos:'DEF', label:'Zagueiro',    num:4,  cls:'p4'},
-  {idx:4, pos:'DEF', label:'Lat. Dir.',   num:2,  cls:'p5'},
-  {idx:5, pos:'MEI', label:'Volante',     num:5,  cls:'p6'},
-  {idx:6, pos:'MEI', label:'Meia',        num:8,  cls:'p7'},
-  {idx:7, pos:'MEI', label:'Meia',        num:10, cls:'p8'},
-  {idx:8, pos:'ATA', label:'Ponta Esq.',  num:7,  cls:'p9'},
-  {idx:9, pos:'ATA', label:'Centroavante',num:9,  cls:'p10'},
-  {idx:10,pos:'ATA', label:'Ponta Dir.',  num:11, cls:'p11'},
-];
+const FORMATIONS = {
+  '4-3-3': {label:'4-3-3', descr:'Ofensivo natural',
+    defs:[
+      {pos:'GOL',label:'Goleiro',num:1,x:50,y:86},
+      {pos:'DEF',label:'Lat. Esq.',num:6,x:14,y:73},
+      {pos:'DEF',label:'Zagueiro',num:3,x:36,y:76},
+      {pos:'DEF',label:'Zagueiro',num:4,x:64,y:76},
+      {pos:'DEF',label:'Lat. Dir.',num:2,x:86,y:73},
+      {pos:'MEI',label:'Volante',num:5,x:25,y:52},
+      {pos:'MEI',label:'Meia',num:8,x:50,y:55},
+      {pos:'MEI',label:'Meia',num:10,x:75,y:52},
+      {pos:'ATA',label:'Ponta Esq.',num:7,x:18,y:25},
+      {pos:'ATA',label:'Centroavante',num:9,x:50,y:18},
+      {pos:'ATA',label:'Ponta Dir.',num:11,x:82,y:25},
+    ]},
+  '4-4-2': {label:'4-4-2', descr:'Clássico equilibrado',
+    defs:[
+      {pos:'GOL',label:'Goleiro',num:1,x:50,y:86},
+      {pos:'DEF',label:'Lat. Esq.',num:6,x:14,y:73},
+      {pos:'DEF',label:'Zagueiro',num:3,x:36,y:76},
+      {pos:'DEF',label:'Zagueiro',num:4,x:64,y:76},
+      {pos:'DEF',label:'Lat. Dir.',num:2,x:86,y:73},
+      {pos:'MEI',label:'Vol. Esq.',num:5,x:14,y:50},
+      {pos:'MEI',label:'Meia',num:8,x:37,y:52},
+      {pos:'MEI',label:'Meia',num:10,x:63,y:52},
+      {pos:'MEI',label:'Vol. Dir.',num:7,x:86,y:50},
+      {pos:'ATA',label:'Atacante',num:9,x:35,y:20},
+      {pos:'ATA',label:'Atacante',num:11,x:65,y:20},
+    ]},
+  '3-5-2': {label:'3-5-2', descr:'Domínio do meio',
+    defs:[
+      {pos:'GOL',label:'Goleiro',num:1,x:50,y:86},
+      {pos:'DEF',label:'Zagueiro',num:3,x:25,y:75},
+      {pos:'DEF',label:'Líbero',num:4,x:50,y:77},
+      {pos:'DEF',label:'Zagueiro',num:6,x:75,y:75},
+      {pos:'MEI',label:'Ala Esq.',num:5,x:10,y:50},
+      {pos:'MEI',label:'Volante',num:2,x:32,y:55},
+      {pos:'MEI',label:'Meia',num:8,x:50,y:53},
+      {pos:'MEI',label:'Meia',num:10,x:68,y:55},
+      {pos:'MEI',label:'Ala Dir.',num:7,x:90,y:50},
+      {pos:'ATA',label:'Atacante',num:9,x:35,y:20},
+      {pos:'ATA',label:'Atacante',num:11,x:65,y:20},
+    ]},
+  '5-3-2': {label:'5-3-2', descr:'Postura defensiva',
+    defs:[
+      {pos:'GOL',label:'Goleiro',num:1,x:50,y:86},
+      {pos:'DEF',label:'Ala Esq.',num:6,x:10,y:72},
+      {pos:'DEF',label:'Zagueiro',num:3,x:28,y:76},
+      {pos:'DEF',label:'Líbero',num:4,x:50,y:78},
+      {pos:'DEF',label:'Zagueiro',num:5,x:72,y:76},
+      {pos:'DEF',label:'Ala Dir.',num:2,x:90,y:72},
+      {pos:'MEI',label:'Volante',num:8,x:28,y:50},
+      {pos:'MEI',label:'Meia',num:10,x:50,y:52},
+      {pos:'MEI',label:'Meia',num:7,x:72,y:50},
+      {pos:'ATA',label:'Atacante',num:9,x:35,y:20},
+      {pos:'ATA',label:'Atacante',num:11,x:65,y:20},
+    ]},
+  '4-2-3-1': {label:'4-2-3-1', descr:'Moderno',
+    defs:[
+      {pos:'GOL',label:'Goleiro',num:1,x:50,y:86},
+      {pos:'DEF',label:'Lat. Esq.',num:6,x:14,y:73},
+      {pos:'DEF',label:'Zagueiro',num:3,x:36,y:76},
+      {pos:'DEF',label:'Zagueiro',num:4,x:64,y:76},
+      {pos:'DEF',label:'Lat. Dir.',num:2,x:86,y:73},
+      {pos:'MEI',label:'Volante',num:5,x:35,y:58},
+      {pos:'MEI',label:'Volante',num:8,x:65,y:58},
+      {pos:'MEI',label:'Meia E.',num:7,x:18,y:35},
+      {pos:'MEI',label:'Meia',num:10,x:50,y:33},
+      {pos:'MEI',label:'Meia D.',num:11,x:82,y:35},
+      {pos:'ATA',label:'Centroavante',num:9,x:50,y:15},
+    ]},
+};
 
-const state = { lineup: Array(11).fill(null), rolls:0, mode:'classico', currentTeam:null, tipo:'todos', teamName:'XI DOS SONHOS', comp:'amistoso', pickedThisRoll:false, speed:110 };
+let SLOTS = [];
+function applyFormation(name){
+  SLOTS = FORMATIONS[name].defs.map((d,i)=>({...d, idx:i}));
+}
+
+const STYLE = {
+  ofensivo:    {mulOur:1.30, mulTheir:1.15, label:'OFENSIVO'},
+  equilibrado: {mulOur:1.00, mulTheir:1.00, label:'EQUILIBRADO'},
+  defensivo:   {mulOur:0.85, mulTheir:0.70, label:'DEFENSIVO'},
+};
+
+const state = { lineup: Array(11).fill(null), rolls:0, mode:'classico', currentTeam:null, tipo:'todos', teamName:'XI DOS SONHOS', comp:'amistoso', pickedThisRoll:false, speed:110, formation:'4-3-3', style:'equilibrado' };
 const $ = s=>document.querySelector(s);
 const $$= s=>document.querySelectorAll(s);
 const pick = a=>a[Math.floor(Math.random()*a.length)];
@@ -519,7 +668,9 @@ function renderPitch(){
   SLOTS.forEach(s=>{
     const p = state.lineup[s.idx];
     const el = document.createElement('div');
-    el.className = 'slot '+s.cls+' '+(p?'filled':'empty');
+    el.className = 'slot '+(p?'filled':'empty');
+    el.style.left = s.x+'%';
+    el.style.top = s.y+'%';
     let discStyle='', discCls='';
     if(p && p.cores){
       const [c1,c2] = p.cores;
@@ -707,8 +858,9 @@ function simAmistoso(){
 function runLiveMatch(foe, onEnd){
   const teamR = calcTeamR();
   const foeR = foe.jogadores.reduce((s,p)=>s+p.r,0)/foe.jogadores.length;
-  const ourChance  = Math.max(.05,((teamR-foeR)/100)*0.35 + 0.18);
-  const theirChance= Math.max(.04,((foeR-teamR+8)/100)*0.30 + 0.07);
+  const sty = STYLE[state.style];
+  const ourChance  = Math.max(.05,((teamR-foeR)/100)*0.35 + 0.18) * sty.mulOur;
+  const theirChance= Math.max(.04,((foeR-teamR+8)/100)*0.30 + 0.07) * sty.mulTheir;
   let score=[0,0], minute=0;
   const scorers = state.lineup.filter(p=>p.pos==='ATA'||p.pos==='MEI');
   const w = scorers.map(p=>p.r);
@@ -1069,7 +1221,59 @@ function hexToRgba(hex,a){
   return `rgba(${r},${g},${b},${a})`;
 }
 
+// ============ SETUP INICIAL ============
+function renderSetupForms(){
+  $('#setup-form').innerHTML = Object.entries(FORMATIONS).map(([k,f])=>{
+    const dots = f.defs.map(d=>`<div class="fm-dot" style="left:${d.x}%;top:${d.y}%"></div>`).join('');
+    return `<button class="setup-card form-card ${k===state.formation?'active':''}" data-form="${k}">
+      <div class="fm-name">${f.label}</div>
+      <div class="fm-desc">${f.descr}</div>
+      <div class="form-mini">${dots}</div>
+    </button>`;
+  }).join('');
+  $$('#setup-form .form-card').forEach(c=>{
+    c.onclick = ()=>{
+      $$('#setup-form .form-card').forEach(x=>x.classList.remove('active'));
+      c.classList.add('active');
+      state.formation = c.dataset.form;
+    };
+  });
+}
+renderSetupForms();
+$$('#setup-style .setup-card').forEach(c=>{
+  c.onclick = ()=>{
+    $$('#setup-style .setup-card').forEach(x=>x.classList.remove('active'));
+    c.classList.add('active');
+    state.style = c.dataset.style;
+  };
+});
+$$('#setup-mode .setup-card').forEach(c=>{
+  c.onclick = ()=>{
+    $$('#setup-mode .setup-card').forEach(x=>x.classList.remove('active'));
+    c.classList.add('active');
+    state.mode = c.dataset.md;
+  };
+});
+$('#setup-go').onclick = ()=>{
+  const nm = $('#setup-name').value.trim();
+  state.teamName = (nm || 'XI DOS SONHOS').toUpperCase();
+  $('#team-name').value = state.teamName;
+  applyFormation(state.formation);
+  state.lineup = Array(SLOTS.length).fill(null);
+  $('.field-head .hint').textContent = `${state.formation} · ${STYLE[state.style].label} · ${state.mode==='pro'?'PRO':'CLÁSSICO'}`;
+  $$('#mode-seg button').forEach(b=>b.classList.toggle('active', b.dataset.mode===state.mode));
+  $('#setup').classList.remove('open');
+  renderPitch();
+};
+
+applyFormation(state.formation);
 renderPitch();
+
+$('#brand-setup').style.cursor='pointer';
+$('#brand-setup').onclick = ()=>{
+  if(state.lineup.filter(Boolean).length>0 && !confirm('Mudar formação vai limpar seu XI. Continuar?')) return;
+  $('#setup').classList.add('open');
+};
 </script>
 </body>
 </html>
