@@ -764,52 +764,108 @@ function pitchEffect(txt, cls='', side=null){
 
 // ============ BRASILEIRÃO 38 RODADAS ============
 function simBrasileirao(){
-  // adversários: outros 19 times brasileiros + completa com seleções se necessário
-  let pool = TIMES.filter(t=>t.tipo==='brasileiro');
+  let pool = TIMES.filter(t=>t.tipo==='brasileiro' && t.nome!==state.teamName);
   while(pool.length<19) pool.push(pick(TIMES.filter(t=>t.tipo==='selecao')));
   pool = pool.slice(0,19);
-  const allTeams = [{nome:state.teamName, jogadores:state.lineup, cores:[$('#m-crest-a').style.getPropertyValue('--c1')||'#f5c842',$('#m-crest-a').style.getPropertyValue('--c2')||'#22d3ee'], id:'me', me:true}, ...pool];
+  // turno+returno = 38 partidas suas. Embaralha ordem.
+  const fixture = shuffle([...pool, ...pool]);
+  const meName = state.teamName;
+  const table = {};
+  const allTeams = [{nome:meName, cores:[$('#m-crest-a').style.getPropertyValue('--c1')||'#f5c842',$('#m-crest-a').style.getPropertyValue('--c2')||'#22d3ee'], id:'me', me:true}, ...pool];
+  allTeams.forEach(t=>table[t.nome]={t,j:0,v:0,e:0,d:0,gp:0,gc:0,pts:0});
+  state.tournament = {mode:'brasileirao', round:1, fixture, table, pool, meName, allTeams, totalRounds:38};
+  addEv(0,`<strong>🏆 BRASILEIRÃO · 38 RODADAS COMEÇOU</strong>`,'goal');
+  playNextBrasRound();
+}
 
-  // joga primeira partida ao vivo contra um adversário aleatório
-  const first = pick(pool);
-  setFoeUI(first);
-  addEv(0,`<strong>🏆 BRASILEIRÃO · 38 RODADAS</strong> · Sua estreia é contra ${first.nome}`,'goal');
-  runLiveMatch(first, (s)=>{
-    // simula restante das 37 partidas + 38 rodadas para todo mundo (turno + returno = 38)
-    const table = {};
-    allTeams.forEach(t=>table[t.nome]={t,j:0,v:0,e:0,d:0,gp:0,gc:0,pts:0});
-    // já jogamos a primeira partida ao vivo: contabilizar
-    const meName = state.teamName, foeName = first.nome;
-    recordMatch(table, meName, foeName, s[0], s[1]);
-    // simular outras 37 rodadas pro usuário
-    const remaining = pool.filter(t=>t.nome!==first.nome);
-    remaining.forEach(t=>{
-      const a = simScore(meName, calcTeamR(), avgR(t.jogadores));
-      recordMatch(table, meName, t.nome, a[0], a[1]);
-    });
-    // turno+returno (2x) — repete tudo de novo
-    [first, ...remaining].forEach(t=>{
-      const a = simScore(meName, calcTeamR(), avgR(t.jogadores));
-      recordMatch(table, meName, t.nome, a[0], a[1]);
-    });
-    // partidas entre os outros (simuladas resumidas)
-    for(let i=0;i<pool.length;i++) for(let j=i+1;j<pool.length;j++){
-      const a = simScore('x', avgR(pool[i].jogadores), avgR(pool[j].jogadores));
-      recordMatch(table, pool[i].nome, pool[j].nome, a[0], a[1]);
-      const b = simScore('x', avgR(pool[j].jogadores), avgR(pool[i].jogadores));
-      recordMatch(table, pool[j].nome, pool[i].nome, b[0], b[1]);
-    }
-    showStandings(table, meName, allTeams);
-    const sorted = Object.values(table).sort(cmpTable);
-    const myPos = sorted.findIndex(r=>r.t.nome===meName)+1;
-    const v=$('#verdict'); v.classList.add('show');
-    if(myPos===1){v.classList.add('win');$('#v-title').textContent='🏆 CAMPEÃO BRASILEIRO!';}
-    else if(myPos<=4){v.classList.add('win');$('#v-title').textContent=`✅ ${myPos}º LUGAR · LIBERTADORES`;}
-    else if(myPos>=17){v.classList.add('lose');$('#v-title').textContent=`💔 ${myPos}º · REBAIXADO`;}
-    else {v.classList.add('draw');$('#v-title').textContent=`🤝 ${myPos}º LUGAR`;}
-    $('#v-text').textContent = `${sorted.find(r=>r.t.nome===meName).pts} pontos em 38 rodadas.`;
+function playNextBrasRound(){
+  const t = state.tournament;
+  if(t.round>t.totalRounds){ return finishBrasileirao(); }
+  const foe = t.fixture[t.round-1];
+  $('#feed').innerHTML='';
+  $('#sc-a').textContent='0'; $('#sc-b').textContent='0';
+  $('#verdict').classList.remove('show','win','lose','draw');
+  setFoeUI(foe);
+  addEv(0,`<strong>📅 RODADA ${t.round}/38</strong> · ${t.meName} x ${foe.nome}`,'goal');
+  // simula outras partidas da rodada em silêncio
+  simBackgroundRound(t);
+  runLiveMatch(foe,(score)=>{
+    recordMatch(t.table, t.meName, foe.nome, score[0], score[1]);
+    showStandings(t.table, t.meName, t.allTeams);
+    showRoundEndUI();
   });
 }
+
+function simBackgroundRound(t){
+  // pareia o pool de modo simples
+  const shuffled = shuffle(t.pool.slice());
+  for(let i=0;i<shuffled.length-1;i+=2){
+    const a=shuffled[i], b=shuffled[i+1];
+    const sc = simScore('x', avgR(a.jogadores), avgR(b.jogadores));
+    recordMatch(t.table, a.nome, b.nome, sc[0], sc[1]);
+  }
+}
+
+function showRoundEndUI(){
+  const t = state.tournament;
+  const v = $('#verdict'); v.classList.add('show');
+  v.classList.remove('win','lose','draw');
+  const sorted = Object.values(t.table).sort(cmpTable);
+  const myPos = sorted.findIndex(r=>r.t.nome===t.meName)+1;
+  const myPts = sorted.find(r=>r.t.nome===t.meName).pts;
+  $('#v-title').textContent = `RODADA ${t.round}/38 · ${myPos}º LUGAR`;
+  $('#v-text').textContent = `${myPts} pontos · próxima rodada?`;
+  $('#verdict .actions').innerHTML = `
+    <button id="btn-next-round">PRÓXIMA RODADA →</button>
+    <button class="ghost" id="btn-skip-end">SIMULAR ATÉ O FIM ⏩</button>
+    <button class="ghost" id="btn-quit-tournament">DESISTIR</button>`;
+  $('#btn-next-round').onclick = ()=>{ t.round++; playNextBrasRound(); };
+  $('#btn-skip-end').onclick = ()=>{ skipBrasToEnd(); };
+  $('#btn-quit-tournament').onclick = ()=>{ $('#match').classList.remove('open'); state.tournament=null; };
+}
+
+function skipBrasToEnd(){
+  const t = state.tournament;
+  addEv(0,'<strong>⏩ Simulando restante…</strong>','goal');
+  // simula todas rodadas restantes (sua + outras) rapidamente
+  while(t.round<=t.totalRounds){
+    const foe = t.fixture[t.round-1];
+    const sc = simScore('me', calcTeamR(), avgR(foe.jogadores));
+    recordMatch(t.table, t.meName, foe.nome, sc[0], sc[1]);
+    simBackgroundRound(t);
+    t.round++;
+  }
+  showStandings(t.table, t.meName, t.allTeams);
+  finishBrasileirao();
+}
+
+function finishBrasileirao(){
+  const t = state.tournament;
+  showStandings(t.table, t.meName, t.allTeams);
+  const sorted = Object.values(t.table).sort(cmpTable);
+  const myPos = sorted.findIndex(r=>r.t.nome===t.meName)+1;
+  const myPts = sorted.find(r=>r.t.nome===t.meName).pts;
+  const v=$('#verdict'); v.classList.add('show');
+  v.classList.remove('win','lose','draw');
+  if(myPos===1){v.classList.add('win');$('#v-title').textContent='🏆 CAMPEÃO BRASILEIRO!';}
+  else if(myPos<=4){v.classList.add('win');$('#v-title').textContent=`✅ ${myPos}º · LIBERTADORES`;}
+  else if(myPos>=17){v.classList.add('lose');$('#v-title').textContent=`💔 ${myPos}º · REBAIXADO`;}
+  else {v.classList.add('draw');$('#v-title').textContent=`🤝 ${myPos}º LUGAR`;}
+  $('#v-text').textContent = `${myPts} pontos em 38 rodadas.`;
+  $('#verdict .actions').innerHTML = `
+    <button id="btn-new-match">NOVO CAMPEONATO</button>
+    <button class="ghost" id="btn-keep">VOLTAR AO CAMPO</button>
+    <button class="ghost" id="btn-restart">RECOMEÇAR TUDO</button>`;
+  rebindEndButtons();
+}
+
+function rebindEndButtons(){
+  $('#btn-keep').onclick = ()=>{$('#match').classList.remove('open'); state.tournament=null;};
+  $('#btn-new-match').onclick = ()=>{$('#btn-sim').click()};
+  $('#btn-restart').onclick = ()=>{state.lineup=Array(11).fill(null);state.rolls=0;renderPitch();$('#match').classList.remove('open');state.tournament=null;};
+}
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a;}
 function avgR(arr){return arr.reduce((s,p)=>s+p.r,0)/arr.length;}
 function simScore(name, ra, rb){
   const diff = ra-rb;
@@ -852,41 +908,92 @@ function showStandings(table, meName, allTeams){
 
 // ============ COPA DO MUNDO ============
 function simCopa(){
-  // 7 oponentes: grupo (3) + oitavas + quartas + semi + final
   const pool = TIMES.filter(t=>t.tipo==='selecao' && t.nome!==state.teamName).slice();
   const group = pickN(pool,3);
-  const bracket = pickN(pool.filter(t=>!group.includes(t)),4);
-  addEv(0,`<strong>🏆 COPA DO MUNDO</strong> · Fase de grupos`,'goal');
-  // joga primeiro do grupo ao vivo
-  setFoeUI(group[0]);
-  runLiveMatch(group[0],(s1)=>{
-    const results = [{foe:group[0], score:s1, stage:'Grupo 1'}];
-    // simular outros 2 jogos do grupo
-    [group[1],group[2]].forEach((g,i)=>{
-      const s = simScore('me', calcTeamR(), avgR(g.jogadores));
-      results.push({foe:g, score:s, stage:'Grupo '+(i+2)});
-    });
-    // pontos
-    let myPts = results.reduce((p,r)=>p+(r.score[0]>r.score[1]?3:r.score[0]===r.score[1]?1:0),0);
-    if(myPts<3){ // eliminado
-      showBracket(results, null);
-      finishCopa(results, 'fase de grupos');
-      return;
+  const knockout = pickN(pool.filter(t=>!group.includes(t)),4);
+  const fixture = [
+    {foe:group[0], stage:'Grupo · J1'},
+    {foe:group[1], stage:'Grupo · J2'},
+    {foe:group[2], stage:'Grupo · J3'},
+    {foe:knockout[0], stage:'OITAVAS'},
+    {foe:knockout[1], stage:'QUARTAS'},
+    {foe:knockout[2], stage:'SEMI'},
+    {foe:knockout[3], stage:'FINAL'},
+  ];
+  state.tournament = {mode:'copa', round:1, fixture, results:[], totalRounds:7, eliminated:false};
+  addEv(0,`<strong>🏆 COPA DO MUNDO COMEÇOU</strong> · Boa sorte!`,'goal');
+  playNextCopaRound();
+}
+
+function playNextCopaRound(){
+  const t = state.tournament;
+  if(t.eliminated || t.round>t.totalRounds) return finishCopa();
+  const cur = t.fixture[t.round-1];
+  $('#feed').innerHTML='';
+  $('#sc-a').textContent='0'; $('#sc-b').textContent='0';
+  $('#verdict').classList.remove('show','win','lose','draw');
+  setFoeUI(cur.foe);
+  addEv(0,`<strong>🏆 ${cur.stage}</strong> · ${state.teamName} x ${cur.foe.nome}`,'goal');
+  runLiveMatch(cur.foe,(score)=>{
+    // se mata-mata e empate → pênaltis
+    if(t.round>=4 && score[0]===score[1]){
+      const winMe = Math.random()<0.55;
+      addEv(91,`<strong>🥅 PÊNALTIS</strong> · ${winMe?state.teamName+' classifica':cur.foe.nome+' classifica'}`,winMe?'goal':'bad');
+      if(winMe) score[0]+=1; else score[1]+=1;
+      $('#sc-a').textContent=score[0]; $('#sc-b').textContent=score[1];
     }
-    // mata-mata
-    let stages = ['Oitavas','Quartas','Semi','FINAL'];
-    let foe;
-    for(let s=0;s<stages.length;s++){
-      foe = bracket[s] || pick(pool);
-      const sc = simScore('me', calcTeamR(), avgR(foe.jogadores));
-      // empate → pênaltis
-      if(sc[0]===sc[1]){ sc[0]+=Math.random()<0.55?1:0; if(sc[0]===sc[1]) sc[1]+=1; }
-      results.push({foe, score:sc, stage:stages[s]});
-      if(sc[0]<sc[1]){ showBracket(results, stages[s]); finishCopa(results, stages[s]); return; }
+    t.results.push({foe:cur.foe, score, stage:cur.stage});
+    showBracket(t.results, null);
+    // checa eliminação
+    if(t.round===3){
+      // fim do grupo — precisa de pelo menos 4 pontos pra avançar
+      const pts = t.results.slice(0,3).reduce((p,r)=>p+(r.score[0]>r.score[1]?3:r.score[0]===r.score[1]?1:0),0);
+      if(pts<4){ t.eliminated = true; return showCopaRoundEnd('fase de grupos · '+pts+' pts'); }
+    } else if(t.round>=4 && score[0]<score[1]){
+      t.eliminated = true; return showCopaRoundEnd(cur.stage);
     }
-    showBracket(results, 'CAMPEÃO');
-    finishCopa(results, 'CAMPEÃO');
+    showCopaRoundEnd(null);
   });
+}
+
+function showCopaRoundEnd(elimStage){
+  const t = state.tournament;
+  const v=$('#verdict'); v.classList.add('show');
+  v.classList.remove('win','lose','draw');
+  if(elimStage){
+    v.classList.add('lose');
+    $('#v-title').textContent = '💔 ELIMINADO';
+    $('#v-text').textContent = `Acabou na ${elimStage}.`;
+    $('#verdict .actions').innerHTML = `
+      <button id="btn-new-match">NOVA COPA</button>
+      <button class="ghost" id="btn-keep">VOLTAR AO CAMPO</button>
+      <button class="ghost" id="btn-restart">RECOMEÇAR TUDO</button>`;
+    rebindEndButtons();
+    return;
+  }
+  if(t.round===t.totalRounds){
+    v.classList.add('win');
+    $('#v-title').textContent='🏆 CAMPEÃO MUNDIAL!';
+    $('#v-text').textContent = `${state.teamName} ergueu a taça!`;
+    $('#verdict .actions').innerHTML = `
+      <button id="btn-new-match">NOVA COPA</button>
+      <button class="ghost" id="btn-keep">VOLTAR AO CAMPO</button>
+      <button class="ghost" id="btn-restart">RECOMEÇAR TUDO</button>`;
+    rebindEndButtons();
+    return;
+  }
+  $('#v-title').textContent = `✅ AVANÇOU · ${t.fixture[t.round-1].stage}`;
+  const next = t.fixture[t.round].stage;
+  $('#v-text').textContent = `Próxima: ${next}`;
+  $('#verdict .actions').innerHTML = `
+    <button id="btn-next-round">PRÓXIMA FASE →</button>
+    <button class="ghost" id="btn-quit-tournament">DESISTIR</button>`;
+  $('#btn-next-round').onclick = ()=>{ t.round++; playNextCopaRound(); };
+  $('#btn-quit-tournament').onclick = ()=>{ $('#match').classList.remove('open'); state.tournament=null; };
+}
+
+function finishCopa(){
+  // só chega aqui se já houve eliminação
 }
 function pickN(arr,n){const c=arr.slice();const out=[];while(out.length<n && c.length){out.push(c.splice(Math.floor(Math.random()*c.length),1)[0])}return out;}
 function showBracket(results, eliminated){
