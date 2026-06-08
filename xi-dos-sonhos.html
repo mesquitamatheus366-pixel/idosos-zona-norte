@@ -59,8 +59,7 @@
   .pitch .mid{position:absolute;top:50%;left:0;right:0;height:2px;background:rgba(255,255,255,.18)}
   .pitch .circle{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:22%;aspect-ratio:1;border-radius:50%;border:2px solid rgba(255,255,255,.18)}
 
-  .slot{position:absolute;transform:translate(-50%,-50%);width:90px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;transition:.2s}
-  .slot:hover{transform:translate(-50%,-50%) scale(1.06)}
+  .slot{position:absolute;transform:translate(-50%,-50%);width:90px;display:flex;flex-direction:column;align-items:center;gap:4px;transition:.2s;pointer-events:none}
   .slot .disc{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Anton';font-size:22px;
     background:#0a141a;border:2px dashed rgba(255,255,255,.25);color:rgba(255,255,255,.4);transition:.2s;position:relative}
   .slot.filled .disc{background:linear-gradient(180deg,#0c2a1a,#072014);border:2px solid var(--gold);color:var(--gold);box-shadow:0 0 18px rgba(245,200,66,.35),inset 0 -8px 0 rgba(0,0,0,.25)}
@@ -177,6 +176,65 @@
   .team-name-input:focus{border-color:var(--neon);background:#0d1018}
   .slot.filled .disc.col-team{background:var(--col1,#0c2a1a);border-color:var(--col2,var(--gold));color:var(--col-text,#fff);box-shadow:0 0 14px var(--col-glow,rgba(245,200,66,.3)),inset 0 -8px 0 rgba(0,0,0,.25)}
 
+  /* Escudo (crest) */
+  .crest{width:34px;height:38px;border-radius:5px 5px 50% 50%/5px 5px 30% 30%;background:linear-gradient(135deg,var(--c1,#666) 0%,var(--c1,#666) 49%,var(--c2,#999) 50%,var(--c2,#999) 100%);
+    display:inline-flex;align-items:center;justify-content:center;color:#fff;font-family:'Anton';font-size:11px;letter-spacing:1px;
+    box-shadow:inset 0 -3px 0 rgba(0,0,0,.25),0 2px 6px rgba(0,0,0,.5);text-shadow:0 1px 2px #000;border:1.5px solid rgba(255,255,255,.15);flex-shrink:0}
+  .crest.big{width:54px;height:62px;font-size:18px}
+  .crest.tiny{width:18px;height:20px;font-size:7px}
+  .lineup-item .crest{margin-right:2px}
+
+  .comp-block{margin-top:14px}
+  .comp-label{font-family:'VT323';letter-spacing:3px;font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
+
+  /* Match overlay melhorado */
+  .match-box.big{max-width:880px;padding:24px}
+  .match-head{margin-bottom:12px}
+  .t-side{display:flex;flex-direction:column;align-items:center;gap:6px}
+  .match-clock-row{display:flex;justify-content:space-between;align-items:center;margin-top:4px;padding:0 6px}
+  .speed-seg{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .speed-seg button{background:transparent;color:var(--muted);border:none;padding:6px 10px;font-size:10px;font-weight:800;letter-spacing:1.5px;cursor:pointer;font-family:inherit}
+  .speed-seg button.active{background:var(--gold);color:#1a1206}
+
+  /* Mini campo da simulação */
+  .match-pitch{position:relative;width:100%;height:140px;border-radius:10px;border:1px solid rgba(34,211,238,.2);margin:12px 0;
+    background:repeating-linear-gradient(90deg,var(--grass) 0 10%,var(--grass-2) 10% 20%);overflow:hidden;box-shadow:inset 0 0 30px rgba(0,0,0,.5)}
+  .mp-mid{position:absolute;top:0;bottom:0;left:50%;width:2px;background:rgba(255,255,255,.18)}
+  .mp-circle{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60px;height:60px;border-radius:50%;border:2px solid rgba(255,255,255,.18)}
+  .mp-goal{position:absolute;top:50%;transform:translateY(-50%);width:18px;height:60px;border:2px solid rgba(255,255,255,.3)}
+  .mp-goal.mp-left{left:0;border-left:none}
+  .mp-goal.mp-right{right:0;border-right:none}
+  .mp-ball{position:absolute;top:50%;left:50%;width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff,#bbb);transform:translate(-50%,-50%);transition:left .4s ease,top .4s ease;box-shadow:0 0 8px rgba(255,255,255,.5);z-index:5}
+  .mp-effect{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;font-family:'Anton';font-size:38px;letter-spacing:3px;color:#fff;text-shadow:0 0 12px var(--green);transition:opacity .15s}
+  .mp-effect.show{opacity:1;animation:flash .5s ease}
+  @keyframes flash{0%{transform:scale(.6);opacity:0}40%{transform:scale(1.2);opacity:1}100%{transform:scale(1);opacity:1}}
+  .mp-effect.goal{color:#fff;text-shadow:0 0 16px var(--green),0 0 30px var(--green)}
+  .mp-effect.yel{color:var(--gold)}
+  .mp-effect.red{color:var(--red)}
+  .mp-effect.save{color:var(--neon)}
+
+  /* Standings table */
+  #standings{margin-top:12px;max-height:280px;overflow-y:auto}
+  #standings table{width:100%;border-collapse:collapse;font-size:12px}
+  #standings th{background:#0a1018;color:var(--muted);font-family:'VT323';font-weight:400;letter-spacing:2px;padding:6px;text-align:left;border-bottom:1px solid var(--line);position:sticky;top:0}
+  #standings td{padding:6px;border-bottom:1px solid var(--line)}
+  #standings tr.me td{background:rgba(245,200,66,.1);font-weight:800;color:var(--gold)}
+  #standings tr.me .crest{box-shadow:0 0 10px var(--gold)}
+  #standings .pos{width:24px;text-align:center;color:var(--muted)}
+  #standings td.nm{display:flex;align-items:center;gap:8px}
+  #standings .pts{font-family:'Anton';color:var(--neon);text-align:center;width:38px;font-size:14px}
+  #standings .num{width:28px;text-align:center;color:var(--muted)}
+
+  /* Bracket Copa */
+  .bracket{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px}
+  .bracket-col{display:flex;flex-direction:column;gap:8px;justify-content:space-around}
+  .bracket-col h4{font-family:'VT323';letter-spacing:2px;color:var(--muted);font-size:11px;text-align:center;margin-bottom:4px}
+  .b-match{padding:6px 8px;background:rgba(10,30,20,.5);border:1px solid var(--line);border-radius:6px;font-size:11px;display:flex;justify-content:space-between;align-items:center;gap:4px}
+  .b-match.win-me{border-color:var(--gold);background:rgba(245,200,66,.08)}
+  .b-match.lose-me{border-color:var(--red);background:rgba(239,68,68,.08);opacity:.7}
+  .b-team{display:flex;align-items:center;gap:5px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px}
+  .b-score{font-family:'Anton';font-size:13px;color:var(--gold)}
+
   @media (max-width:1100px){
     .game{grid-template-columns:1fr;padding:16px}
     .field-wrap{min-height:auto}
@@ -221,7 +279,7 @@
   <section class="field-wrap">
     <div class="field-head">
       <div class="title">CAMPO · 4-3-3</div>
-      <div class="hint">Clique num disco preenchido pra remover</div>
+      <div class="hint">Role o dado e escolha um jogador</div>
     </div>
     <div class="pitch" id="pitch"><div class="mid"></div><div class="circle"></div></div>
   </section>
@@ -230,26 +288,54 @@
     <h2>SEU XI</h2>
     <input type="text" id="team-name" class="team-name-input" placeholder="Nome do seu time" maxlength="32" value="XI DOS SONHOS"/>
     <div class="lineup-list" id="lineup-list"></div>
-    <button class="sim-btn" id="btn-sim" disabled>SIMULAR PARTIDA</button>
+    <div class="comp-block">
+      <div class="comp-label">COMPETIÇÃO</div>
+      <div class="mode-seg full" id="comp-seg">
+        <button class="active" data-comp="amistoso">AMISTOSO</button>
+        <button data-comp="brasileirao">BRASILEIRÃO</button>
+        <button data-comp="copa">COPA</button>
+      </div>
+    </div>
+    <button class="sim-btn" id="btn-sim" disabled>SIMULAR</button>
   </aside>
 </main>
 
 
 <div class="match-overlay" id="match">
-  <div class="match-box">
-    <div class="match-teams">
-      <div><div class="tn" id="m-team-a">XI DOS SONHOS</div></div>
-      <div class="vs">VS</div>
-      <div><div class="tn foe" id="foe-name">ADVERSÁRIO</div></div>
+  <div class="match-box big">
+    <div class="match-head">
+      <div class="match-teams">
+        <div class="t-side"><div class="crest big" id="m-crest-a"></div><div class="tn" id="m-team-a">XI DOS SONHOS</div></div>
+        <div class="vs">VS</div>
+        <div class="t-side"><div class="crest big" id="m-crest-b"></div><div class="tn foe" id="foe-name">ADVERSÁRIO</div></div>
+      </div>
+      <div class="match-score"><span class="s" id="sc-a">0</span><span style="color:var(--muted)">:</span><span class="s r" id="sc-b">0</span></div>
+      <div class="match-clock-row">
+        <div class="match-clock" id="m-clock">00'</div>
+        <div class="speed-seg" id="speed-seg">
+          <button data-sp="200">LENTO</button>
+          <button class="active" data-sp="110">NORMAL</button>
+          <button data-sp="40">RÁPIDO</button>
+        </div>
+      </div>
     </div>
-    <div class="match-score"><span class="s" id="sc-a">0</span><span style="color:var(--muted)">:</span><span class="s r" id="sc-b">0</span></div>
-    <div class="match-clock" id="m-clock">00'</div>
+
+    <div class="match-pitch" id="match-pitch">
+      <div class="mp-mid"></div><div class="mp-circle"></div>
+      <div class="mp-goal mp-left"></div><div class="mp-goal mp-right"></div>
+      <div class="mp-ball" id="mp-ball"></div>
+      <div class="mp-effect" id="mp-effect"></div>
+    </div>
+
     <div class="feed" id="feed"></div>
+
+    <div id="standings" style="display:none"></div>
+
     <div class="verdict" id="verdict">
       <h3 id="v-title">—</h3>
       <p id="v-text">—</p>
       <div class="actions">
-        <button id="btn-new-match">JOGAR NOVA PARTIDA</button>
+        <button id="btn-new-match">NOVA PARTIDA</button>
         <button class="ghost" id="btn-keep">VOLTAR AO CAMPO</button>
         <button class="ghost" id="btn-restart">RECOMEÇAR TUDO</button>
       </div>
@@ -422,7 +508,7 @@ const SLOTS = [
   {idx:10,pos:'ATA', label:'Ponta Dir.',  num:11, cls:'p11'},
 ];
 
-const state = { lineup: Array(11).fill(null), rolls:0, mode:'classico', currentTeam:null, tipo:'todos', teamName:'XI DOS SONHOS' };
+const state = { lineup: Array(11).fill(null), rolls:0, mode:'classico', currentTeam:null, tipo:'todos', teamName:'XI DOS SONHOS', comp:'amistoso', pickedThisRoll:false, speed:110 };
 const $ = s=>document.querySelector(s);
 const $$= s=>document.querySelectorAll(s);
 const pick = a=>a[Math.floor(Math.random()*a.length)];
@@ -446,13 +532,6 @@ function renderPitch(){
       <div class="pos-tag">${s.pos}</div>
       <div class="label">${p?p.n:s.label}</div>
       ${p?`<div class="team">${p.teamShort}</div>`:''}`;
-    el.onclick = ()=>{
-      if(state.lineup[s.idx]){
-        if(confirm('Remover '+state.lineup[s.idx].n+' do XI?')){
-          state.lineup[s.idx]=null; renderPitch();
-        }
-      }
-    };
     pitch.appendChild(el);
   });
   renderLineup();
@@ -463,6 +542,7 @@ function renderLineup(){
     const p = state.lineup[s.idx];
     return `<div class="lineup-item ${p?'':'empty'}">
       <div class="pos-chip">${s.pos}</div>
+      ${p?crestFromPlayer(p,'tiny'):'<span class="crest tiny" style="--c1:#222;--c2:#333"></span>'}
       <div class="nm">${p?p.n:'—'}</div>
       <div class="tm">${p?p.teamShort:''}</div>
     </div>`;
@@ -479,6 +559,7 @@ function updateStats(){
 
 function rollDice(){
   state.rolls++;
+  state.pickedThisRoll = false;
   const dice = $('#dice');
   dice.classList.add('rolling');
   $('#btn-roll').disabled = true;
@@ -496,7 +577,7 @@ function rollDice(){
       const pool = state.tipo==='todos'?TIMES:TIMES.filter(x=>x.tipo===state.tipo);
       const team = pick(pool);
       state.currentTeam = team;
-      $('#reveal-name').textContent = team.nome;
+      $('#reveal-name').innerHTML = crestHTML(team) + ' ' + team.nome;
       $('#reveal-year').textContent = team.era;
       $('#reveal').classList.add('shown');
       renderRoster();
@@ -509,20 +590,22 @@ function rollDice(){
 function renderRoster(){
   const team = state.currentTeam;
   if(!team){$('#player-list').innerHTML='';return;}
+  if(state.pickedThisRoll){
+    $('#player-list').innerHTML = `<div class="roster-head" style="grid-column:1/-1;text-align:center;color:var(--gold)">✓ JOGADOR ESCOLHIDO · role o dado de novo para escolher outro</div>`;
+    return;
+  }
   const isPro = state.mode==='pro';
-  // posições já preenchidas
   const filledCount = pos => SLOTS.filter((s,i)=>s.pos===pos && state.lineup[i]).length;
   const maxPos = {GOL:1, DEF:4, MEI:3, ATA:3};
-  const head = `<div class="roster-head">ELENCO · <b>${team.nome}</b> · clique no jogador pra mandar pro seu XI</div>`;
+  const head = `<div class="roster-head" style="grid-column:1/-1">${crestHTML(team,'tiny')} <b>${team.nome}</b> · escolha 1 jogador</div>`;
   $('#player-list').innerHTML = head + team.jogadores.map((p,i)=>{
     const cheia = filledCount(p.pos) >= maxPos[p.pos];
-    // já está no XI?
     const jaNoXI = state.lineup.some(l=>l && l.n===p.n && l.team===team.nome);
     const locked = cheia || jaNoXI;
     const rating = isPro?'<span class="rt hidden">??</span>':`<div class="rt">${p.r}</div>`;
     return `<div class="pl ${locked?'locked':''}" data-i="${i}" title="${jaNoXI?'já está no XI':(cheia?'vaga de '+p.pos+' lotada':'')}">
       <div class="av">${p.pos==='GOL'?1:p.pos==='DEF'?'D':p.pos==='MEI'?'M':'A'}</div>
-      <div class="info"><div class="nm">${p.n}</div><div class="mt">${team.nome}</div></div>
+      <div class="info"><div class="nm">${p.n}</div></div>
       <div class="pl-pos">${p.pos}</div>
       ${rating}
     </div>`;
@@ -533,7 +616,9 @@ function renderRoster(){
       const p = team.jogadores[+el.dataset.i];
       const slotIdx = SLOTS.findIndex((s,i)=>s.pos===p.pos && !state.lineup[i]);
       if(slotIdx<0){ toast('Posição '+p.pos+' já está lotada'); return; }
-      state.lineup[slotIdx] = {...p, team:team.nome, teamShort:team.id.toUpperCase(), cores:team.cores};
+      state.lineup[slotIdx] = {...p, team:team.nome, teamShort:team.id.toUpperCase(), cores:team.cores, crestLabel:crestLabel(team)};
+      state.pickedThisRoll = true;
+      $('#btn-roll').textContent = 'ROLAR DE NOVO';
       if(state.mode==='pro') toast(`${p.n} revelado · OVER ${p.r}`);
       else toast(`${p.n} entrou no XI`);
       renderPitch();
@@ -541,6 +626,27 @@ function renderRoster(){
       if(state.lineup.filter(Boolean).length===11) toast('Escalação completa! Hora de simular ⚽');
     };
   });
+}
+function crestLabel(team){
+  // sigla curta para o escudo
+  const map = {br58:'BRA',br62:'BRA',br70:'BRA',br82:'BRA',br94:'BRA',br02:'BRA',br22:'BRA',
+    arg86:'ARG',arg22:'ARG',hol74:'HOL',ale90:'ALE',ale14:'ALE',fra98:'FRA',fra18:'FRA',
+    ita82:'ITA',esp10:'ESP',ing66:'ING',uru50:'URU',por16:'POR',
+    san62:'SAN',fla81:'FLA',fla19:'FLA',spfc92:'SPFC',spfc05:'SPFC',cor12:'COR',
+    pal99:'PAL',pal21:'PAL',cru76:'CRU',cru03:'CRU',gre83:'GRE',int06:'INT',
+    cam13:'CAM',vas89:'VAS',flu12:'FLU',flu23:'FLU',bot24:'BOT'};
+  return map[team.id] || team.id.slice(0,3).toUpperCase();
+}
+function crestHTML(team, size=''){
+  if(!team) return '';
+  const lbl = crestLabel(team);
+  const [c1,c2] = team.cores||['#666','#888'];
+  return `<span class="crest ${size}" style="--c1:${c1};--c2:${c2}">${lbl}</span>`;
+}
+function crestFromPlayer(p, size=''){
+  if(!p||!p.cores) return '';
+  const [c1,c2] = p.cores;
+  return `<span class="crest ${size}" style="--c1:${c1};--c2:${c2}">${p.crestLabel||p.teamShort}</span>`;
 }
 $('#btn-roll').onclick = rollDice;
 
@@ -555,44 +661,257 @@ $('#btn-sim').onclick = ()=>{
   $('#match').classList.add('open');
   $('#verdict').classList.remove('show','win','lose','draw');
   $('#feed').innerHTML='';
+  $('#standings').style.display='none';
+  $('#standings').innerHTML='';
   $('#sc-a').textContent='0'; $('#sc-b').textContent='0'; $('#m-clock').textContent="00'";
-  const foes = ['Alemanha 2014','Argentina 2022','Espanha 2010','França 1998','Itália 1982','Inglaterra 1966','Holanda 1974','Uruguai 1950'];
-  const foe = pick(foes);
-  $('#foe-name').textContent = foe.toUpperCase();
   $('#m-team-a').textContent = state.teamName.toUpperCase();
-  const teamR = state.lineup.reduce((s,p)=>s+p.r,0)/11;
-  const foeR = 78 + Math.random()*12;
-  const ourChance  = Math.max(.05, ((teamR-foeR)/100)*0.35 + 0.18);
-  const theirChance= Math.max(.04, ((foeR-teamR+8)/100)*0.30 + 0.07);
+  // crest do "seu time" — usa o jogador mais frequente como base de cores, ou padrão dourado
+  const counts = {};
+  state.lineup.forEach(p=>{if(p&&p.team){counts[p.team]=(counts[p.team]||0)+1}});
+  const topTeam = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+  const mainTeam = topTeam ? TIMES.find(t=>t.nome===topTeam[0]) : null;
+  $('#m-crest-a').style.cssText = `--c1:${mainTeam?mainTeam.cores[0]:'#f5c842'};--c2:${mainTeam?mainTeam.cores[1]:'#22d3ee'}`;
+  $('#m-crest-a').textContent = (state.teamName.slice(0,3)||'XI').toUpperCase();
+
+  if(state.comp==='brasileirao') return simBrasileirao();
+  if(state.comp==='copa') return simCopa();
+  return simAmistoso();
+};
+
+function calcTeamR(){ return state.lineup.reduce((s,p)=>s+p.r,0)/11; }
+
+function pickFoe(filter){
+  const pool = TIMES.filter(t=>!filter || t.tipo===filter);
+  return pick(pool);
+}
+
+function setFoeUI(foe){
+  $('#foe-name').textContent = foe.nome.toUpperCase();
+  $('#m-crest-b').style.cssText = `--c1:${foe.cores[0]};--c2:${foe.cores[1]}`;
+  $('#m-crest-b').textContent = crestLabel(foe);
+}
+
+function simAmistoso(){
+  const foe = pickFoe(null);
+  setFoeUI(foe);
+  runLiveMatch(foe, (score)=>{
+    const v=$('#verdict'); v.classList.add('show');
+    const d=score[0]-score[1];
+    if(d>0){v.classList.add('win');$('#v-title').textContent='✅ VITÓRIA';}
+    else if(d===0){v.classList.add('draw');$('#v-title').textContent='🤝 EMPATE';}
+    else{v.classList.add('lose');$('#v-title').textContent='💔 DERROTA';}
+    $('#v-text').textContent=`${state.teamName} ${score[0]} x ${score[1]} ${foe.nome}.`;
+  });
+}
+
+function runLiveMatch(foe, onEnd){
+  const teamR = calcTeamR();
+  const foeR = foe.jogadores.reduce((s,p)=>s+p.r,0)/foe.jogadores.length;
+  const ourChance  = Math.max(.05,((teamR-foeR)/100)*0.35 + 0.18);
+  const theirChance= Math.max(.04,((foeR-teamR+8)/100)*0.30 + 0.07);
   let score=[0,0], minute=0;
   const scorers = state.lineup.filter(p=>p.pos==='ATA'||p.pos==='MEI');
   const w = scorers.map(p=>p.r);
+  const speed = state.speed;
   const tick = setInterval(()=>{
     minute++;
     $('#m-clock').textContent = String(minute).padStart(2,'0')+"'";
+    moveBall();
     if(Math.random()<ourChance/12){
       const sc = weighted(scorers,w);
       score[0]++; $('#sc-a').textContent=score[0];
-      addEv(minute,`<strong>⚽ GOL!</strong> ${sc.n} (${sc.teamShort}) marca! ${score[0]}-${score[1]}`,'goal');
-    }
-    if(Math.random()<theirChance/12){
+      addEv(minute,`<strong>⚽ GOL!</strong> ${sc.n} marca! ${score[0]}-${score[1]}`,'goal');
+      pitchEffect('GOL!','goal','right');
+    } else if(Math.random()<theirChance/12){
       score[1]++; $('#sc-b').textContent=score[1];
-      addEv(minute,`<strong>Gol do adversário</strong> · ${score[0]}-${score[1]}`,'bad');
-    }
-    if(minute%18===0){
-      addEv(minute, pick(['Pressão alta de '+pick(state.lineup).n+'.','Defesaça do goleiro!','Quase no contra-ataque.','Falta perigosa.','Posse rolando no meio.']));
+      const sc = pick(foe.jogadores.filter(p=>p.pos==='ATA'||p.pos==='MEI'));
+      addEv(minute,`<strong>Gol do adversário</strong> · ${sc.n} (${foe.nome}) · ${score[0]}-${score[1]}`,'bad');
+      pitchEffect('GOL','goal','left');
+    } else if(Math.random()<0.04){
+      const ev = pick(['yellow','yellow','red','save','save','foul']);
+      if(ev==='yellow'){addEv(minute,`🟨 Amarelo · ${pick(state.lineup).n}`);pitchEffect('🟨','yel');}
+      else if(ev==='red'){addEv(minute,`🟥 VERMELHO · ${pick(state.lineup).n} expulso!`,'bad');pitchEffect('🟥','red');}
+      else if(ev==='save'){const gk=state.lineup[0];addEv(minute,`🧤 Defesa de pênalti! ${gk.n} pega!`,'goal');pitchEffect('DEFENDEU!','save');}
+      else addEv(minute,'Falta perigosa próxima à área.');
     }
     if(minute>=90){
       clearInterval(tick);
       addEv(90,'<strong>FIM DE JOGO</strong>','goal');
-      const v = $('#verdict'); v.classList.add('show');
-      const d = score[0]-score[1];
-      if(d>0){v.classList.add('win');$('#v-title').textContent='✅ VITÓRIA';$('#v-text').textContent=`Seu XI venceu por ${score[0]} a ${score[1]} contra ${foe}.`}
-      else if(d===0){v.classList.add('draw');$('#v-title').textContent='🤝 EMPATE';$('#v-text').textContent=`${score[0]} a ${score[1]}. Bom jogo!`}
-      else{v.classList.add('lose');$('#v-title').textContent='💔 DERROTA';$('#v-text').textContent=`${score[0]} a ${score[1]}. Troque peças e jogue de novo.`}
+      onEnd(score);
     }
-  },110);
-};
+  }, speed);
+}
+
+function moveBall(){
+  const b = $('#mp-ball');
+  if(!b) return;
+  const x = 10 + Math.random()*80;
+  const y = 15 + Math.random()*70;
+  b.style.left = x+'%';
+  b.style.top = y+'%';
+}
+function pitchEffect(txt, cls='', side=null){
+  const e = $('#mp-effect');
+  e.className = 'mp-effect show '+cls;
+  e.textContent = txt;
+  if(side){
+    const b = $('#mp-ball');
+    b.style.left = side==='left'?'4%':'94%';
+    b.style.top = '50%';
+  }
+  setTimeout(()=>{ e.className='mp-effect '+cls; }, 600);
+}
+
+// ============ BRASILEIRÃO 38 RODADAS ============
+function simBrasileirao(){
+  // adversários: outros 19 times brasileiros + completa com seleções se necessário
+  let pool = TIMES.filter(t=>t.tipo==='brasileiro');
+  while(pool.length<19) pool.push(pick(TIMES.filter(t=>t.tipo==='selecao')));
+  pool = pool.slice(0,19);
+  const allTeams = [{nome:state.teamName, jogadores:state.lineup, cores:[$('#m-crest-a').style.getPropertyValue('--c1')||'#f5c842',$('#m-crest-a').style.getPropertyValue('--c2')||'#22d3ee'], id:'me', me:true}, ...pool];
+
+  // joga primeira partida ao vivo contra um adversário aleatório
+  const first = pick(pool);
+  setFoeUI(first);
+  addEv(0,`<strong>🏆 BRASILEIRÃO · 38 RODADAS</strong> · Sua estreia é contra ${first.nome}`,'goal');
+  runLiveMatch(first, (s)=>{
+    // simula restante das 37 partidas + 38 rodadas para todo mundo (turno + returno = 38)
+    const table = {};
+    allTeams.forEach(t=>table[t.nome]={t,j:0,v:0,e:0,d:0,gp:0,gc:0,pts:0});
+    // já jogamos a primeira partida ao vivo: contabilizar
+    const meName = state.teamName, foeName = first.nome;
+    recordMatch(table, meName, foeName, s[0], s[1]);
+    // simular outras 37 rodadas pro usuário
+    const remaining = pool.filter(t=>t.nome!==first.nome);
+    remaining.forEach(t=>{
+      const a = simScore(meName, calcTeamR(), avgR(t.jogadores));
+      recordMatch(table, meName, t.nome, a[0], a[1]);
+    });
+    // turno+returno (2x) — repete tudo de novo
+    [first, ...remaining].forEach(t=>{
+      const a = simScore(meName, calcTeamR(), avgR(t.jogadores));
+      recordMatch(table, meName, t.nome, a[0], a[1]);
+    });
+    // partidas entre os outros (simuladas resumidas)
+    for(let i=0;i<pool.length;i++) for(let j=i+1;j<pool.length;j++){
+      const a = simScore('x', avgR(pool[i].jogadores), avgR(pool[j].jogadores));
+      recordMatch(table, pool[i].nome, pool[j].nome, a[0], a[1]);
+      const b = simScore('x', avgR(pool[j].jogadores), avgR(pool[i].jogadores));
+      recordMatch(table, pool[j].nome, pool[i].nome, b[0], b[1]);
+    }
+    showStandings(table, meName, allTeams);
+    const sorted = Object.values(table).sort(cmpTable);
+    const myPos = sorted.findIndex(r=>r.t.nome===meName)+1;
+    const v=$('#verdict'); v.classList.add('show');
+    if(myPos===1){v.classList.add('win');$('#v-title').textContent='🏆 CAMPEÃO BRASILEIRO!';}
+    else if(myPos<=4){v.classList.add('win');$('#v-title').textContent=`✅ ${myPos}º LUGAR · LIBERTADORES`;}
+    else if(myPos>=17){v.classList.add('lose');$('#v-title').textContent=`💔 ${myPos}º · REBAIXADO`;}
+    else {v.classList.add('draw');$('#v-title').textContent=`🤝 ${myPos}º LUGAR`;}
+    $('#v-text').textContent = `${sorted.find(r=>r.t.nome===meName).pts} pontos em 38 rodadas.`;
+  });
+}
+function avgR(arr){return arr.reduce((s,p)=>s+p.r,0)/arr.length;}
+function simScore(name, ra, rb){
+  const diff = ra-rb;
+  const ourBase = Math.max(0.5, 1.2 + diff/30);
+  const theirBase = Math.max(0.3, 1.0 - diff/30);
+  return [poisson(ourBase), poisson(theirBase)];
+}
+function poisson(lambda){let L=Math.exp(-lambda),k=0,p=1;do{k++;p*=Math.random()}while(p>L);return k-1;}
+function recordMatch(table,a,b,ga,gb){
+  if(!table[a]||!table[b]) return;
+  table[a].j++; table[b].j++;
+  table[a].gp+=ga; table[a].gc+=gb;
+  table[b].gp+=gb; table[b].gc+=ga;
+  if(ga>gb){table[a].v++; table[a].pts+=3; table[b].d++;}
+  else if(ga<gb){table[b].v++; table[b].pts+=3; table[a].d++;}
+  else {table[a].e++; table[a].pts+=1; table[b].e++; table[b].pts+=1;}
+}
+function cmpTable(a,b){return b.pts-a.pts || (b.gp-b.gc)-(a.gp-a.gc) || b.gp-a.gp;}
+function showStandings(table, meName, allTeams){
+  const sorted = Object.values(table).sort(cmpTable);
+  const rows = sorted.map((r,i)=>{
+    const t = allTeams.find(x=>x.nome===r.t.nome) || r.t;
+    const crest = t.cores ? `<span class="crest tiny" style="--c1:${t.cores[0]};--c2:${t.cores[1]}">${t.me?'XI':crestLabel(t)}</span>` : '';
+    return `<tr class="${r.t.nome===meName?'me':''}">
+      <td class="pos">${i+1}</td>
+      <td class="nm">${crest}<span>${r.t.nome}</span></td>
+      <td class="pts">${r.pts}</td>
+      <td class="num">${r.j}</td>
+      <td class="num">${r.v}</td>
+      <td class="num">${r.e}</td>
+      <td class="num">${r.d}</td>
+      <td class="num">${r.gp-r.gc}</td>
+    </tr>`;
+  }).join('');
+  $('#standings').innerHTML = `<table>
+    <thead><tr><th></th><th>TIME</th><th>P</th><th>J</th><th>V</th><th>E</th><th>D</th><th>SG</th></tr></thead>
+    <tbody>${rows}</tbody></table>`;
+  $('#standings').style.display='block';
+}
+
+// ============ COPA DO MUNDO ============
+function simCopa(){
+  // 7 oponentes: grupo (3) + oitavas + quartas + semi + final
+  const pool = TIMES.filter(t=>t.tipo==='selecao' && t.nome!==state.teamName).slice();
+  const group = pickN(pool,3);
+  const bracket = pickN(pool.filter(t=>!group.includes(t)),4);
+  addEv(0,`<strong>🏆 COPA DO MUNDO</strong> · Fase de grupos`,'goal');
+  // joga primeiro do grupo ao vivo
+  setFoeUI(group[0]);
+  runLiveMatch(group[0],(s1)=>{
+    const results = [{foe:group[0], score:s1, stage:'Grupo 1'}];
+    // simular outros 2 jogos do grupo
+    [group[1],group[2]].forEach((g,i)=>{
+      const s = simScore('me', calcTeamR(), avgR(g.jogadores));
+      results.push({foe:g, score:s, stage:'Grupo '+(i+2)});
+    });
+    // pontos
+    let myPts = results.reduce((p,r)=>p+(r.score[0]>r.score[1]?3:r.score[0]===r.score[1]?1:0),0);
+    if(myPts<3){ // eliminado
+      showBracket(results, null);
+      finishCopa(results, 'fase de grupos');
+      return;
+    }
+    // mata-mata
+    let stages = ['Oitavas','Quartas','Semi','FINAL'];
+    let foe;
+    for(let s=0;s<stages.length;s++){
+      foe = bracket[s] || pick(pool);
+      const sc = simScore('me', calcTeamR(), avgR(foe.jogadores));
+      // empate → pênaltis
+      if(sc[0]===sc[1]){ sc[0]+=Math.random()<0.55?1:0; if(sc[0]===sc[1]) sc[1]+=1; }
+      results.push({foe, score:sc, stage:stages[s]});
+      if(sc[0]<sc[1]){ showBracket(results, stages[s]); finishCopa(results, stages[s]); return; }
+    }
+    showBracket(results, 'CAMPEÃO');
+    finishCopa(results, 'CAMPEÃO');
+  });
+}
+function pickN(arr,n){const c=arr.slice();const out=[];while(out.length<n && c.length){out.push(c.splice(Math.floor(Math.random()*c.length),1)[0])}return out;}
+function showBracket(results, eliminated){
+  const cols = [
+    {h:'Grupo',m:results.filter(r=>r.stage.startsWith('Grupo'))},
+    {h:'Oitavas/Quartas',m:results.filter(r=>r.stage==='Oitavas'||r.stage==='Quartas')},
+    {h:'Semi',m:results.filter(r=>r.stage==='Semi')},
+    {h:'Final',m:results.filter(r=>r.stage==='FINAL')},
+  ];
+  const html = `<div class="bracket">`+cols.map(c=>`<div class="bracket-col"><h4>${c.h}</h4>`+c.m.map(r=>{
+    const win = r.score[0]>r.score[1];
+    return `<div class="b-match ${win?'win-me':'lose-me'}">
+      <div class="b-team">${crestHTML(r.foe,'tiny')} ${r.foe.nome}</div>
+      <div class="b-score">${r.score[0]}-${r.score[1]}</div>
+    </div>`;
+  }).join('')+`</div>`).join('')+`</div>`;
+  $('#standings').innerHTML = html;
+  $('#standings').style.display='block';
+}
+function finishCopa(results, last){
+  const v=$('#verdict'); v.classList.add('show');
+  if(last==='CAMPEÃO'){v.classList.add('win');$('#v-title').textContent='🏆 CAMPEÃO MUNDIAL!';$('#v-text').textContent=`${state.teamName} ergueu a taça!`;}
+  else if(last==='FINAL'){v.classList.add('lose');$('#v-title').textContent='🥈 VICE-CAMPEÃO';$('#v-text').textContent='Foi até a final mas perdeu a decisão.';}
+  else {v.classList.add('lose');$('#v-title').textContent=`Eliminado nas/no ${last}`;$('#v-text').textContent=`Fim de campanha.`;}
+}
 function weighted(items,weights){const t=weights.reduce((s,w)=>s+w,0);let r=Math.random()*t;for(let i=0;i<items.length;i++){r-=weights[i];if(r<=0)return items[i]}return items[0];}
 function addEv(m,h,c=''){const f=$('#feed');const d=document.createElement('div');d.className='ev '+c;d.innerHTML=`<span class="mn">${String(m).padStart(2,'0')}'</span>${h}`;f.appendChild(d);f.scrollTop=f.scrollHeight;}
 $('#btn-keep').onclick = ()=>$('#match').classList.remove('open');
@@ -617,6 +936,19 @@ document.querySelector('#tipo-seg').addEventListener('click',e=>{
 });
 document.querySelector('#team-name').addEventListener('input',e=>{
   state.teamName = e.target.value.trim() || 'XI DOS SONHOS';
+});
+document.querySelector('#comp-seg').addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON') return;
+  document.querySelectorAll('#comp-seg button').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active');
+  state.comp = e.target.dataset.comp;
+  $('#btn-sim').textContent = state.comp==='brasileirao'?'JOGAR BRASILEIRÃO':state.comp==='copa'?'JOGAR COPA':'SIMULAR';
+});
+document.querySelector('#speed-seg').addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON') return;
+  document.querySelectorAll('#speed-seg button').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active');
+  state.speed = +e.target.dataset.sp;
 });
 
 function isLight(hex){
