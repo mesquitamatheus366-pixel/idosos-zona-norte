@@ -6,7 +6,7 @@
 <title>XI dos Sonhos · Role o Dado</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#0b0d12; --panel:#13161f; --panel-2:#1a1e2b;
@@ -18,7 +18,7 @@
     --grass:#0d3b22; --grass-2:#0a3119;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{background:var(--bg);color:var(--ink);font-family:'Space Grotesk','Inter',sans-serif;min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+  html,body{background:var(--bg);color:var(--ink);font-family:'Outfit','Inter',sans-serif;min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
   @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
   @keyframes slide-up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
   @keyframes slide-in{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:none}}
@@ -32,8 +32,8 @@
   .topbar{display:flex;justify-content:space-between;align-items:center;padding:16px 28px;border-bottom:1px solid var(--line);background:rgba(11,13,18,.7);backdrop-filter:blur(8px);position:sticky;top:0;z-index:50}
   .brand{display:flex;align-items:center;gap:12px;font-family:'Bebas Neue',sans-serif;letter-spacing:1.5px;font-size:24px}
   .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--gold);box-shadow:0 0 14px var(--gold);animation:pulse-soft 2s ease infinite}
-  .brand small{color:var(--muted);font-family:'Space Grotesk',sans-serif;letter-spacing:.3px;font-size:12px;margin-left:6px;font-weight:500;text-transform:none}
-  .stats{display:flex;gap:18px;align-items:center;font-size:12px;color:var(--muted);font-family:'Space Grotesk',sans-serif;letter-spacing:.3px;font-weight:600}
+  .brand small{color:var(--muted);font-family:'Outfit',sans-serif;letter-spacing:.3px;font-size:12px;margin-left:6px;font-weight:500;text-transform:none}
+  .stats{display:flex;gap:18px;align-items:center;font-size:12px;color:var(--muted);font-family:'Outfit',sans-serif;letter-spacing:.3px;font-weight:600}
   .stats b{color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-right:6px}
   .btn-reset{background:transparent;border:1px solid var(--line);color:var(--muted);padding:7px 12px;font-size:11px;letter-spacing:1px;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600;text-transform:uppercase;transition:.15s}
   .btn-reset:hover{border-color:var(--red);color:var(--red)}
@@ -47,12 +47,12 @@
   .step .n{width:24px;height:24px;border-radius:50%;background:var(--neon);color:#031620;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
   .meter{margin-top:18px;height:8px;border-radius:99px;background:#0b1018;overflow:hidden;border:1px solid var(--line)}
   .meter>div{height:100%;background:linear-gradient(90deg,var(--neon),var(--gold));width:0%;transition:width .4s}
-  .meter-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:1px;font-family:'Space Grotesk',sans-serif}
+  .meter-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:1px;font-family:'Outfit',sans-serif}
 
   .field-wrap{position:relative;background:linear-gradient(180deg,#0f1320,#0a0d16);border:1px solid var(--line);border-radius:18px;padding:24px;min-height:680px}
   .field-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
   .field-head .title{font-family:'Bebas Neue';font-size:26px;letter-spacing:1.5px}
-  .field-head .hint{color:var(--muted);font-size:12px;font-family:'Space Grotesk',sans-serif;letter-spacing:1px;text-transform:uppercase}
+  .field-head .hint{color:var(--muted);font-size:12px;font-family:'Outfit',sans-serif;letter-spacing:1px;text-transform:uppercase}
   .pitch{position:relative;width:100%;max-width:540px;aspect-ratio:3/4;margin:0 auto;border-radius:14px;border:2px solid rgba(34,211,238,.25);
     background:repeating-linear-gradient(0deg,var(--grass) 0 7%,var(--grass-2) 7% 14%);
     overflow:hidden;box-shadow:inset 0 0 80px rgba(0,0,0,.55), 0 30px 80px rgba(0,0,0,.5)}
@@ -73,19 +73,19 @@
   .slot.filled .pos-tag{color:var(--neon-2)}
   .slot .label{font-size:11.5px;color:#fff;font-weight:700;text-shadow:0 1px 4px #000,0 0 2px #000;text-align:center;max-width:100px;line-height:1.2}
   .slot.empty .label{color:rgba(255,255,255,.5);font-weight:600}
-  .slot .team{font-family:'Space Grotesk',sans-serif;font-size:11px;color:var(--gold-2);letter-spacing:1px}
+  .slot .team{font-family:'Outfit',sans-serif;font-size:11px;color:var(--gold-2);letter-spacing:1px}
 
 
   .lineup-list{display:flex;flex-direction:column;gap:6px;margin-top:10px}
   .lineup-item{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--panel-2);border:1px solid var(--line);border-radius:9px;font-size:13px;transition:.2s;animation:slide-in .3s ease both}
   .lineup-item:not(.empty):hover{border-color:var(--gold);background:#1a1f2e}
   .lineup-item .nm{font-weight:600}
-  .lineup-item .tm{font-family:'Space Grotesk',sans-serif;font-weight:500;font-size:10.5px;letter-spacing:.3px;text-transform:uppercase}
+  .lineup-item .tm{font-family:'Outfit',sans-serif;font-weight:500;font-size:10.5px;letter-spacing:.3px;text-transform:uppercase}
   .lineup-item.empty{opacity:.4}
-  .lineup-item .pos-chip{width:32px;text-align:center;background:#0a1018;border-radius:6px;padding:3px 0;font-weight:800;font-size:10px;color:var(--neon);letter-spacing:.5px;font-family:'Space Grotesk',sans-serif}
+  .lineup-item .pos-chip{width:32px;text-align:center;background:#0a1018;border-radius:6px;padding:3px 0;font-weight:800;font-size:10px;color:var(--neon);letter-spacing:.5px;font-family:'Outfit',sans-serif}
   .lineup-item .nm{flex:1;font-weight:700}
   .lineup-item .tm-old{color:var(--muted)}
-  .sim-btn{width:100%;margin-top:16px;background:linear-gradient(180deg,var(--gold),var(--gold-2));color:#1a1206;border:none;padding:16px;font-weight:800;font-size:14px;letter-spacing:1.5px;cursor:pointer;border-radius:12px;font-family:'Space Grotesk',sans-serif;text-transform:uppercase;transition:all .25s;box-shadow:0 8px 24px rgba(245,200,66,.3),inset 0 -3px 0 rgba(0,0,0,.15);position:relative;overflow:hidden}
+  .sim-btn{width:100%;margin-top:16px;background:linear-gradient(180deg,var(--gold),var(--gold-2));color:#1a1206;border:none;padding:16px;font-weight:800;font-size:14px;letter-spacing:1.5px;cursor:pointer;border-radius:12px;font-family:'Outfit',sans-serif;text-transform:uppercase;transition:all .25s;box-shadow:0 8px 24px rgba(245,200,66,.3),inset 0 -3px 0 rgba(0,0,0,.15);position:relative;overflow:hidden}
   .sim-btn:not(:disabled):hover{animation:glow 1.5s ease infinite}
   .sim-btn:hover:not(:disabled){transform:translateY(-2px)}
   .sim-btn:disabled{opacity:.35;cursor:not-allowed;background:#2a2f3d;color:#666;box-shadow:none}
@@ -107,13 +107,13 @@
     box-shadow:0 18px 40px rgba(0,0,0,.6),inset 0 -10px 0 rgba(0,0,0,.08);transition:transform .15s}
   .dice.rolling{animation:dice .08s infinite}
   @keyframes dice{0%{transform:rotate(-14deg) scale(1.05)}50%{transform:rotate(16deg) scale(.95)}100%{transform:rotate(-8deg) scale(1.02)}}
-  .roll-btn{background:linear-gradient(180deg,var(--neon),#0ea5cc);color:#031620;border:none;padding:15px 28px;font-weight:800;font-size:13px;letter-spacing:1.2px;cursor:pointer;border-radius:10px;font-family:'Space Grotesk',sans-serif;text-transform:uppercase;transition:all .25s;box-shadow:0 6px 18px rgba(34,211,238,.25),inset 0 -2px 0 rgba(0,0,0,.15)}
+  .roll-btn{background:linear-gradient(180deg,var(--neon),#0ea5cc);color:#031620;border:none;padding:15px 28px;font-weight:800;font-size:13px;letter-spacing:1.2px;cursor:pointer;border-radius:10px;font-family:'Outfit',sans-serif;text-transform:uppercase;transition:all .25s;box-shadow:0 6px 18px rgba(34,211,238,.25),inset 0 -2px 0 rgba(0,0,0,.15)}
   .roll-btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(34,211,238,.3)}
   .roll-btn.alt{background:var(--panel-2);color:var(--muted);border:1px solid var(--line);margin-left:8px}
 
   .reveal-team{margin:20px 0 6px;padding:14px;border:1px dashed rgba(34,211,238,.4);border-radius:12px;background:rgba(34,211,238,.06);text-align:center;display:none}
   .reveal-team.shown{display:block;animation:pop .35s ease}
-  .reveal-team .lab{font-family:'Space Grotesk',sans-serif;letter-spacing:1.2px;font-size:12px;color:var(--neon);text-transform:uppercase;margin-bottom:4px}
+  .reveal-team .lab{font-family:'Outfit',sans-serif;letter-spacing:1.2px;font-size:12px;color:var(--neon);text-transform:uppercase;margin-bottom:4px}
   .reveal-team .nm{font-family:'Bebas Neue';font-size:24px;letter-spacing:1px}
   .reveal-team .yr{color:var(--muted);font-size:12px;margin-top:2px}
 
@@ -126,7 +126,7 @@
   .pl .mt{display:none}
   .pl .pl-pos{font-size:9px;padding:2px 6px;letter-spacing:1px;flex-shrink:0}
   .pl .rt{font-family:'Bebas Neue';font-size:15px;color:var(--gold);letter-spacing:0;flex-shrink:0;min-width:22px;text-align:right}
-  .pl .rt.hidden{font-family:'Space Grotesk',sans-serif;font-size:15px;color:var(--muted)}
+  .pl .rt.hidden{font-family:'Outfit',sans-serif;font-size:15px;color:var(--muted)}
 
   .match-overlay{position:fixed;inset:0;background:rgba(5,6,10,.95);display:none;align-items:center;justify-content:center;z-index:200;padding:20px}
   .match-overlay.open{display:flex}
@@ -134,11 +134,11 @@
   .match-teams{display:flex;justify-content:space-around;align-items:center;gap:18px}
   .match-teams .tn{font-family:'Bebas Neue';font-size:18px;letter-spacing:1px;color:var(--neon)}
   .match-teams .tn.foe{color:var(--red)}
-  .match-teams .vs{color:var(--muted);font-family:'Space Grotesk',sans-serif;letter-spacing:1.5px}
+  .match-teams .vs{color:var(--muted);font-family:'Outfit',sans-serif;letter-spacing:1.5px}
   .match-score{font-family:'Bebas Neue';font-size:120px;line-height:1;display:flex;justify-content:center;align-items:center;gap:24px;margin:16px 0 8px}
   .match-score .s{color:var(--gold);text-shadow:0 0 20px rgba(245,200,66,.4)}
   .match-score .s.r{color:var(--red);text-shadow:0 0 20px rgba(239,68,68,.4)}
-  .match-clock{font-family:'Space Grotesk',sans-serif;font-size:24px;color:var(--neon);letter-spacing:1.5px;margin-bottom:14px}
+  .match-clock{font-family:'Outfit',sans-serif;font-size:24px;color:var(--neon);letter-spacing:1.5px;margin-bottom:14px}
   .feed{text-align:left;max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:5px;padding:6px}
   .feed::-webkit-scrollbar{width:6px}
   .feed::-webkit-scrollbar-thumb{background:var(--line);border-radius:99px}
@@ -147,7 +147,7 @@
   .ev.goal strong{color:var(--green)}
   .ev.bad{border-color:var(--red);color:#ffd9dc}
   .ev.bad strong{color:var(--red)}
-  .ev .mn{font-family:'Space Grotesk',sans-serif;color:var(--muted);margin-right:8px;letter-spacing:1px}
+  .ev .mn{font-family:'Outfit',sans-serif;color:var(--muted);margin-right:8px;letter-spacing:1px}
   .verdict{margin-top:20px;padding:18px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.02);display:none}
   .verdict.show{display:block;animation:pop .3s ease}
   .verdict h3{font-family:'Bebas Neue';font-size:30px;letter-spacing:1.5px;margin-bottom:6px}
@@ -165,9 +165,9 @@
 
   .pl.locked{opacity:.45;cursor:not-allowed;background:#0d1019}
   .pl.locked:hover{transform:none;border-color:var(--line)}
-  .pl .rt.hidden{color:var(--muted);font-family:'Space Grotesk',sans-serif;font-size:18px}
+  .pl .rt.hidden{color:var(--muted);font-family:'Outfit',sans-serif;font-size:18px}
   .pl-pos{font-size:9px;padding:2px 6px;border-radius:99px;background:#0a1018;color:var(--neon);font-weight:800;letter-spacing:1px;border:1px solid var(--line)}
-  .roster-head{font-family:'Space Grotesk',sans-serif;letter-spacing:1.2px;color:var(--muted);font-size:12px;text-transform:uppercase;margin:14px 0 6px;padding-top:10px;border-top:1px dashed var(--line)}
+  .roster-head{font-family:'Outfit',sans-serif;letter-spacing:1.2px;color:var(--muted);font-size:12px;text-transform:uppercase;margin:14px 0 6px;padding-top:10px;border-top:1px dashed var(--line)}
   .roster-head b{color:var(--neon)}
 
   .dice-panel{position:sticky;top:80px;max-height:calc(100vh - 100px);overflow-y:auto}
@@ -195,7 +195,7 @@
   .setup-section:nth-child(1){animation-delay:.05s} .setup-section:nth-child(2){animation-delay:.12s}
   .setup-section:nth-child(3){animation-delay:.19s} .setup-section:nth-child(4){animation-delay:.26s}
   .setup-section:nth-child(5){animation-delay:.33s} .setup-section:nth-child(6){animation-delay:.40s}
-  .setup-label{font-family:'Space Grotesk',sans-serif;font-weight:700;letter-spacing:.5px;font-size:12px;color:var(--neon);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;padding-left:8px;border-left:3px solid var(--neon)}
+  .setup-label{font-family:'Outfit',sans-serif;font-weight:700;letter-spacing:.5px;font-size:12px;color:var(--neon);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;padding-left:8px;border-left:3px solid var(--neon)}
   .setup-input{width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;text-transform:uppercase;outline:none;transition:.2s}
   .setup-input:focus{border-color:var(--neon);background:#0d1018}
   .setup-grid{display:grid;gap:10px}
@@ -219,7 +219,7 @@
   .form-card .fm-desc{font-size:10px;color:var(--muted);margin-top:3px}
   .form-mini{margin-top:8px;height:60px;position:relative;background:repeating-linear-gradient(0deg,var(--grass) 0 14%,var(--grass-2) 14% 28%);border-radius:4px;border:1px solid rgba(34,211,238,.15)}
   .fm-dot{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--gold);transform:translate(-50%,-50%);box-shadow:0 0 4px rgba(245,200,66,.6)}
-  .setup-go{display:block;width:100%;margin-top:28px;background:linear-gradient(180deg,var(--gold) 0%,var(--gold-2) 100%);color:#1a1206;border:none;padding:20px;font-weight:800;font-size:16px;letter-spacing:2px;cursor:pointer;border-radius:14px;font-family:'Space Grotesk',sans-serif;text-transform:uppercase;transition:all .25s;box-shadow:0 10px 30px rgba(245,200,66,.35),inset 0 -3px 0 rgba(0,0,0,.15);position:relative;overflow:hidden}
+  .setup-go{display:block;width:100%;margin-top:28px;background:linear-gradient(180deg,var(--gold) 0%,var(--gold-2) 100%);color:#1a1206;border:none;padding:20px;font-weight:800;font-size:16px;letter-spacing:2px;cursor:pointer;border-radius:14px;font-family:'Outfit',sans-serif;text-transform:uppercase;transition:all .25s;box-shadow:0 10px 30px rgba(245,200,66,.35),inset 0 -3px 0 rgba(0,0,0,.15);position:relative;overflow:hidden}
   .setup-go::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);transform:translateX(-100%);transition:.6s}
   .setup-go:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(245,200,66,.5),inset 0 -3px 0 rgba(0,0,0,.15)}
   .setup-go:hover::after{transform:translateX(100%)}
@@ -233,7 +233,7 @@
   .lineup-item .crest{margin-right:2px}
 
   .comp-block{margin-top:14px}
-  .comp-label{font-family:'Space Grotesk',sans-serif;letter-spacing:1.2px;font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
+  .comp-label{font-family:'Outfit',sans-serif;letter-spacing:1.2px;font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
 
   /* Match overlay melhorado */
   .match-box.big{max-width:880px;padding:24px}
@@ -264,7 +264,7 @@
   /* Standings table */
   #standings{margin-top:12px;max-height:280px;overflow-y:auto}
   #standings table{width:100%;border-collapse:collapse;font-size:12px}
-  #standings th{background:#0a1018;color:var(--muted);font-family:'Space Grotesk',sans-serif;font-weight:400;letter-spacing:1px;padding:6px;text-align:left;border-bottom:1px solid var(--line);position:sticky;top:0}
+  #standings th{background:#0a1018;color:var(--muted);font-family:'Outfit',sans-serif;font-weight:400;letter-spacing:1px;padding:6px;text-align:left;border-bottom:1px solid var(--line);position:sticky;top:0}
   #standings td{padding:6px;border-bottom:1px solid var(--line)}
   #standings tr.me td{background:rgba(245,200,66,.1);font-weight:800;color:var(--gold)}
   #standings tr.me .crest{box-shadow:0 0 10px var(--gold)}
@@ -276,7 +276,7 @@
   /* Bracket Copa */
   .bracket{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px}
   .bracket-col{display:flex;flex-direction:column;gap:8px;justify-content:space-around}
-  .bracket-col h4{font-family:'Space Grotesk',sans-serif;letter-spacing:1px;color:var(--muted);font-size:11px;text-align:center;margin-bottom:4px}
+  .bracket-col h4{font-family:'Outfit',sans-serif;letter-spacing:1px;color:var(--muted);font-size:11px;text-align:center;margin-bottom:4px}
   .b-match{padding:6px 8px;background:rgba(10,30,20,.5);border:1px solid var(--line);border-radius:6px;font-size:11px;display:flex;justify-content:space-between;align-items:center;gap:4px}
   .b-match.win-me{border-color:var(--gold);background:rgba(245,200,66,.08)}
   .b-match.lose-me{border-color:var(--red);background:rgba(239,68,68,.08);opacity:.7}
@@ -512,7 +512,7 @@ const TIMES = [
   { id:'br02', tipo:'selecao', nome:'Brasil 2002', era:'Copa do Mundo · Coreia/Japão', cores:['#fde047','#16a34a'], jogadores:[
     {n:'Marcos',pos:'GOL',r:88},{n:'Cafu',pos:'DEF',r:94},{n:'Lúcio',pos:'DEF',r:91},{n:'Edmílson',pos:'DEF',r:87},{n:'R. Carlos',pos:'DEF',r:95},
     {n:'G. Silva',pos:'MEI',r:88},{n:'Kléberson',pos:'MEI',r:82},{n:'Juninho P.',pos:'MEI',r:84},
-    {n:'Ronaldinho',pos:'ATA',r:96},{n:'Rivaldo',pos:'ATA',r:95},{n:'Ronaldo',pos:'ATA',r:98}]},
+    {n:'Ronaldinho',pos:'MEI',r:96},{n:'Rivaldo',pos:'MEI',r:95},{n:'Ronaldo',pos:'ATA',r:98},{n:'Luizão',pos:'ATA',r:82}]},
   { id:'br22', tipo:'selecao', nome:'Brasil 2022', era:'Copa do Mundo · Catar', cores:['#fde047','#16a34a'], jogadores:[
     {n:'Alisson',pos:'GOL',r:93},{n:'Danilo',pos:'DEF',r:84},{n:'Marquinhos',pos:'DEF',r:91},{n:'T. Silva',pos:'DEF',r:90},{n:'A. Sandro',pos:'DEF',r:84},
     {n:'Casemiro',pos:'MEI',r:91},{n:'Paquetá',pos:'MEI',r:85},{n:'Bruno G.',pos:'MEI',r:86},
@@ -526,9 +526,9 @@ const TIMES = [
     {n:'De Paul',pos:'MEI',r:89},{n:'Fernández',pos:'MEI',r:86},{n:'Mac Allister',pos:'MEI',r:87},
     {n:'Messi',pos:'ATA',r:98},{n:'J. Álvarez',pos:'ATA',r:88},{n:'Di María',pos:'ATA',r:89}]},
   { id:'hol74', tipo:'selecao', nome:'Holanda 1974', era:'Carrossel · Copa Alemanha', cores:['#fb923c','#000'], jogadores:[
-    {n:'Jongbloed',pos:'GOL',r:82},{n:'Suurbier',pos:'DEF',r:84},{n:'Rijsbergen',pos:'DEF',r:83},{n:'Krol',pos:'DEF',r:90},{n:'Haan',pos:'DEF',r:85},
+    {n:'Jongbloed',pos:'GOL',r:82},{n:'Suurbier',pos:'DEF',r:84},{n:'Rijsbergen',pos:'DEF',r:83},{n:'Krol',pos:'DEF',r:90},{n:'Haan',pos:'MEI',r:85},
     {n:'Jansen',pos:'MEI',r:84},{n:'Neeskens',pos:'MEI',r:92},{n:'Van Hanegem',pos:'MEI',r:88},
-    {n:'Rep',pos:'ATA',r:85},{n:'Cruyff',pos:'ATA',r:97},{n:'Rensenbrink',pos:'ATA',r:88}]},
+    {n:'Rep',pos:'ATA',r:85},{n:'Cruyff',pos:'ATA',r:97},{n:'Rensenbrink',pos:'ATA',r:88},{n:'Hulshoff',pos:'DEF',r:85}]},
   { id:'ale90', tipo:'selecao', nome:'Alemanha 1990', era:'Copa do Mundo · Itália', cores:['#fff','#000'], jogadores:[
     {n:'Illgner',pos:'GOL',r:85},{n:'Berthold',pos:'DEF',r:83},{n:'Augenthaler',pos:'DEF',r:87},{n:'Kohler',pos:'DEF',r:86},{n:'Brehme',pos:'DEF',r:90},
     {n:'Buchwald',pos:'MEI',r:85},{n:'Matthäus',pos:'MEI',r:95},{n:'Hässler',pos:'MEI',r:86},{n:'Littbarski',pos:'MEI',r:87},
@@ -580,9 +580,9 @@ const TIMES = [
     {n:'W. Arão',pos:'MEI',r:83},{n:'Gerson',pos:'MEI',r:87},{n:'Arrascaeta',pos:'MEI',r:91},{n:'É. Ribeiro',pos:'MEI',r:88},
     {n:'B. Henrique',pos:'ATA',r:90},{n:'Gabigol',pos:'ATA',r:92}]},
   { id:'spfc92', tipo:'brasileiro', nome:'São Paulo 1992-93', era:'Bicampeão Mundial', cores:['#dc2626','#fff'], jogadores:[
-    {n:'Zetti',pos:'GOL',r:88},{n:'Cafu',pos:'DEF',r:92},{n:'Ronaldão',pos:'DEF',r:85},{n:'Válber',pos:'DEF',r:83},{n:'Leonardo',pos:'DEF',r:88},
+    {n:'Zetti',pos:'GOL',r:88},{n:'Cafu',pos:'DEF',r:92},{n:'Ronaldão',pos:'DEF',r:85},{n:'Válber',pos:'DEF',r:83},{n:'Leonardo',pos:'MEI',r:88},
     {n:'T. Cerezo',pos:'MEI',r:88},{n:'Raí',pos:'MEI',r:94},{n:'Palhinha',pos:'MEI',r:84},
-    {n:'Müller',pos:'ATA',r:88},{n:'Macedo',pos:'ATA',r:82},{n:'Catê',pos:'ATA',r:80}]},
+    {n:'Müller',pos:'ATA',r:88},{n:'Macedo',pos:'ATA',r:82},{n:'Catê',pos:'ATA',r:80},{n:'André',pos:'DEF',r:83}]},
   { id:'spfc05', tipo:'brasileiro', nome:'São Paulo 2005', era:'Tri Mundial', cores:['#dc2626','#fff'], jogadores:[
     {n:'Rogério Ceni',pos:'GOL',r:92},{n:'Cicinho',pos:'DEF',r:85},{n:'Lugano',pos:'DEF',r:88},{n:'Edcarlos',pos:'DEF',r:82},{n:'Júnior',pos:'DEF',r:84},
     {n:'Josué',pos:'MEI',r:84},{n:'Mineiro',pos:'MEI',r:85},{n:'Danilo',pos:'MEI',r:85},
@@ -594,7 +594,7 @@ const TIMES = [
   { id:'pal99', tipo:'brasileiro', nome:'Palmeiras 1999', era:'Libertadores · Parque Antártica', cores:['#16a34a','#fff'], jogadores:[
     {n:'M. Carlos',pos:'GOL',r:84},{n:'Arce',pos:'DEF',r:84},{n:'Júnior',pos:'DEF',r:84},{n:'R. Gomes',pos:'DEF',r:86},{n:'Júnior B.',pos:'DEF',r:83},
     {n:'César Sampaio',pos:'MEI',r:86},{n:'Galeano',pos:'MEI',r:84},{n:'Z. Roberto',pos:'MEI',r:89},
-    {n:'Alex',pos:'ATA',r:90},{n:'Oséas',pos:'ATA',r:82},{n:'Paulo Nunes',pos:'ATA',r:83}]},
+    {n:'Alex',pos:'MEI',r:90},{n:'Oséas',pos:'ATA',r:82},{n:'Paulo Nunes',pos:'ATA',r:83},{n:'Evair',pos:'ATA',r:84}]},
   { id:'pal21', tipo:'brasileiro', nome:'Palmeiras 2021', era:'Bi da Libertadores', cores:['#16a34a','#fff'], jogadores:[
     {n:'Weverton',pos:'GOL',r:87},{n:'M. Rocha',pos:'DEF',r:83},{n:'G. Gómez',pos:'DEF',r:88},{n:'Luan',pos:'DEF',r:83},{n:'Piquerez',pos:'DEF',r:85},
     {n:'Zé Rafael',pos:'MEI',r:84},{n:'Danilo',pos:'MEI',r:86},{n:'R. Veiga',pos:'MEI',r:88},
@@ -616,9 +616,9 @@ const TIMES = [
     {n:'Edinho',pos:'MEI',r:84},{n:'Wellington Monteiro',pos:'MEI',r:83},{n:'Perdigão',pos:'MEI',r:82},
     {n:'Iarley',pos:'ATA',r:85},{n:'Fernandão',pos:'ATA',r:87},{n:'Rafael Sóbis',pos:'ATA',r:84}]},
   { id:'cam13', tipo:'brasileiro', nome:'Atlético-MG 2013', era:'Libertadores · Mineirão', cores:['#000','#fff'], jogadores:[
-    {n:'V. Giovanni',pos:'GOL',r:84},{n:'Marcos Rocha',pos:'DEF',r:85},{n:'Réver',pos:'DEF',r:85},{n:'Leonardo Silva',pos:'DEF',r:85},{n:'R. Dátolo',pos:'DEF',r:84},
+    {n:'V. Giovanni',pos:'GOL',r:84},{n:'Marcos Rocha',pos:'DEF',r:85},{n:'Réver',pos:'DEF',r:85},{n:'Leonardo Silva',pos:'DEF',r:85},{n:'R. Dátolo',pos:'MEI',r:84},
     {n:'Pierre',pos:'MEI',r:84},{n:'Josué',pos:'MEI',r:84},{n:'Bernard',pos:'MEI',r:88},
-    {n:'Diego Tardelli',pos:'ATA',r:86},{n:'Ronaldinho',pos:'ATA',r:91},{n:'Jô',pos:'ATA',r:85}]},
+    {n:'Diego Tardelli',pos:'ATA',r:86},{n:'Ronaldinho',pos:'ATA',r:91},{n:'Jô',pos:'ATA',r:85},{n:'Luan',pos:'DEF',r:82}]},
   { id:'vas89', tipo:'brasileiro', nome:'Vasco 1989', era:'Brasileirão', cores:['#000','#fff'], jogadores:[
     {n:'Acácio',pos:'GOL',r:84},{n:'Mazinho',pos:'DEF',r:85},{n:'R. Gaúcho',pos:'DEF',r:85},{n:'Geovani Silva',pos:'DEF',r:83},{n:'Luís Carlos',pos:'DEF',r:82},
     {n:'Geovani',pos:'MEI',r:88},{n:'Bismarck',pos:'MEI',r:89},{n:'Sorato',pos:'MEI',r:83},
@@ -656,7 +656,7 @@ const TIMES = [
   { id:'atm14', tipo:'europeu', nome:'Atlético Madrid 2014', era:'La Liga · Simeone', cores:['#dc2626','#fff'], jogadores:[
     {n:'Courtois',pos:'GOL',r:90},{n:'Juanfran',pos:'DEF',r:85},{n:'Miranda',pos:'DEF',r:86},{n:'Godín',pos:'DEF',r:90},{n:'Filipe Luís',pos:'DEF',r:88},
     {n:'Gabi',pos:'MEI',r:85},{n:'Tiago',pos:'MEI',r:84},{n:'Koke',pos:'MEI',r:88},
-    {n:'Turan',pos:'ATA',r:86},{n:'D. Costa',pos:'ATA',r:90},{n:'Villa',pos:'ATA',r:87}]},
+    {n:'Turan',pos:'MEI',r:86},{n:'D. Costa',pos:'ATA',r:90},{n:'Villa',pos:'ATA',r:87},{n:'Adrián',pos:'ATA',r:82}]},
   { id:'mu99', tipo:'europeu', nome:'Man United 1999', era:'Treble · Ferguson', cores:['#dc2626','#fde047'], jogadores:[
     {n:'Schmeichel',pos:'GOL',r:93},{n:'G. Neville',pos:'DEF',r:87},{n:'J. Stam',pos:'DEF',r:89},{n:'Johnsen',pos:'DEF',r:84},{n:'Irwin',pos:'DEF',r:86},
     {n:'Beckham',pos:'MEI',r:91},{n:'R. Keane',pos:'MEI',r:93},{n:'Scholes',pos:'MEI',r:90},{n:'Giggs',pos:'MEI',r:92},
@@ -664,7 +664,7 @@ const TIMES = [
   { id:'mc23', tipo:'europeu', nome:'Man City 2023', era:'Treble · Guardiola', cores:['#7dd3fc','#fff'], jogadores:[
     {n:'Ederson',pos:'GOL',r:91},{n:'Walker',pos:'DEF',r:86},{n:'Stones',pos:'DEF',r:87},{n:'Dias',pos:'DEF',r:89},{n:'Aké',pos:'DEF',r:84},
     {n:'Rodri',pos:'MEI',r:91},{n:'De Bruyne',pos:'MEI',r:94},{n:'B. Silva',pos:'MEI',r:89},
-    {n:'Mahrez',pos:'ATA',r:87},{n:'Haaland',pos:'ATA',r:95},{n:'Grealish',pos:'ATA',r:86}]},
+    {n:'Mahrez',pos:'ATA',r:87},{n:'Haaland',pos:'ATA',r:95},{n:'Grealish',pos:'MEI',r:86},{n:'Foden',pos:'ATA',r:90}]},
   { id:'liv19', tipo:'europeu', nome:'Liverpool 2019', era:'Champions · Klopp', cores:['#dc2626','#16a34a'], jogadores:[
     {n:'Alisson',pos:'GOL',r:92},{n:'T.A.-Arnold',pos:'DEF',r:88},{n:'Matip',pos:'DEF',r:84},{n:'V. Dijk',pos:'DEF',r:92},{n:'Robertson',pos:'DEF',r:88},
     {n:'Fabinho',pos:'MEI',r:88},{n:'Henderson',pos:'MEI',r:85},{n:'Wijnaldum',pos:'MEI',r:86},
@@ -691,8 +691,8 @@ const TIMES = [
     {n:'Messi',pos:'ATA',r:93},{n:'Mbappé',pos:'ATA',r:94},{n:'Neymar',pos:'ATA',r:91}]},
   { id:'mil90', tipo:'europeu', nome:'Milan 1989-90', era:'Bi Europeu · Sacchi', cores:['#dc2626','#000'], jogadores:[
     {n:'G. Galli',pos:'GOL',r:84},{n:'Tassotti',pos:'DEF',r:86},{n:'Costacurta',pos:'DEF',r:86},{n:'Baresi',pos:'DEF',r:93},{n:'Maldini',pos:'DEF',r:94},
-    {n:'Ancelotti',pos:'MEI',r:85},{n:'Rijkaard',pos:'MEI',r:91},{n:'Massaro',pos:'MEI',r:84},
-    {n:'Gullit',pos:'ATA',r:94},{n:'Van Basten',pos:'ATA',r:96},{n:'Donadoni',pos:'ATA',r:86}]},
+    {n:'Ancelotti',pos:'MEI',r:85},{n:'Rijkaard',pos:'MEI',r:91},{n:'Massaro',pos:'ATA',r:84},
+    {n:'Gullit',pos:'ATA',r:94},{n:'Van Basten',pos:'ATA',r:96},{n:'Donadoni',pos:'MEI',r:86}]},
   { id:'juve17', tipo:'europeu', nome:'Juventus 2017', era:'Sexta Serie A', cores:['#000','#fff'], jogadores:[
     {n:'Buffon',pos:'GOL',r:90},{n:'Lichtsteiner',pos:'DEF',r:84},{n:'Bonucci',pos:'DEF',r:89},{n:'Chiellini',pos:'DEF',r:88},{n:'Alex Sandro',pos:'DEF',r:86},
     {n:'Khedira',pos:'MEI',r:84},{n:'Pjanic',pos:'MEI',r:86},{n:'Marchisio',pos:'MEI',r:84},
