@@ -60,6 +60,12 @@
   .pitch::before,.pitch::after{content:"";position:absolute;left:50%;transform:translateX(-50%);width:38%;height:16%;border:2px solid rgba(255,255,255,.18);pointer-events:none}
   .pitch .mid,.pitch .circle{pointer-events:none}
   .slot{z-index:5}
+  .slot.target{z-index:8;animation:targetPulse 1s ease-in-out infinite}
+  .slot.target .disc{background:linear-gradient(180deg,#fde047,#facc15)!important;border:3px solid #fff!important;color:#1a1206!important;box-shadow:0 0 22px #fde047,0 0 40px rgba(253,224,71,.6),inset 0 -6px 0 rgba(0,0,0,.2)!important;cursor:pointer}
+  .slot.target .label{color:#fde047!important;text-shadow:0 0 8px rgba(253,224,71,.7),0 1px 4px #000!important}
+  .slot.target .pos-tag{color:#fde047!important}
+  @keyframes targetPulse{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.08)}}
+  .pl.chosen{border-color:var(--gold)!important;background:rgba(245,200,66,.12)!important;box-shadow:0 0 0 1px var(--gold),0 0 12px rgba(245,200,66,.4)!important;transform:translateX(4px)}
   .pitch::before{top:-2px;border-top:none}
   .pitch::after{bottom:-2px;border-bottom:none}
   .pitch .mid{position:absolute;top:50%;left:0;right:0;height:2px;background:rgba(255,255,255,.18)}
@@ -1095,7 +1101,7 @@ const STYLE = {
 };
 
 const DIFF = {facil:25, normal:16, dificil:13, lendario:11};
-const state = { lineup: Array(11).fill(null), rolls:0, mode:'classico', currentTeam:null, tipo:'todos', teamName:'XI DOS SONHOS', comp:'amistoso', pickedThisRoll:false, speed:110, formation:'4-3-3', style:'equilibrado', diff:'normal', maxRolls:16, buff:null };
+const state = { lineup: Array(11).fill(null), rolls:0, mode:'classico', currentTeam:null, tipo:'todos', teamName:'XI DOS SONHOS', comp:'amistoso', pickedThisRoll:false, speed:110, formation:'4-3-3', style:'equilibrado', diff:'normal', maxRolls:16, buff:null, pendingPlayer:null };
 const $ = s=>document.querySelector(s);
 const $$= s=>document.querySelectorAll(s);
 const pick = a=>a[Math.floor(Math.random()*a.length)];
@@ -1103,10 +1109,15 @@ const pick = a=>a[Math.floor(Math.random()*a.length)];
 function renderPitch(){
   const pitch = $('#pitch');
   pitch.querySelectorAll('.slot').forEach(s=>s.remove());
+  const pending = state.pendingPlayer;
+  const targetSet = pending ? new Set(pending.slots) : null;
   SLOTS.forEach(s=>{
     const p = state.lineup[s.idx];
     const el = document.createElement('div');
-    el.className = 'slot '+(p?'filled':'empty');
+    let cls = 'slot '+(p?'filled':'empty');
+    const isTarget = targetSet && targetSet.has(s.idx);
+    if(isTarget) cls += ' target';
+    el.className = cls;
     el.style.left = s.x+'%';
     el.style.top = s.y+'%';
     let discStyle='', discCls='';
@@ -1126,6 +1137,16 @@ function renderPitch(){
       <div class="pos-tag">${s.pos}</div>
       <div class="label">${p?p.n:s.label}</div>
       ${p?`<div class="team">${p.teamShort}</div>`:''}`;
+    if(isTarget){
+      el.style.pointerEvents = 'auto';
+      el.style.cursor = 'pointer';
+      el.onclick = ()=>{
+        const pp = state.pendingPlayer;
+        if(!pp) return;
+        state.pendingPlayer = null;
+        placePlayer(pp.p, pp.team, s.idx);
+      };
+    }
     pitch.appendChild(el);
   });
   renderLineup();
@@ -1188,6 +1209,7 @@ function rollDice(){
   if(remaining <= 0){ toast('Rolagens esgotadas!'); return; }
   state.rolls++;
   state.pickedThisRoll = false;
+  state.pendingPlayer = null;
   const dice = $('#dice');
   dice.classList.add('rolling');
   $('#btn-roll').disabled = true;
@@ -1253,7 +1275,12 @@ function renderRoster(){
         if(positions.includes(s.pos) && !state.lineup[i]) availableSlots.push(i);
       });
       if(availableSlots.length===0){ toast('Vagas de '+positions.join('/')+' lotadas'); return; }
-      openSlotPicker(p, team, availableSlots);
+      // Marca o jogador como "selecionado" e ilumina os slots disponíveis no campo
+      state.pendingPlayer = {p, team, slots:availableSlots};
+      el.classList.add('chosen');
+      $$('#player-list .pl').forEach(x=>{if(x!==el)x.classList.remove('chosen')});
+      renderPitch();
+      toast(positions.length>1?'Clique no campo onde quer colocar':'Clique no campo para colocar');
     };
   });
 }
@@ -1327,7 +1354,7 @@ function toast(t){const el=document.createElement('div');el.className='toast';el
 
 $('#btn-reset').onclick = ()=>{
   if(state.lineup.filter(Boolean).length>0 && !confirm('Limpar toda a escalação?')) return;
-  state.lineup = Array(SLOTS.length).fill(null); state.rolls=0; state.buff=null;
+  state.lineup = Array(SLOTS.length).fill(null); state.rolls=0; state.buff=null; state.pendingPlayer=null;
   renderPitch(); updateStats(); updateRollsLeft(); renderBuffPanel();
   $('#btn-roll').disabled=false; $('#btn-roll').textContent='ROLAR O DADO';
   $('#reveal').classList.remove('shown'); $('#player-list').innerHTML='';
