@@ -50,7 +50,7 @@
   .meter>div{height:100%;background:linear-gradient(90deg,var(--neon),var(--gold));width:0%;transition:width .4s}
   .meter-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:1px;font-family:'Outfit',sans-serif}
 
-  .field-wrap{position:relative;background:linear-gradient(180deg,#0f1320,#0a0d16);border:1px solid var(--line);border-radius:18px;padding:24px;min-height:680px}
+  .field-wrap{position:relative;background:linear-gradient(180deg,#0f1320,#0a0d16);border:1px solid var(--line);border-radius:18px;padding:24px}
   .field-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
   .field-head .title{font-family:'Bebas Neue';font-size:26px;letter-spacing:1.5px}
   .field-head .hint{color:var(--muted);font-size:12px;font-family:'Outfit',sans-serif;letter-spacing:1px;text-transform:uppercase}
@@ -311,9 +311,142 @@
   .h-summary b{color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px}
   .h-summary small{color:var(--muted);font-size:11px;display:block;margin-top:2px}
 
+  /* ============ TABLET ============ */
   @media (max-width:1100px){
-    .game{grid-template-columns:1fr;padding:16px}
-    .field-wrap{min-height:auto}
+    .game{grid-template-columns:1fr 1fr;padding:16px;gap:14px}
+    .field-wrap{grid-column:1/-1;min-height:auto;order:-1;padding:16px}
+    .panel{padding:16px}
+    .dice-panel{position:static;max-height:none}
+  }
+
+  /* ============ CELULAR ============ */
+  @media (max-width:640px){
+    .topbar{padding:10px 14px;flex-direction:column;gap:8px;align-items:flex-start}
+    .brand{font-size:18px;gap:8px}
+    .brand small{font-size:10px;margin-left:4px}
+    .stats{gap:8px;font-size:10px;flex-wrap:wrap;width:100%;justify-content:space-between}
+    .stats b{font-size:17px;margin-right:3px}
+    .btn-reset{padding:5px 8px;font-size:9px}
+
+    .game{grid-template-columns:1fr;padding:10px;gap:10px}
+    .field-wrap{grid-column:1;order:0;padding:10px;border-radius:12px}
+    .field-head{flex-direction:column;gap:4px;align-items:flex-start;margin-bottom:8px}
+    .field-head .title{font-size:18px}
+    .field-head .hint{font-size:10px}
+    .pitch{max-width:100%;aspect-ratio:3/4;border-radius:10px}
+    .slot{width:60px;gap:2px}
+    .slot .disc{width:36px;height:36px;font-size:16px}
+    .slot .label{font-size:9px;max-width:64px}
+    .slot .pos-tag{font-size:7px}
+    .slot .team{font-size:8px}
+
+    .panel{padding:14px;border-radius:12px}
+    .panel h2{font-size:18px;letter-spacing:1.5px}
+    .dice-panel{position:static;max-height:none}
+    .dice-wrap{margin-bottom:4px}
+    .dice-inline{width:70px;height:70px;font-size:44px;border-radius:14px;margin:2px auto 6px}
+    .rolls-left{font-size:11px}
+    .roll-btn{padding:12px 20px;font-size:12px}
+    .reveal-team{margin:12px 0 4px;padding:10px}
+    .reveal-team .nm{font-size:18px}
+    .reveal-team .yr{font-size:10px}
+    .skip-warn{font-size:10px;padding:5px 6px}
+
+    .pl{padding:5px 8px;gap:6px}
+    .pl .av{width:20px;height:20px;font-size:9px}
+    .pl .nm{font-size:12px}
+    .pl .pl-pos{font-size:8px;padding:1px 4px}
+    .pl .rt{font-size:13px;min-width:18px}
+    .pl .rt.hidden{font-size:13px}
+
+    .lineup-list{gap:4px}
+    .lineup-item{padding:6px 8px;gap:6px;font-size:11px;border-radius:7px}
+    .lineup-item .pos-chip{width:26px;font-size:8px;padding:2px 0}
+    .lineup-item .nm{font-size:12px}
+    .lineup-item .tm{font-size:9px}
+    .crest{width:22px;height:26px;font-size:8px;border-radius:3px 3px 50% 50%/3px 3px 30% 30%}
+    .crest.big{width:30px;height:36px;font-size:10px}
+    .crest.tiny{width:14px;height:16px;font-size:6px}
+    .sim-btn{padding:14px;font-size:13px;border-radius:10px}
+    .meter{margin-top:12px;height:6px}
+    .meter-label{font-size:10px}
+
+    /* Setup */
+    .setup-overlay{padding:16px 10px}
+    .setup-box{padding:20px 14px;border-radius:14px}
+    .setup-head .brand{font-size:22px}
+    .setup-sub{font-size:11px}
+    .setup-label{font-size:11px;padding-left:6px}
+    .setup-input{font-size:20px;padding:12px 14px;letter-spacing:1.5px}
+    .setup-grid.form-grid{grid-template-columns:repeat(3,1fr);gap:6px}
+    .setup-grid.style-grid{grid-template-columns:repeat(2,1fr);gap:6px}
+    .setup-grid.style-grid.two{grid-template-columns:repeat(2,1fr)}
+    .setup-grid.style-grid.four{grid-template-columns:repeat(2,1fr)}
+    .setup-card{padding:10px}
+    .sc-icon{font-size:18px;margin-bottom:3px}
+    .sc-ttl{font-size:14px;letter-spacing:1px}
+    .sc-desc{font-size:10px}
+    .form-card{padding:8px}
+    .form-card .fm-name{font-size:18px}
+    .form-card .fm-desc{font-size:9px}
+    .form-mini{height:44px}
+    .fm-dot{width:5px;height:5px}
+    .setup-go{padding:16px;font-size:14px;letter-spacing:1.5px;border-radius:10px}
+    .history-btn{padding:10px;font-size:11px}
+
+    /* Match overlay */
+    .match-overlay{padding:8px}
+    .match-box{padding:12px;border-radius:12px}
+    .match-box.big{max-width:100%;padding:10px}
+    .match-teams .tn{font-size:12px}
+    .match-teams .vs{font-size:10px}
+    .match-score{font-size:40px;gap:10px;margin:4px 0 2px}
+    .match-clock{font-size:13px}
+    .match-clock-row{padding:0;flex-direction:column;gap:4px;align-items:center}
+    .speed-seg button{font-size:9px;padding:4px 8px}
+    .match-pitch{height:56px;border-radius:6px;margin:4px 0}
+    .mp-ball{width:10px;height:10px}
+    .mp-effect{font-size:22px}
+    .mp-goal{width:12px;height:40px}
+    .mp-circle{width:40px;height:40px}
+    .feed{max-height:100px}
+    .ev{padding:4px 7px;font-size:10px}
+    .ev .mn{font-size:9px}
+    .verdict{padding:10px;margin-top:6px}
+    .verdict h3{font-size:16px}
+    .verdict p{font-size:10px;margin-bottom:6px}
+    .verdict button{padding:8px 12px;font-size:10px}
+    #standings{max-height:140px}
+    #standings table{font-size:10px}
+    #standings th{padding:4px;font-size:9px}
+    #standings td{padding:4px}
+    .bracket{grid-template-columns:repeat(2,1fr);gap:6px}
+    .b-match{padding:4px 6px;font-size:9px}
+    .b-team{font-size:8px}
+    .b-score{font-size:11px}
+
+    /* History */
+    .modal{border-radius:14px;max-height:85vh}
+    .modal-head{padding:12px 14px}
+    .modal-head .ttl{font-size:18px}
+    .modal-body{padding:14px 12px}
+    .h-entry{padding:10px;gap:10px}
+    .h-score{font-size:24px;min-width:44px}
+    .h-score small{font-size:8px}
+    .h-team{font-size:12px}
+    .h-detail{font-size:10px}
+    .h-date{font-size:9px}
+    .h-summary b{font-size:22px}
+    .h-summary small{font-size:10px}
+  }
+
+  /* ============ CELULAR PEQUENO ============ */
+  @media (max-width:380px){
+    .setup-grid.form-grid{grid-template-columns:repeat(2,1fr)}
+    .slot{width:50px}
+    .slot .disc{width:30px;height:30px;font-size:14px}
+    .slot .label{font-size:8px;max-width:52px}
+    .match-score{font-size:32px}
   }
 </style>
 </head>
