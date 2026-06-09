@@ -290,6 +290,27 @@
   .b-team{display:flex;align-items:center;gap:5px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px}
   .b-score{font-family:'Bebas Neue';font-size:13px;color:var(--gold)}
 
+  .history-btn{display:block;width:100%;margin-top:12px;background:transparent;border:1px solid var(--line);color:var(--muted);padding:14px;font-weight:700;font-size:13px;letter-spacing:1px;cursor:pointer;border-radius:10px;font-family:'Outfit',sans-serif;text-transform:uppercase;transition:.2s}
+  .history-btn:hover{border-color:var(--neon);color:var(--neon)}
+  .h-entry{padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2);margin-bottom:8px;display:flex;align-items:center;gap:14px;transition:.15s}
+  .h-entry:hover{border-color:var(--gold);background:#1a1f2e}
+  .h-score{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--gold);min-width:56px;text-align:center;line-height:1}
+  .h-score small{font-size:10px;color:var(--muted);display:block;font-family:'Outfit',sans-serif;font-weight:600;letter-spacing:.5px}
+  .h-info{flex:1;min-width:0}
+  .h-team{font-weight:700;font-size:14px;margin-bottom:2px}
+  .h-detail{font-size:11px;color:var(--muted);line-height:1.5}
+  .h-detail span{margin-right:8px}
+  .h-badge{font-size:9px;padding:2px 6px;border-radius:99px;font-weight:800;letter-spacing:.5px}
+  .h-badge.win{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3)}
+  .h-badge.lose{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+  .h-badge.ok{background:rgba(245,200,66,.15);color:var(--gold);border:1px solid rgba(245,200,66,.3)}
+  .h-date{font-size:10px;color:var(--muted);text-align:right;white-space:nowrap}
+  .h-clear{background:transparent;border:1px solid var(--line);color:var(--muted);padding:8px 14px;font-size:11px;letter-spacing:1px;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600;text-transform:uppercase;margin-top:10px;display:block;width:100%;transition:.15s}
+  .h-clear:hover{border-color:var(--red);color:var(--red)}
+  .h-summary{text-align:center;padding:14px;margin-bottom:12px;border:1px solid var(--line);border-radius:10px;background:rgba(34,211,238,.04)}
+  .h-summary b{color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px}
+  .h-summary small{color:var(--muted);font-size:11px;display:block;margin-top:2px}
+
   @media (max-width:1100px){
     .game{grid-template-columns:1fr;padding:16px}
     .field-wrap{min-height:auto}
@@ -411,6 +432,20 @@
     </div>
 
     <button class="setup-go" id="setup-go">COMEÇAR A MONTAR →</button>
+    <button class="history-btn" id="btn-history">HISTÓRICO DE PONTUAÇÃO</button>
+  </div>
+</div>
+
+<!-- HISTÓRICO -->
+<div class="modal-bg" id="history-modal">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-head">
+      <span class="ttl">HISTÓRICO DE PONTUAÇÃO</span>
+      <button class="x" id="history-close">&times;</button>
+    </div>
+    <div class="modal-body" id="history-body">
+      <p style="color:var(--muted);text-align:center">Nenhuma partida registrada ainda.</p>
+    </div>
   </div>
 </div>
 
@@ -1043,10 +1078,12 @@ function simAmistoso(){
   runLiveMatch(foe, (score)=>{
     const v=$('#verdict'); v.classList.add('show');
     const d=score[0]-score[1];
+    const outcome = d>0?'win':d===0?'draw':'lose';
     if(d>0){v.classList.add('win');$('#v-title').textContent='✅ VITÓRIA';}
     else if(d===0){v.classList.add('draw');$('#v-title').textContent='🤝 EMPATE';}
     else{v.classList.add('lose');$('#v-title').textContent='💔 DERROTA';}
-    $('#v-text').textContent=`${state.teamName} ${score[0]} x ${score[1]} ${foe.nome}.`;
+    const pts = saveToHistory({type:'amistoso', outcome, detail:`${state.teamName} ${score[0]} x ${score[1]} ${foe.nome}`, badge:outcome==='win'?'VITÓRIA':outcome==='draw'?'EMPATE':'DERROTA', badgeClass:outcome==='win'?'win':outcome==='draw'?'ok':'lose'});
+    $('#v-text').textContent=`${state.teamName} ${score[0]} x ${score[1]} ${foe.nome}. (+${pts} pts)`;
   });
 }
 
@@ -1195,11 +1232,13 @@ function finishBrasileirao(){
   const myPts = sorted.find(r=>r.t.nome===t.meName).pts;
   const v=$('#verdict'); v.classList.add('show');
   v.classList.remove('win','lose','draw');
-  if(myPos===1){v.classList.add('win');$('#v-title').textContent='🏆 CAMPEÃO BRASILEIRO!';}
-  else if(myPos<=4){v.classList.add('win');$('#v-title').textContent=`✅ ${myPos}º · LIBERTADORES`;}
-  else if(myPos>=17){v.classList.add('lose');$('#v-title').textContent=`💔 ${myPos}º · REBAIXADO`;}
-  else {v.classList.add('draw');$('#v-title').textContent=`🤝 ${myPos}º LUGAR`;}
-  $('#v-text').textContent = `${myPts} pontos em 38 rodadas.`;
+  let badge='', badgeClass='ok';
+  if(myPos===1){v.classList.add('win');$('#v-title').textContent='🏆 CAMPEÃO BRASILEIRO!';badge='CAMPEÃO';badgeClass='win';}
+  else if(myPos<=4){v.classList.add('win');$('#v-title').textContent=`✅ ${myPos}º · LIBERTADORES`;badge=myPos+'º LUGAR';badgeClass='win';}
+  else if(myPos>=17){v.classList.add('lose');$('#v-title').textContent=`💔 ${myPos}º · REBAIXADO`;badge='REBAIXADO';badgeClass='lose';}
+  else {v.classList.add('draw');$('#v-title').textContent=`🤝 ${myPos}º LUGAR`;badge=myPos+'º LUGAR';badgeClass='ok';}
+  const pts = saveToHistory({type:'brasileirao', position:myPos, detail:`${myPos}º lugar · ${myPts} pontos em 38 rodadas`, badge, badgeClass});
+  $('#v-text').textContent = `${myPts} pontos em 38 rodadas. (+${pts} pts)`;
   $('#verdict .actions').innerHTML = `
     <button id="btn-new-match">NOVO CAMPEONATO</button>
     <button class="ghost" id="btn-keep">VOLTAR AO CAMPO</button>
@@ -1363,9 +1402,12 @@ function showBracket(results, eliminated){
 }
 function finishCopa(results, last){
   const v=$('#verdict'); v.classList.add('show');
-  if(last==='CAMPEÃO'){v.classList.add('win');$('#v-title').textContent='🏆 CAMPEÃO MUNDIAL!';$('#v-text').textContent=`${state.teamName} ergueu a taça!`;}
-  else if(last==='FINAL'){v.classList.add('lose');$('#v-title').textContent='🥈 VICE-CAMPEÃO';$('#v-text').textContent='Foi até a final mas perdeu a decisão.';}
-  else {v.classList.add('lose');$('#v-title').textContent=`Eliminado nas/no ${last}`;$('#v-text').textContent=`Fim de campanha.`;}
+  let badge='', badgeClass='ok', detail='';
+  if(last==='CAMPEÃO'){v.classList.add('win');$('#v-title').textContent='🏆 CAMPEÃO MUNDIAL!';badge='CAMPEÃO';badgeClass='win';detail=`${state.teamName} ergueu a taça!`;}
+  else if(last==='FINAL'){v.classList.add('lose');$('#v-title').textContent='🥈 VICE-CAMPEÃO';badge='VICE';badgeClass='ok';detail='Final perdida.';}
+  else {v.classList.add('lose');$('#v-title').textContent=`Eliminado nas/no ${last}`;badge='Eliminado';badgeClass='lose';detail=`Caiu nas/no ${last}.`;}
+  const pts = saveToHistory({type:'copa', stage:last==='CAMPEÃO'?'CAMPEÃO':last, detail, badge, badgeClass});
+  $('#v-text').textContent = detail + ` (+${pts} pts)`;
 }
 function weighted(items,weights){const t=weights.reduce((s,w)=>s+w,0);let r=Math.random()*t;for(let i=0;i<items.length;i++){r-=weights[i];if(r<=0)return items[i]}return items[0];}
 function addEv(m,h,c=''){const f=$('#feed');const d=document.createElement('div');d.className='ev '+c;d.innerHTML=`<span class="mn">${String(m).padStart(2,'0')}'</span>${h}`;f.appendChild(d);f.scrollTop=f.scrollHeight;}
@@ -1480,6 +1522,100 @@ $('#brand-setup').onclick = ()=>{
   if(state.lineup.filter(Boolean).length>0 && !confirm('Mudar formação vai limpar seu XI. Continuar?')) return;
   $('#setup').classList.add('open');
 };
+
+// ============ SISTEMA DE PONTUAÇÃO E HISTÓRICO ============
+const DIFF_MULT = {facil:0.6, normal:1.0, dificil:1.5, lendario:2.0};
+const COMP_LABEL = {amistoso:'Mata-Mata', brasileirao:'Brasileirão', copa:'Copa do Mundo'};
+
+function calcScore(result){
+  const ovr = calcTeamR();
+  const diffMul = DIFF_MULT[state.diff] || 1;
+  let base = Math.round(ovr * 10);
+  let resultBonus = 0;
+  if(result.type==='amistoso'){
+    if(result.outcome==='win') resultBonus = 200;
+    else if(result.outcome==='draw') resultBonus = 80;
+    else resultBonus = 20;
+  } else if(result.type==='brasileirao'){
+    const pos = result.position || 20;
+    if(pos===1) resultBonus = 500;
+    else if(pos<=4) resultBonus = 300;
+    else if(pos<=10) resultBonus = 150;
+    else if(pos<=16) resultBonus = 50;
+    else resultBonus = 10;
+  } else if(result.type==='copa'){
+    if(result.stage==='CAMPEÃO') resultBonus = 600;
+    else if(result.stage==='FINAL') resultBonus = 350;
+    else if(result.stage==='Semi') resultBonus = 200;
+    else if(result.stage==='Quartas') resultBonus = 120;
+    else if(result.stage==='Oitavas') resultBonus = 60;
+    else resultBonus = 20;
+  }
+  return Math.round((base + resultBonus) * diffMul);
+}
+
+function saveToHistory(result){
+  const score = calcScore(result);
+  const entry = {
+    date: new Date().toLocaleDateString('pt-BR'),
+    time: new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),
+    team: state.teamName,
+    formation: state.formation,
+    diff: state.diff,
+    mode: state.mode,
+    comp: result.type,
+    ovr: Math.round(calcTeamR()),
+    score,
+    detail: result.detail || '',
+    badge: result.badge || '',
+    badgeClass: result.badgeClass || 'ok'
+  };
+  const history = JSON.parse(localStorage.getItem('xi-history') || '[]');
+  history.unshift(entry);
+  if(history.length > 50) history.length = 50;
+  localStorage.setItem('xi-history', JSON.stringify(history));
+  return score;
+}
+
+function renderHistory(){
+  const history = JSON.parse(localStorage.getItem('xi-history') || '[]');
+  const body = $('#history-body');
+  if(!history.length){
+    body.innerHTML = '<p style="color:var(--muted);text-align:center;padding:20px">Nenhuma partida registrada ainda.</p>';
+    return;
+  }
+  const totalPts = history.reduce((s,e)=>s+e.score,0);
+  const best = Math.max(...history.map(e=>e.score));
+  const diffLabel = {facil:'Fácil',normal:'Normal',dificil:'Difícil',lendario:'Lendário'};
+  let html = `<div class="h-summary"><b>${totalPts}</b> pontos totais<small>${history.length} partida${history.length>1?'s':''} · recorde: ${best} pts</small></div>`;
+  html += history.map(e=>`
+    <div class="h-entry">
+      <div class="h-score">${e.score}<small>PTS</small></div>
+      <div class="h-info">
+        <div class="h-team">${e.team}</div>
+        <div class="h-detail">
+          <span>${COMP_LABEL[e.comp]||e.comp}</span>
+          <span>${e.formation}</span>
+          <span>OVR ${e.ovr}</span>
+          <span>${diffLabel[e.diff]||e.diff}</span>
+          ${e.badge?`<span class="h-badge ${e.badgeClass}">${e.badge}</span>`:''}
+        </div>
+        <div class="h-detail">${e.detail}</div>
+      </div>
+      <div class="h-date">${e.date}<br>${e.time}</div>
+    </div>`).join('');
+  html += '<button class="h-clear" id="h-clear">LIMPAR HISTÓRICO</button>';
+  body.innerHTML = html;
+  const clearBtn = $('#h-clear');
+  if(clearBtn) clearBtn.onclick = ()=>{
+    if(!confirm('Apagar todo o histórico?')) return;
+    localStorage.removeItem('xi-history');
+    renderHistory();
+  };
+}
+
+$('#btn-history').onclick = ()=>{ renderHistory(); $('#history-modal').classList.add('open'); };
+$('#history-close').onclick = ()=>$('#history-modal').classList.remove('open');
 </script>
 </body>
 </html>
