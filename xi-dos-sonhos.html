@@ -311,6 +311,41 @@
   .h-summary b{color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px}
   .h-summary small{color:var(--muted);font-size:11px;display:block;margin-top:2px}
 
+  .buff-badge{position:absolute;top:-6px;right:-8px;background:linear-gradient(180deg,var(--gold),var(--gold-2));color:#1a1206;font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:0;padding:2px 5px;border-radius:99px;font-weight:800;box-shadow:0 2px 6px rgba(245,200,66,.5),0 0 0 2px #0a141a;animation:pulse-soft 1.5s ease infinite}
+
+  /* Buff system */
+  .buff-card{position:relative;text-align:center;padding:24px 18px;border-radius:14px;border:2px solid var(--rar-color,var(--gold));background:linear-gradient(180deg,var(--rar-bg,rgba(245,200,66,.08)),rgba(0,0,0,.2));box-shadow:0 0 30px var(--rar-glow,rgba(245,200,66,.25));overflow:hidden}
+  .buff-card::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,var(--rar-glow,rgba(245,200,66,.3)),transparent 70%);pointer-events:none;animation:pulse-soft 2s ease infinite}
+  .buff-rar{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:2px;color:var(--rar-color,var(--gold));margin-bottom:8px;font-weight:700}
+  .buff-icon{font-size:54px;margin:8px 0 12px;animation:float 2.5s ease-in-out infinite;filter:drop-shadow(0 4px 8px rgba(0,0,0,.4))}
+  .buff-name{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:1.5px;color:#fff;margin-bottom:8px;line-height:1}
+  .buff-desc{font-size:13px;color:#cbd5e1;line-height:1.5;max-width:340px;margin:0 auto}
+  .buff-card.rar-common{--rar-color:#9ca3af;--rar-bg:rgba(156,163,175,.08);--rar-glow:rgba(156,163,175,.25)}
+  .buff-card.rar-uncommon{--rar-color:var(--green);--rar-bg:rgba(34,197,94,.1);--rar-glow:rgba(34,197,94,.3)}
+  .buff-card.rar-rare{--rar-color:var(--neon);--rar-bg:rgba(34,211,238,.1);--rar-glow:rgba(34,211,238,.35)}
+  .buff-card.rar-epic{--rar-color:#a855f7;--rar-bg:rgba(168,85,247,.1);--rar-glow:rgba(168,85,247,.4)}
+  .buff-card.rar-legendary{--rar-color:var(--gold);--rar-bg:rgba(245,200,66,.12);--rar-glow:rgba(245,200,66,.5)}
+  .buff-targets{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto}
+  .buff-target-opt{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);cursor:pointer;transition:.15s;font-family:inherit;color:var(--ink);text-align:left}
+  .buff-target-opt:hover{border-color:var(--gold);background:#1a1f2e}
+  .buff-target-opt.selected{border-color:var(--gold);background:rgba(245,200,66,.1);box-shadow:0 0 0 1px var(--gold)}
+  .buff-target-opt .nm{flex:1;font-weight:700;font-size:13px}
+  .buff-target-opt .pos-chip{width:32px;text-align:center;background:#0a1018;border-radius:6px;padding:3px 0;font-weight:800;font-size:10px;color:var(--neon)}
+  .buff-target-opt .rt{font-family:'Bebas Neue',sans-serif;font-size:15px;color:var(--gold)}
+
+  /* Active buff pill (no canto) */
+  .active-buff{position:fixed;bottom:16px;right:16px;display:flex;align-items:center;gap:10px;padding:10px 14px;background:linear-gradient(180deg,#161a26,#0e111a);border:1px solid var(--rar-color,var(--gold));border-radius:99px;box-shadow:0 6px 20px var(--rar-glow,rgba(245,200,66,.25));z-index:90;font-size:12px;animation:slide-up .4s ease;cursor:pointer}
+  .active-buff .ab-icon{font-size:18px}
+  .active-buff .ab-name{font-family:'Bebas Neue',sans-serif;letter-spacing:1px;font-size:14px;color:var(--rar-color,var(--gold))}
+  .active-buff .ab-charges{font-size:10px;color:var(--muted);padding:2px 6px;border:1px solid var(--line);border-radius:99px}
+  @media (max-width:640px){
+    .active-buff{bottom:10px;right:10px;padding:7px 10px;font-size:10px}
+    .active-buff .ab-name{font-size:12px}
+    .buff-icon{font-size:42px}
+    .buff-name{font-size:24px}
+    .buff-desc{font-size:11px}
+  }
+
   /* Slot picker (escolher posição) */
   .sp-player{text-align:center;padding:14px;border:1px solid var(--gold);border-radius:12px;background:linear-gradient(180deg,rgba(245,200,66,.08),rgba(245,200,66,.02));margin-bottom:8px}
   .sp-name{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1.2px;color:var(--gold)}
@@ -605,6 +640,31 @@
     </div>
   </div>
 </div>
+
+<!-- BUFF (sorte do elenco) -->
+<div class="modal-bg" id="buff-modal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-head">
+      <span class="ttl">✨ SORTE DO ELENCO</span>
+    </div>
+    <div class="modal-body" id="buff-body">
+      <div class="buff-card" id="buff-card">
+        <div class="buff-rar" id="buff-rar">RARO</div>
+        <div class="buff-icon" id="buff-icon">⚡</div>
+        <div class="buff-name" id="buff-name">—</div>
+        <div class="buff-desc" id="buff-desc">—</div>
+      </div>
+      <div id="buff-target" style="display:none">
+        <p style="color:var(--muted);font-size:12px;text-align:center;margin:14px 0 10px">Escolha o jogador para receber o buff:</p>
+        <div class="buff-targets" id="buff-target-list"></div>
+      </div>
+      <button class="setup-go" id="buff-confirm" style="margin-top:16px">ATIVAR BUFF</button>
+    </div>
+  </div>
+</div>
+
+<!-- BUFF ATIVO (badge no canto) -->
+<div id="active-buff-pill" class="active-buff" style="display:none"></div>
 
 <!-- HISTÓRICO -->
 <div class="modal-bg" id="history-modal">
@@ -1005,7 +1065,7 @@ const STYLE = {
 };
 
 const DIFF = {facil:25, normal:16, dificil:13, lendario:11};
-const state = { lineup: Array(11).fill(null), rolls:0, mode:'classico', currentTeam:null, tipo:'todos', teamName:'XI DOS SONHOS', comp:'amistoso', pickedThisRoll:false, speed:110, formation:'4-3-3', style:'equilibrado', diff:'normal', maxRolls:16 };
+const state = { lineup: Array(11).fill(null), rolls:0, mode:'classico', currentTeam:null, tipo:'todos', teamName:'XI DOS SONHOS', comp:'amistoso', pickedThisRoll:false, speed:110, formation:'4-3-3', style:'equilibrado', diff:'normal', maxRolls:16, buff:null };
 const $ = s=>document.querySelector(s);
 const $$= s=>document.querySelectorAll(s);
 const pick = a=>a[Math.floor(Math.random()*a.length)];
@@ -1026,8 +1086,13 @@ function renderPitch(){
       discStyle = `--col1:${c1};--col2:${c2};--col-text:${textCol};--col-glow:${hexToRgba(c2,.4)}`;
       discCls='col-team';
     }
+    let buffBadge = '';
+    if(p){
+      const eff = effectiveR(p, s.idx);
+      if(eff > p.r) buffBadge = `<div class="buff-badge">+${eff-p.r}</div>`;
+    }
     el.innerHTML = `
-      <div class="disc ${discCls}" style="${discStyle}">${p?s.num:'?'}</div>
+      <div class="disc ${discCls}" style="${discStyle}">${p?s.num:'?'}${buffBadge}</div>
       <div class="pos-tag">${s.pos}</div>
       <div class="label">${p?p.n:s.label}</div>
       ${p?`<div class="team">${p.teamShort}</div>`:''}`;
@@ -1058,7 +1123,7 @@ function updateStats(){
   $('#btn-sim').disabled = n!==11;
   if(n===0){ $('#stat-ovr').textContent='—'; }
   else {
-    const sum = filled.reduce((a,p)=>a+(p.r||0),0);
+    const sum = state.lineup.reduce((a,p,i)=>a+(p?effectiveR(p,i):0),0);
     const avg = Math.round(sum/n);
     $('#stat-ovr').textContent = n===11 ? `${avg}` : `${avg}*`;
   }
@@ -1158,11 +1223,7 @@ function renderRoster(){
         if(positions.includes(s.pos) && !state.lineup[i]) availableSlots.push(i);
       });
       if(availableSlots.length===0){ toast('Vagas de '+positions.join('/')+' lotadas'); return; }
-      if(availableSlots.length===1){
-        placePlayer(p, team, availableSlots[0]);
-      } else {
-        openSlotPicker(p, team, availableSlots);
-      }
+      openSlotPicker(p, team, availableSlots);
     };
   });
 }
@@ -1178,7 +1239,10 @@ function placePlayer(p, team, slotIdx){
   renderRoster();
   updateStats();
   updateRollsLeft();
-  if(state.lineup.filter(Boolean).length===11) toast('Escalação completa! Hora de simular ⚽');
+  if(state.lineup.filter(Boolean).length===11){
+    toast('Escalação completa! Hora de simular ⚽');
+    setTimeout(()=>grantBuff(), 500);
+  }
 }
 
 function openSlotPicker(p, team, slotIdxs){
@@ -1233,8 +1297,8 @@ function toast(t){const el=document.createElement('div');el.className='toast';el
 
 $('#btn-reset').onclick = ()=>{
   if(state.lineup.filter(Boolean).length>0 && !confirm('Limpar toda a escalação?')) return;
-  state.lineup = Array(SLOTS.length).fill(null); state.rolls=0;
-  renderPitch(); updateStats(); updateRollsLeft();
+  state.lineup = Array(SLOTS.length).fill(null); state.rolls=0; state.buff=null;
+  renderPitch(); updateStats(); updateRollsLeft(); renderBuffPanel();
   $('#btn-roll').disabled=false; $('#btn-roll').textContent='ROLAR O DADO';
   $('#reveal').classList.remove('shown'); $('#player-list').innerHTML='';
 };
@@ -1260,7 +1324,19 @@ $('#btn-sim').onclick = ()=>{
   return simAmistoso();
 };
 
-function calcTeamR(){ return state.lineup.reduce((s,p)=>s+p.r,0)/11; }
+function effectiveR(p,i){
+  if(!p) return 0;
+  let r = p.r;
+  const b = state.buff;
+  if(!b) return r;
+  if(b.type==='all') r += b.amount;
+  else if(b.type==='allPos' && p.pos===b.pos) r += b.amount;
+  else if(b.type==='single' && b.target===i) r += b.amount;
+  return Math.min(99, r);
+}
+function calcTeamR(){
+  return state.lineup.reduce((s,p,i)=>s+effectiveR(p,i),0)/11;
+}
 
 function pickFoe(filter){
   const pool = TIMES.filter(t=>!filter || t.tipo===filter);
@@ -1292,8 +1368,16 @@ function runLiveMatch(foe, onEnd){
   const teamR = calcTeamR();
   const foeR = foe.jogadores.reduce((s,p)=>s+p.r,0)/foe.jogadores.length;
   const sty = STYLE[state.style];
-  const ourChance  = Math.max(.05,((teamR-foeR)/100)*0.35 + 0.18) * sty.mulOur;
-  const theirChance= Math.max(.04,((foeR-teamR+8)/100)*0.30 + 0.07) * sty.mulTheir;
+  const guaranteedWin = state.buff && state.buff.type==='guaranteedWin' && state.buff.charges>0;
+  if(guaranteedWin){
+    state.buff.charges--;
+    addEv(0,`<strong>✨ BUFF ATIVADO:</strong> ${state.buff.name} (vitória garantida!)`,'goal');
+    renderBuffPanel();
+  }
+  let ourMul = guaranteedWin ? 2.2 : 1;
+  let theirMul = guaranteedWin ? 0.25 : 1;
+  const ourChance  = Math.max(.05,((teamR-foeR)/100)*0.35 + 0.18) * sty.mulOur * ourMul;
+  const theirChance= Math.max(.04,((foeR-teamR+8)/100)*0.30 + 0.07) * sty.mulTheir * theirMul;
   let score=[0,0], minute=0;
   const scorers = state.lineup.filter(p=>p.pos==='ATA'||p.pos==='MEI');
   const w = scorers.map(p=>p.r);
@@ -1614,7 +1698,7 @@ function weighted(items,weights){const t=weights.reduce((s,w)=>s+w,0);let r=Math
 function addEv(m,h,c=''){const f=$('#feed');const d=document.createElement('div');d.className='ev '+c;d.innerHTML=`<span class="mn">${String(m).padStart(2,'0')}'</span>${h}`;f.appendChild(d);f.scrollTop=f.scrollHeight;}
 $('#btn-keep').onclick = ()=>$('#match').classList.remove('open');
 $('#btn-new-match').onclick = ()=>{$('#btn-sim').click()};
-$('#btn-restart').onclick = ()=>{state.lineup=Array(SLOTS.length).fill(null);state.rolls=0;renderPitch();updateStats();updateRollsLeft();$('#btn-roll').disabled=false;$('#btn-roll').textContent='ROLAR O DADO';$('#reveal').classList.remove('shown');$('#player-list').innerHTML='';$('#match').classList.remove('open')};
+$('#btn-restart').onclick = ()=>{state.lineup=Array(SLOTS.length).fill(null);state.rolls=0;state.buff=null;renderPitch();updateStats();updateRollsLeft();renderBuffPanel();$('#btn-roll').disabled=false;$('#btn-roll').textContent='ROLAR O DADO';$('#reveal').classList.remove('shown');$('#player-list').innerHTML='';$('#match').classList.remove('open')};
 
 document.querySelector('#team-name').addEventListener('input',e=>{
   state.teamName = e.target.value.trim() || 'XI DOS SONHOS';
@@ -1817,6 +1901,100 @@ function renderHistory(){
 
 $('#btn-history').onclick = ()=>{ renderHistory(); $('#history-modal').classList.add('open'); };
 $('#history-close').onclick = ()=>$('#history-modal').classList.remove('open');
+
+// ============ SISTEMA DE BUFFS ============
+const BUFFS = [
+  // COMMON (sai mais)
+  {id:'aquece',rar:'common',w:18,icon:'🔥',name:'Aquecimento',desc:'+3 OVR num jogador escolhido.',need:'any',apply:i=>({type:'single',amount:3,target:i})},
+  {id:'time',rar:'common',w:14,icon:'🤝',name:'Time Unido',desc:'+2 OVR em todos os jogadores.',apply:()=>({type:'all',amount:2})},
+  // UNCOMMON
+  {id:'artilheiro',rar:'uncommon',w:10,icon:'⚽',name:'Artilheiro',desc:'+6 OVR num atacante escolhido.',need:'ATA',apply:i=>({type:'single',amount:6,target:i})},
+  {id:'maestro',rar:'uncommon',w:10,icon:'🎼',name:'Maestro',desc:'+6 OVR num meia escolhido.',need:'MEI',apply:i=>({type:'single',amount:6,target:i})},
+  {id:'muralha',rar:'uncommon',w:10,icon:'🛡️',name:'Muralha',desc:'+6 OVR num zagueiro escolhido.',need:'DEF',apply:i=>({type:'single',amount:6,target:i})},
+  {id:'ataque',rar:'uncommon',w:8,icon:'⚔️',name:'Linha de Frente',desc:'+4 OVR em todos os atacantes.',apply:()=>({type:'allPos',pos:'ATA',amount:4})},
+  {id:'meio',rar:'uncommon',w:8,icon:'🎯',name:'Meio Campo Sólido',desc:'+4 OVR em todos os meias.',apply:()=>({type:'allPos',pos:'MEI',amount:4})},
+  {id:'defesa',rar:'uncommon',w:8,icon:'🔒',name:'Linha de Trás',desc:'+4 OVR em todos os defensores.',apply:()=>({type:'allPos',pos:'DEF',amount:4})},
+  // RARE
+  {id:'maos',rar:'rare',w:5,icon:'🧤',name:'Mãos de Aranha',desc:'+10 OVR no goleiro.',apply:()=>({type:'allPos',pos:'GOL',amount:10})},
+  {id:'showdebola',rar:'rare',w:5,icon:'🌟',name:'Show de Bola',desc:'+10 OVR num jogador escolhido.',need:'any',apply:i=>({type:'single',amount:10,target:i})},
+  // EPIC
+  {id:'lendario',rar:'epic',w:3,icon:'💫',name:'Toque Lendário',desc:'+15 OVR num jogador escolhido.',need:'any',apply:i=>({type:'single',amount:15,target:i})},
+  {id:'sorte',rar:'epic',w:3,icon:'🍀',name:'Sorte Grande',desc:'+5 OVR em todos os jogadores.',apply:()=>({type:'all',amount:5})},
+  // LEGENDARY
+  {id:'maovasco',rar:'legendary',w:2,icon:'👑',name:'Mão de Vasco',desc:'Vitória garantida em 1 partida.',apply:()=>({type:'guaranteedWin',charges:1})},
+];
+
+const RAR_LABEL = {common:'COMUM',uncommon:'INCOMUM',rare:'RARO',epic:'ÉPICO',legendary:'LENDÁRIO'};
+
+function pickBuff(){
+  const totalW = BUFFS.reduce((s,b)=>s+b.w,0);
+  let r = Math.random()*totalW;
+  for(const b of BUFFS){ r-=b.w; if(r<=0) return b; }
+  return BUFFS[0];
+}
+
+function grantBuff(){
+  if(state.buff) return; // só 1 por elenco
+  const buff = pickBuff();
+  const card = $('#buff-card');
+  card.className = 'buff-card rar-'+buff.rar;
+  $('#buff-rar').textContent = RAR_LABEL[buff.rar];
+  $('#buff-icon').textContent = buff.icon;
+  $('#buff-name').textContent = buff.name.toUpperCase();
+  $('#buff-desc').textContent = buff.desc;
+  const targetBox = $('#buff-target');
+  const list = $('#buff-target-list');
+  let selectedIdx = -1;
+  if(buff.need){
+    targetBox.style.display='block';
+    const options = state.lineup
+      .map((p,i)=>({p,i}))
+      .filter(x=>x.p && (buff.need==='any' || x.p.pos===buff.need));
+    list.innerHTML = options.map(({p,i})=>`
+      <button class="buff-target-opt" data-i="${i}">
+        <div class="pos-chip">${p.pos}</div>
+        <div class="nm">${p.n} <span style="color:var(--muted);font-weight:500;font-size:11px">· ${p.teamShort}</span></div>
+        <div class="rt">${p.r}</div>
+      </button>`).join('');
+    $$('#buff-target-list .buff-target-opt').forEach(btn=>{
+      btn.onclick = ()=>{
+        $$('#buff-target-list .buff-target-opt').forEach(x=>x.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedIdx = +btn.dataset.i;
+      };
+    });
+  } else {
+    targetBox.style.display='none';
+  }
+  const confirm = $('#buff-confirm');
+  confirm.textContent = 'ATIVAR BUFF';
+  confirm.onclick = ()=>{
+    if(buff.need && selectedIdx<0){ toast('Escolha um jogador!'); return; }
+    const eff = buff.apply(selectedIdx);
+    state.buff = {...eff, name:buff.name, icon:buff.icon, rar:buff.rar, desc:buff.desc};
+    $('#buff-modal').classList.remove('open');
+    renderBuffPanel();
+    renderPitch();
+    updateStats();
+    toast(`✨ ${buff.name} ativado!`);
+  };
+  $('#buff-modal').classList.add('open');
+}
+
+function renderBuffPanel(){
+  const pill = $('#active-buff-pill');
+  if(!state.buff){ pill.style.display='none'; return; }
+  const b = state.buff;
+  if(b.type==='guaranteedWin' && b.charges<=0){ pill.style.display='none'; return; }
+  pill.style.display='flex';
+  pill.style.setProperty('--rar-color', getComputedStyle(document.documentElement).getPropertyValue(
+    b.rar==='legendary'?'--gold':b.rar==='epic'?'--pink':b.rar==='rare'?'--neon':b.rar==='uncommon'?'--green':'--muted'
+  ));
+  const charges = b.type==='guaranteedWin' ? `<span class="ab-charges">${b.charges} uso${b.charges!==1?'s':''}</span>` : '';
+  pill.innerHTML = `<div class="ab-icon">${b.icon}</div><div class="ab-name">${b.name}</div>${charges}`;
+  pill.title = b.desc;
+  pill.onclick = ()=>toast(`✨ ${b.name}: ${b.desc}`);
+}
 </script>
 </body>
 </html>
