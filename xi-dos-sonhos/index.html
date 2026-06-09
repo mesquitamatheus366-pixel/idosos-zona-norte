@@ -313,6 +313,19 @@
 
   .buff-badge{position:absolute;top:-6px;right:-8px;background:linear-gradient(180deg,var(--gold),var(--gold-2));color:#1a1206;font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:0;padding:2px 5px;border-radius:99px;font-weight:800;box-shadow:0 2px 6px rgba(245,200,66,.5),0 0 0 2px #0a141a;animation:pulse-soft 1.5s ease infinite}
 
+  /* Transfer window */
+  .tf-lineup{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:280px;overflow-y:auto}
+  .tf-slot{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);cursor:pointer;transition:.15s;font-family:inherit;color:var(--ink);text-align:left}
+  .tf-slot:hover{border-color:var(--gold);background:#1a1f2e}
+  .tf-slot.selected{border-color:var(--gold);background:rgba(245,200,66,.1);box-shadow:0 0 0 1px var(--gold)}
+  .tf-slot .pos-chip{width:30px;text-align:center;background:#0a1018;border-radius:6px;padding:3px 0;font-weight:800;font-size:9px;color:var(--neon)}
+  .tf-slot .nm{flex:1;font-weight:700;font-size:12px;min-width:0;overflow:hidden}
+  .tf-slot .rt{font-family:'Bebas Neue',sans-serif;font-size:14px;color:var(--gold)}
+  @media (max-width:640px){
+    .tf-lineup{grid-template-columns:1fr;max-height:220px}
+    .tf-slot .nm{font-size:11px}
+  }
+
   /* Buff system */
   .buff-card{position:relative;text-align:center;padding:24px 18px;border-radius:14px;border:2px solid var(--rar-color,var(--gold));background:linear-gradient(180deg,var(--rar-bg,rgba(245,200,66,.08)),rgba(0,0,0,.2));box-shadow:0 0 30px var(--rar-glow,rgba(245,200,66,.25));overflow:hidden}
   .buff-card::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,var(--rar-glow,rgba(245,200,66,.3)),transparent 70%);pointer-events:none;animation:pulse-soft 2s ease infinite}
@@ -637,6 +650,23 @@
       </div>
       <p style="color:var(--muted);font-size:12px;text-align:center;margin:12px 0">Esse jogador joga em mais de uma posição. Onde você quer colocá-lo?</p>
       <div class="sp-opts" id="sp-opts"></div>
+    </div>
+  </div>
+</div>
+
+<!-- JANELA DE TRANSFERÊNCIAS -->
+<div class="modal-bg" id="transfer-modal">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-head">
+      <span class="ttl" id="tf-title">JANELA DE TRANSFERÊNCIAS</span>
+      <button class="x" onclick="document.querySelector('#transfer-modal').classList.remove('open');finishTransfer()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--neon);font-size:12px;text-align:center;letter-spacing:1px;font-weight:700;margin-bottom:8px" id="tf-info">3 rolagens e 3 trocas disponíveis</p>
+      <p style="color:var(--muted);font-size:11px;text-align:center;margin-bottom:14px">Clique num jogador para trocar. Você só pode trocar por jogadores que joguem naquela posição.</p>
+      <div id="tf-lineup" class="tf-lineup"></div>
+      <div id="tf-dice-box" style="margin-top:14px"></div>
+      <button class="setup-go" id="tf-continue" style="margin-top:16px">CONTINUAR PARA O CAMPEONATO →</button>
     </div>
   </div>
 </div>
@@ -1432,17 +1462,40 @@ function pitchEffect(txt, cls='', side=null){
 }
 
 // ============ BRASILEIRÃO 38 RODADAS ============
+function buildRoundRobin(teams){
+  // Circle method: each team plays each other exactly once = N-1 rodadas
+  const arr = teams.slice();
+  if(arr.length%2!==0) arr.push(null); // bye
+  const n = arr.length;
+  const rounds = [];
+  let order = arr.slice();
+  for(let r=0; r<n-1; r++){
+    const matches = [];
+    for(let i=0; i<n/2; i++){
+      const a = order[i], b = order[n-1-i];
+      if(a && b) matches.push({a,b});
+    }
+    rounds.push(matches);
+    // rotate: keep first fixed, move last to position 1
+    const last = order.pop();
+    order.splice(1, 0, last);
+  }
+  return rounds;
+}
+
 function simBrasileirao(){
   let pool = TIMES.filter(t=>t.tipo==='brasileiro' && t.nome!==state.teamName);
   while(pool.length<19) pool.push(pick(TIMES.filter(t=>t.tipo==='selecao')));
   pool = pool.slice(0,19);
-  // turno+returno = 38 partidas suas. Embaralha ordem.
-  const fixture = shuffle([...pool, ...pool]);
   const meName = state.teamName;
+  const meTeam = {nome:meName, cores:[$('#m-crest-a').style.getPropertyValue('--c1')||'#f5c842',$('#m-crest-a').style.getPropertyValue('--c2')||'#22d3ee'], id:'me', me:true};
+  const all = [meTeam, ...pool]; // 20 times
+  const turno = buildRoundRobin(all); // 19 rodadas
+  const returno = turno.map(rd => rd.map(m=>({a:m.b,b:m.a}))); // inverte mando
+  const fixture = [...turno, ...returno]; // 38 rodadas
   const table = {};
-  const allTeams = [{nome:meName, cores:[$('#m-crest-a').style.getPropertyValue('--c1')||'#f5c842',$('#m-crest-a').style.getPropertyValue('--c2')||'#22d3ee'], id:'me', me:true}, ...pool];
-  allTeams.forEach(t=>table[t.nome]={t,j:0,v:0,e:0,d:0,gp:0,gc:0,pts:0});
-  state.tournament = {mode:'brasileirao', round:1, fixture, table, pool, meName, allTeams, totalRounds:38};
+  all.forEach(t=>table[t.nome]={t,j:0,v:0,e:0,d:0,gp:0,gc:0,pts:0});
+  state.tournament = {mode:'brasileirao', round:1, fixture, table, pool, meName, allTeams:all, totalRounds:38};
   addEv(0,`<strong>🏆 BRASILEIRÃO · 38 RODADAS COMEÇOU</strong>`,'goal');
   playNextBrasRound();
 }
@@ -1450,29 +1503,27 @@ function simBrasileirao(){
 function playNextBrasRound(){
   const t = state.tournament;
   if(t.round>t.totalRounds){ return finishBrasileirao(); }
-  const foe = t.fixture[t.round-1];
+  const roundMatches = t.fixture[t.round-1];
+  // encontra meu jogo da rodada
+  const myMatch = roundMatches.find(m=>m.a.nome===t.meName || m.b.nome===t.meName);
+  if(!myMatch){ t.round++; return playNextBrasRound(); }
+  const foe = myMatch.a.nome===t.meName ? myMatch.b : myMatch.a;
   $('#feed').innerHTML='';
   $('#sc-a').textContent='0'; $('#sc-b').textContent='0';
   $('#verdict').classList.remove('show','win','lose','draw');
   setFoeUI(foe);
   addEv(0,`<strong>📅 RODADA ${t.round}/38</strong> · ${t.meName} x ${foe.nome}`,'goal');
-  // simula outras partidas da rodada em silêncio
-  simBackgroundRound(t);
+  // simula os OUTROS jogos da rodada (cada time joga 1 vez por rodada)
+  roundMatches.forEach(m=>{
+    if(m===myMatch) return;
+    const sc = simScore('x', avgR(m.a.jogadores), avgR(m.b.jogadores));
+    recordMatch(t.table, m.a.nome, m.b.nome, sc[0], sc[1]);
+  });
   runLiveMatch(foe,(score)=>{
     recordMatch(t.table, t.meName, foe.nome, score[0], score[1]);
     showStandings(t.table, t.meName, t.allTeams);
     showRoundEndUI();
   });
-}
-
-function simBackgroundRound(t){
-  // pareia o pool de modo simples
-  const shuffled = shuffle(t.pool.slice());
-  for(let i=0;i<shuffled.length-1;i+=2){
-    const a=shuffled[i], b=shuffled[i+1];
-    const sc = simScore('x', avgR(a.jogadores), avgR(b.jogadores));
-    recordMatch(t.table, a.nome, b.nome, sc[0], sc[1]);
-  }
 }
 
 function showRoundEndUI(){
@@ -1497,12 +1548,16 @@ function showRoundEndUI(){
 function skipBrasToEnd(){
   const t = state.tournament;
   addEv(0,'<strong>⏩ Simulando restante…</strong>','goal');
-  // simula todas rodadas restantes (sua + outras) rapidamente
   while(t.round<=t.totalRounds){
-    const foe = t.fixture[t.round-1];
-    const sc = simScore('me', calcTeamR(), avgR(foe.jogadores));
-    recordMatch(t.table, t.meName, foe.nome, sc[0], sc[1]);
-    simBackgroundRound(t);
+    const roundMatches = t.fixture[t.round-1];
+    roundMatches.forEach(m=>{
+      let ra, rb;
+      if(m.a.nome===t.meName){ ra=calcTeamR(); rb=avgR(m.b.jogadores); }
+      else if(m.b.nome===t.meName){ ra=avgR(m.a.jogadores); rb=calcTeamR(); }
+      else { ra=avgR(m.a.jogadores); rb=avgR(m.b.jogadores); }
+      const sc = simScore('x', ra, rb);
+      recordMatch(t.table, m.a.nome, m.b.nome, sc[0], sc[1]);
+    });
     t.round++;
   }
   showStandings(t.table, t.meName, t.allTeams);
@@ -1524,17 +1579,312 @@ function finishBrasileirao(){
   else {v.classList.add('draw');$('#v-title').textContent=`🤝 ${myPos}º LUGAR`;badge=myPos+'º LUGAR';badgeClass='ok';}
   const pts = saveToHistory({type:'brasileirao', position:myPos, detail:`${myPos}º lugar · ${myPts} pontos em 38 rodadas`, badge, badgeClass});
   $('#v-text').textContent = `${myPts} pontos em 38 rodadas. (+${pts} pts)`;
+  const libertaBtn = myPos<=4 ? `<button id="btn-go-liberta">🌎 IR PARA A LIBERTADORES</button>` : '';
   $('#verdict .actions').innerHTML = `
-    <button id="btn-new-match">NOVO CAMPEONATO</button>
+    ${libertaBtn}
+    <button class="ghost" id="btn-new-match">NOVO CAMPEONATO</button>
     <button class="ghost" id="btn-keep">VOLTAR AO CAMPO</button>
     <button class="ghost" id="btn-restart">RECOMEÇAR TUDO</button>`;
   rebindEndButtons();
+  if(myPos<=4){
+    $('#btn-go-liberta').onclick = ()=>{ openTransferWindow('libertadores'); };
+  }
 }
 
 function rebindEndButtons(){
   $('#btn-keep').onclick = ()=>{$('#match').classList.remove('open'); state.tournament=null;};
   $('#btn-new-match').onclick = ()=>{$('#btn-sim').click()};
-  $('#btn-restart').onclick = ()=>{state.lineup=Array(11).fill(null);state.rolls=0;renderPitch();$('#match').classList.remove('open');state.tournament=null;};
+  $('#btn-restart').onclick = ()=>{state.lineup=Array(11).fill(null);state.rolls=0;state.buff=null;renderPitch();renderBuffPanel();$('#match').classList.remove('open');state.tournament=null;};
+}
+
+// ============ JANELA DE TRANSFERÊNCIAS (3 rolagens, 3 trocas) ============
+function openTransferWindow(nextComp){
+  state.transfer = {nextComp, rollsLeft:3, swapsLeft:3, selectedIdx:-1, currentTeam:null};
+  $('#match').classList.remove('open');
+  $('#transfer-modal').classList.add('open');
+  renderTransfer();
+}
+
+function renderTransfer(){
+  const tf = state.transfer;
+  const nextLabel = tf.nextComp==='libertadores'?'LIBERTADORES':'MUNDIAL DE CLUBES';
+  $('#tf-title').textContent = `🔄 JANELA DE TRANSFERÊNCIAS · ${nextLabel}`;
+  $('#tf-info').textContent = `${tf.rollsLeft} rolagens e ${tf.swapsLeft} trocas disponíveis`;
+  // lineup atual
+  $('#tf-lineup').innerHTML = state.lineup.map((p,i)=>{
+    const slot = SLOTS[i];
+    const sel = tf.selectedIdx===i?' selected':'';
+    return `<button class="tf-slot${sel}" data-i="${i}">
+      <div class="pos-chip">${slot.pos}</div>
+      <div class="nm">${p?p.n:'—'}<small style="display:block;color:var(--muted);font-size:10px">${slot.label}</small></div>
+      ${p?`<div class="rt">${p.r}</div>`:''}
+    </button>`;
+  }).join('');
+  $$('#tf-lineup .tf-slot').forEach(b=>{
+    b.onclick = ()=>{
+      tf.selectedIdx = +b.dataset.i;
+      tf.currentTeam = null;
+      renderTransfer();
+    };
+  });
+  // dado e roster
+  const dice = $('#tf-dice-box');
+  if(tf.selectedIdx<0){
+    dice.innerHTML = '<p style="color:var(--muted);text-align:center;padding:14px;font-size:12px">Selecione um jogador acima para trocar</p>';
+  } else if(tf.rollsLeft<=0){
+    dice.innerHTML = '<p style="color:var(--red);text-align:center;padding:14px;font-size:12px">Sem rolagens. Confirme as trocas para continuar.</p>';
+  } else if(!tf.currentTeam){
+    dice.innerHTML = `<button class="roll-btn full" id="tf-roll">ROLAR DADO (${tf.rollsLeft} restante${tf.rollsLeft!==1?'s':''})</button>`;
+    $('#tf-roll').onclick = ()=>{
+      tf.rollsLeft--;
+      const slotPos = SLOTS[tf.selectedIdx].pos;
+      const positionsOK = p => (p.pos===slotPos) || (p.pos2===slotPos);
+      // sorteia time que tenha pelo menos 1 jogador da posição
+      const pool = TIMES.filter(team => team.jogadores.some(positionsOK));
+      tf.currentTeam = pick(pool);
+      renderTransfer();
+    };
+  } else {
+    const team = tf.currentTeam;
+    const slotPos = SLOTS[tf.selectedIdx].pos;
+    const positionsOK = p => (p.pos===slotPos) || (p.pos2===slotPos);
+    const valid = team.jogadores.filter(positionsOK);
+    dice.innerHTML = `
+      <div class="reveal-team shown" style="display:block">
+        <div class="lab">ELENCO SORTEADO</div>
+        <div class="nm">${crestHTML(team)} ${team.nome}</div>
+        <div class="yr">${team.era}</div>
+      </div>
+      <div class="player-list">
+        ${valid.map((p,j)=>{
+          const idx = team.jogadores.indexOf(p);
+          return `<div class="pl" data-j="${idx}">
+            <div class="av">${p.pos==='GOL'?1:p.pos==='DEF'?'D':p.pos==='MEI'?'M':'A'}</div>
+            <div class="info"><div class="nm">${p.n}</div></div>
+            <div class="pl-pos">${p.pos}${p.pos2?'/'+p.pos2:''}</div>
+            <div class="rt">${p.r}</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <button class="roll-btn full" id="tf-skip" style="margin-top:10px;background:transparent;border:1px solid var(--line);color:var(--muted)">PULAR (rolar de novo)</button>`;
+    $$('#tf-dice-box .pl').forEach(el=>{
+      el.onclick = ()=>{
+        const p = team.jogadores[+el.dataset.j];
+        const slotIdx = tf.selectedIdx;
+        const slot = SLOTS[slotIdx];
+        state.lineup[slotIdx] = {...p, pos:slot.pos, team:team.nome, teamShort:team.id.toUpperCase(), cores:team.cores, crestLabel:crestLabel(team)};
+        tf.swapsLeft--;
+        tf.selectedIdx=-1;
+        tf.currentTeam=null;
+        toast(`✓ ${p.n} entrou no XI!`);
+        renderPitch();
+        updateStats();
+        if(tf.swapsLeft<=0 || tf.rollsLeft<=0) finishTransfer();
+        else renderTransfer();
+      };
+    });
+    $('#tf-skip').onclick = ()=>{ tf.currentTeam=null; renderTransfer(); };
+  }
+}
+
+function finishTransfer(){
+  const tf = state.transfer;
+  const next = tf.nextComp;
+  state.transfer = null;
+  $('#transfer-modal').classList.remove('open');
+  if(next==='libertadores') startLibertadores();
+  else if(next==='mundial') startMundial();
+}
+
+$('#tf-continue').onclick = ()=>finishTransfer();
+
+// ============ LIBERTADORES (knockout) ============
+function startLibertadores(){
+  const meTeam = {nome:state.teamName, cores:[$('#m-crest-a').style.getPropertyValue('--c1')||'#f5c842','#22d3ee'], id:'me', me:true, jogadores:state.lineup.filter(Boolean)};
+  // 15 adversários: clubes brasileiros + alguns sul-americanos (selecoes como placeholder)
+  let pool = TIMES.filter(t=>t.tipo==='brasileiro' && t.nome!==state.teamName);
+  // adiciona "sul-americanos" usando seleções como proxy
+  const sulam = TIMES.filter(t=>t.tipo==='selecao').slice(0,6);
+  pool = shuffle([...pool, ...sulam]).slice(0,15);
+  const teams = shuffle([meTeam, ...pool]);
+  state.tournament = {mode:'libertadores', round:'Oitavas', bracket:teams, results:[]};
+  $('#match').classList.add('open');
+  $('#feed').innerHTML='';
+  $('#standings').style.display='none';
+  $('#sc-a').textContent='0'; $('#sc-b').textContent='0';
+  $('#verdict').classList.remove('show','win','lose','draw');
+  addEv(0,`<strong>🌎 LIBERTADORES · OITAVAS DE FINAL</strong>`,'goal');
+  playLibertaRound();
+}
+
+function playLibertaRound(){
+  const t = state.tournament;
+  // encontra meu adversário
+  const meIdx = t.bracket.findIndex(x=>x.me);
+  const pairIdx = meIdx%2===0 ? meIdx+1 : meIdx-1;
+  const foe = t.bracket[pairIdx];
+  $('#feed').innerHTML='';
+  $('#sc-a').textContent='0'; $('#sc-b').textContent='0';
+  $('#verdict').classList.remove('show','win','lose','draw');
+  setFoeUI(foe);
+  addEv(0,`<strong>🌎 ${t.round.toUpperCase()}</strong> · ${state.teamName} x ${foe.nome}`,'goal');
+  // simula outras chaves
+  const others = [];
+  for(let i=0;i<t.bracket.length;i+=2){
+    if(i===meIdx || i===pairIdx-1 || i===pairIdx) continue;
+    const a=t.bracket[i], b=t.bracket[i+1];
+    if(!a||!b) continue;
+    const sc = simScore('x', avgR(a.jogadores), avgR(b.jogadores));
+    others.push({a, b, score:sc, winner: sc[0]>=sc[1]?a:b});
+  }
+  runLiveMatch(foe,(score)=>{
+    const t2 = state.tournament;
+    if(score[0]>=score[1]){
+      // ganhei — avanço
+      t2.results.push({stage:t2.round, foe, score, win:true});
+      const meTeam = t2.bracket[meIdx];
+      const winners = [meTeam, ...others.map(o=>o.winner)];
+      const nextRound = {Oitavas:'Quartas', Quartas:'Semi', Semi:'FINAL', FINAL:'CAMPEÃO'}[t2.round];
+      if(nextRound==='CAMPEÃO'){
+        finishLibertadores(true);
+        return;
+      }
+      t2.bracket = shuffle(winners);
+      t2.round = nextRound;
+      showLibertaRoundEnd(true);
+    } else {
+      t2.results.push({stage:t2.round, foe, score, win:false});
+      finishLibertadores(false, t2.round);
+    }
+  });
+}
+
+function showLibertaRoundEnd(win){
+  const t = state.tournament;
+  const v = $('#verdict'); v.classList.add('show');
+  v.classList.add('win');
+  $('#v-title').textContent = `✅ CLASSIFICADO PARA ${t.round.toUpperCase()}`;
+  $('#v-text').textContent = `Próximo desafio na frente.`;
+  $('#verdict .actions').innerHTML = `
+    <button id="btn-next-liberta">PRÓXIMA FASE →</button>
+    <button class="ghost" id="btn-quit-tournament">DESISTIR</button>`;
+  $('#btn-next-liberta').onclick = ()=>{ playLibertaRound(); };
+  $('#btn-quit-tournament').onclick = ()=>{ $('#match').classList.remove('open'); state.tournament=null; };
+  setTimeout(()=>v.scrollIntoView({behavior:'smooth',block:'center'}),60);
+}
+
+function finishLibertadores(won, lastStage){
+  const v=$('#verdict'); v.classList.add('show');
+  v.classList.remove('win','lose','draw');
+  let badge='', badgeClass='ok';
+  if(won){
+    v.classList.add('win');
+    $('#v-title').textContent='🏆 CAMPEÃO DA LIBERTADORES!';
+    badge='LIBERTADORES'; badgeClass='win';
+  } else {
+    v.classList.add('lose');
+    $('#v-title').textContent=`💔 Eliminado nas ${lastStage}`;
+    badge='Eliminado'; badgeClass='lose';
+  }
+  const pts = saveToHistory({type:'copa', stage:won?'CAMPEÃO':lastStage, detail:won?'Campeão da Libertadores':`Caiu nas/no ${lastStage} da Libertadores`, badge, badgeClass});
+  $('#v-text').textContent = won ? `Tri da América! (+${pts} pts) Vamos pro Mundial?` : `(+${pts} pts)`;
+  const mundialBtn = won ? `<button id="btn-go-mundial">🌐 IR PARA O MUNDIAL DE CLUBES</button>` : '';
+  $('#verdict .actions').innerHTML = `
+    ${mundialBtn}
+    <button class="ghost" id="btn-new-match">NOVO CAMPEONATO</button>
+    <button class="ghost" id="btn-keep">VOLTAR AO CAMPO</button>
+    <button class="ghost" id="btn-restart">RECOMEÇAR TUDO</button>`;
+  rebindEndButtons();
+  if(won) $('#btn-go-mundial').onclick = ()=>{ openTransferWindow('mundial'); };
+}
+
+// ============ MUNDIAL DE CLUBES ============
+function startMundial(){
+  const meTeam = {nome:state.teamName, cores:[$('#m-crest-a').style.getPropertyValue('--c1')||'#f5c842','#22d3ee'], id:'me', me:true, jogadores:state.lineup.filter(Boolean)};
+  // 4 times: me (CONMEBOL) + UEFA + outro continente top
+  let europeanPool = TIMES.filter(t=>t.tipo==='europeu');
+  let othersPool = TIMES.filter(t=>t.tipo==='selecao');
+  const adversaries = [
+    pick(europeanPool),
+    pick(europeanPool.filter(t=>t!==europeanPool[0])),
+    pick(othersPool)
+  ];
+  const teams = shuffle([meTeam, ...adversaries]);
+  state.tournament = {mode:'mundial', round:'Semi', bracket:teams, results:[]};
+  $('#match').classList.add('open');
+  $('#feed').innerHTML='';
+  $('#standings').style.display='none';
+  $('#sc-a').textContent='0'; $('#sc-b').textContent='0';
+  $('#verdict').classList.remove('show','win','lose','draw');
+  addEv(0,`<strong>🌐 MUNDIAL DE CLUBES · SEMI</strong>`,'goal');
+  playMundialRound();
+}
+
+function playMundialRound(){
+  const t = state.tournament;
+  const meIdx = t.bracket.findIndex(x=>x.me);
+  const pairIdx = meIdx%2===0 ? meIdx+1 : meIdx-1;
+  const foe = t.bracket[pairIdx];
+  $('#feed').innerHTML='';
+  $('#sc-a').textContent='0'; $('#sc-b').textContent='0';
+  $('#verdict').classList.remove('show','win','lose','draw');
+  setFoeUI(foe);
+  addEv(0,`<strong>🌐 ${t.round}</strong> · ${state.teamName} x ${foe.nome}`,'goal');
+  const otherIdx = t.bracket.findIndex((x,i)=>i!==meIdx && i!==pairIdx);
+  const otherFoeIdx = t.bracket.findIndex((x,i)=>i!==meIdx && i!==pairIdx && i!==otherIdx);
+  let otherWinner = null;
+  if(otherIdx>=0 && otherFoeIdx>=0){
+    const a=t.bracket[otherIdx], b=t.bracket[otherFoeIdx];
+    const sc = simScore('x', avgR(a.jogadores), avgR(b.jogadores));
+    otherWinner = sc[0]>=sc[1]?a:b;
+  }
+  runLiveMatch(foe,(score)=>{
+    const t2 = state.tournament;
+    if(score[0]>=score[1]){
+      t2.results.push({stage:t2.round, foe, score, win:true});
+      if(t2.round==='FINAL'){
+        finishMundial(true);
+        return;
+      }
+      const meTeam = t2.bracket[meIdx];
+      t2.bracket = otherWinner ? [meTeam, otherWinner] : [meTeam];
+      t2.round = 'FINAL';
+      const v = $('#verdict'); v.classList.add('show','win');
+      $('#v-title').textContent = '✅ CLASSIFICADO PARA A FINAL';
+      $('#v-text').textContent = `Próximo: ${otherWinner?otherWinner.nome:'oponente'}`;
+      $('#verdict .actions').innerHTML = `
+        <button id="btn-next-mundial">JOGAR FINAL →</button>
+        <button class="ghost" id="btn-quit-tournament">DESISTIR</button>`;
+      $('#btn-next-mundial').onclick = ()=>{ playMundialRound(); };
+      $('#btn-quit-tournament').onclick = ()=>{ $('#match').classList.remove('open'); state.tournament=null; };
+      setTimeout(()=>v.scrollIntoView({behavior:'smooth',block:'center'}),60);
+    } else {
+      t2.results.push({stage:t2.round, foe, score, win:false});
+      finishMundial(false, t2.round);
+    }
+  });
+}
+
+function finishMundial(won, lastStage){
+  const v=$('#verdict'); v.classList.add('show');
+  v.classList.remove('win','lose','draw');
+  let badge='', badgeClass='ok';
+  if(won){
+    v.classList.add('win');
+    $('#v-title').textContent='👑 CAMPEÃO MUNDIAL DE CLUBES!';
+    badge='MUNDIAL'; badgeClass='win';
+  } else {
+    v.classList.add('lose');
+    $('#v-title').textContent=lastStage==='FINAL'?'🥈 VICE-MUNDIAL':`💔 Eliminado na ${lastStage}`;
+    badge=lastStage==='FINAL'?'VICE':'Eliminado'; badgeClass=lastStage==='FINAL'?'ok':'lose';
+  }
+  const pts = saveToHistory({type:'copa', stage:won?'CAMPEÃO':lastStage, detail:won?'Campeão Mundial de Clubes!':`Caiu na ${lastStage} do Mundial`, badge, badgeClass});
+  $('#v-text').textContent = `(+${pts} pts)`;
+  $('#verdict .actions').innerHTML = `
+    <button class="ghost" id="btn-new-match">NOVO CAMPEONATO</button>
+    <button class="ghost" id="btn-keep">VOLTAR AO CAMPO</button>
+    <button class="ghost" id="btn-restart">RECOMEÇAR TUDO</button>`;
+  rebindEndButtons();
 }
 
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a;}
