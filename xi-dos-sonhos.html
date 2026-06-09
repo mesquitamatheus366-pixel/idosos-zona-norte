@@ -35,6 +35,7 @@
   .brand small{color:var(--muted);font-family:'Outfit',sans-serif;letter-spacing:.3px;font-size:12px;margin-left:6px;font-weight:500;text-transform:none}
   .stats{display:flex;gap:18px;align-items:center;font-size:12px;color:var(--muted);font-family:'Outfit',sans-serif;letter-spacing:.3px;font-weight:600}
   .stats b{color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-right:6px}
+  #stat-ovr{color:var(--neon)}
   .btn-reset{background:transparent;border:1px solid var(--line);color:var(--muted);padding:7px 12px;font-size:11px;letter-spacing:1px;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600;text-transform:uppercase;transition:.15s}
   .btn-reset:hover{border-color:var(--red);color:var(--red)}
 
@@ -128,33 +129,33 @@
   .pl .rt{font-family:'Bebas Neue';font-size:15px;color:var(--gold);letter-spacing:0;flex-shrink:0;min-width:22px;text-align:right}
   .pl .rt.hidden{font-family:'Outfit',sans-serif;font-size:15px;color:var(--muted)}
 
-  .match-overlay{position:fixed;inset:0;background:rgba(5,6,10,.95);display:none;align-items:center;justify-content:center;z-index:200;padding:20px}
+  .match-overlay{position:fixed;inset:0;background:rgba(5,6,10,.95);display:none;align-items:flex-start;justify-content:center;z-index:200;padding:12px;overflow-y:auto}
   .match-overlay.open{display:flex}
-  .match-box{background:linear-gradient(180deg,#0f1320,#0a0d16);border:1px solid var(--line);border-radius:18px;width:100%;max-width:720px;padding:30px;text-align:center}
-  .match-teams{display:flex;justify-content:space-around;align-items:center;gap:18px}
-  .match-teams .tn{font-family:'Bebas Neue';font-size:18px;letter-spacing:1px;color:var(--neon)}
+  .match-box{background:linear-gradient(180deg,#0f1320,#0a0d16);border:1px solid var(--line);border-radius:14px;width:100%;max-width:620px;padding:16px;text-align:center;margin:auto}
+  .match-teams{display:flex;justify-content:space-around;align-items:center;gap:12px}
+  .match-teams .tn{font-family:'Bebas Neue';font-size:15px;letter-spacing:1px;color:var(--neon)}
   .match-teams .tn.foe{color:var(--red)}
-  .match-teams .vs{color:var(--muted);font-family:'Outfit',sans-serif;letter-spacing:1.5px}
-  .match-score{font-family:'Bebas Neue';font-size:120px;line-height:1;display:flex;justify-content:center;align-items:center;gap:24px;margin:16px 0 8px}
+  .match-teams .vs{color:var(--muted);font-family:'Outfit',sans-serif;letter-spacing:1.5px;font-size:12px}
+  .match-score{font-family:'Bebas Neue';font-size:56px;line-height:1;display:flex;justify-content:center;align-items:center;gap:14px;margin:8px 0 4px}
   .match-score .s{color:var(--gold);text-shadow:0 0 20px rgba(245,200,66,.4)}
   .match-score .s.r{color:var(--red);text-shadow:0 0 20px rgba(239,68,68,.4)}
-  .match-clock{font-family:'Outfit',sans-serif;font-size:24px;color:var(--neon);letter-spacing:1.5px;margin-bottom:14px}
-  .feed{text-align:left;max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:5px;padding:6px}
+  .match-clock{font-family:'Outfit',sans-serif;font-size:16px;color:var(--neon);letter-spacing:1.2px;margin-bottom:6px;font-weight:700}
+  .feed{text-align:left;max-height:130px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;padding:4px}
   .feed::-webkit-scrollbar{width:6px}
   .feed::-webkit-scrollbar-thumb{background:var(--line);border-radius:99px}
-  .ev{padding:8px 12px;background:rgba(255,255,255,.03);border-left:3px solid var(--line);border-radius:0 6px 6px 0;font-size:12.5px;color:#cbd5e1}
+  .ev{padding:5px 9px;background:rgba(255,255,255,.03);border-left:3px solid var(--line);border-radius:0 6px 6px 0;font-size:11.5px;color:#cbd5e1}
   .ev.goal{border-color:var(--green);color:#fff}
   .ev.goal strong{color:var(--green)}
   .ev.bad{border-color:var(--red);color:#ffd9dc}
   .ev.bad strong{color:var(--red)}
   .ev .mn{font-family:'Outfit',sans-serif;color:var(--muted);margin-right:8px;letter-spacing:1px}
-  .verdict{margin-top:20px;padding:18px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.02);display:none}
+  .verdict{margin-top:10px;padding:12px;border-radius:10px;border:1px solid var(--gold);background:rgba(245,200,66,.08);display:none;position:sticky;bottom:0;backdrop-filter:blur(4px);z-index:5}
   .verdict.show{display:block;animation:pop .3s ease}
-  .verdict h3{font-family:'Bebas Neue';font-size:30px;letter-spacing:1.5px;margin-bottom:6px}
+  .verdict h3{font-family:'Bebas Neue';font-size:20px;letter-spacing:1.2px;margin-bottom:3px}
   .verdict.win h3{color:var(--green)} .verdict.lose h3{color:var(--red)} .verdict.draw h3{color:var(--gold)}
-  .verdict p{color:#cbd5e1;font-size:13px;margin-bottom:14px}
-  .verdict .actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-  .verdict button{background:var(--neon);color:#031620;border:none;padding:11px 18px;font-weight:800;font-size:12px;letter-spacing:1px;border-radius:8px;cursor:pointer;font-family:inherit;text-transform:uppercase}
+  .verdict p{color:#cbd5e1;font-size:11.5px;margin-bottom:9px}
+  .verdict .actions{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+  .verdict button{background:var(--gold);color:#1a1206;border:none;padding:10px 16px;font-weight:800;font-size:12px;letter-spacing:1px;border-radius:8px;cursor:pointer;font-family:inherit;text-transform:uppercase}
   .verdict button.ghost{background:transparent;border:1px solid var(--line);color:var(--muted)}
 
   .toast{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:#1a1f2e;border:1px solid var(--line);color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:300;animation:pop .25s}
@@ -228,7 +229,7 @@
   .crest{width:34px;height:38px;border-radius:5px 5px 50% 50%/5px 5px 30% 30%;background:linear-gradient(135deg,var(--c1,#666) 0%,var(--c1,#666) 49%,var(--c2,#999) 50%,var(--c2,#999) 100%);
     display:inline-flex;align-items:center;justify-content:center;color:#fff;font-family:'Bebas Neue';font-size:11px;letter-spacing:1px;
     box-shadow:inset 0 -3px 0 rgba(0,0,0,.25),0 2px 6px rgba(0,0,0,.5);text-shadow:0 1px 2px #000;border:1.5px solid rgba(255,255,255,.15);flex-shrink:0}
-  .crest.big{width:54px;height:62px;font-size:18px}
+  .crest.big{width:38px;height:44px;font-size:13px}
   .crest.tiny{width:18px;height:20px;font-size:7px}
   .lineup-item .crest{margin-right:2px}
 
@@ -236,7 +237,7 @@
   .comp-label{font-family:'Outfit',sans-serif;letter-spacing:1.2px;font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
 
   /* Match overlay melhorado */
-  .match-box.big{max-width:880px;padding:24px}
+  .match-box.big{max-width:680px;padding:14px}
   .match-head{margin-bottom:12px}
   .t-side{display:flex;flex-direction:column;align-items:center;gap:6px}
   .match-clock-row{display:flex;justify-content:space-between;align-items:center;margin-top:4px;padding:0 6px}
@@ -245,7 +246,7 @@
   .speed-seg button.active{background:var(--gold);color:#1a1206}
 
   /* Mini campo da simulação */
-  .match-pitch{position:relative;width:100%;height:140px;border-radius:10px;border:1px solid rgba(34,211,238,.2);margin:12px 0;
+  .match-pitch{position:relative;width:100%;height:78px;border-radius:8px;border:1px solid rgba(34,211,238,.2);margin:6px 0;
     background:repeating-linear-gradient(90deg,var(--grass) 0 10%,var(--grass-2) 10% 20%);overflow:hidden;box-shadow:inset 0 0 30px rgba(0,0,0,.5)}
   .mp-mid{position:absolute;top:0;bottom:0;left:50%;width:2px;background:rgba(255,255,255,.18)}
   .mp-circle{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60px;height:60px;border-radius:50%;border:2px solid rgba(255,255,255,.18)}
@@ -262,7 +263,7 @@
   .mp-effect.save{color:var(--neon)}
 
   /* Standings table */
-  #standings{margin-top:12px;max-height:280px;overflow-y:auto}
+  #standings{margin-top:8px;max-height:180px;overflow-y:auto}
   #standings table{width:100%;border-collapse:collapse;font-size:12px}
   #standings th{background:#0a1018;color:var(--muted);font-family:'Outfit',sans-serif;font-weight:400;letter-spacing:1px;padding:6px;text-align:left;border-bottom:1px solid var(--line);position:sticky;top:0}
   #standings td{padding:6px;border-bottom:1px solid var(--line)}
@@ -388,12 +389,9 @@
 <header class="topbar">
   <div class="brand"><div class="dot"></div> XI DOS SONHOS <small id="brand-setup">· editar configuração</small></div>
   <div class="stats">
-    <div class="mode-seg" id="mode-seg">
-      <button class="active" data-mode="classico">CLÁSSICO</button>
-      <button data-mode="pro">PRO</button>
-    </div>
     <div><b id="stat-filled">0</b>/11 escalados</div>
     <div><b id="stat-rolls">0</b>dados rolados</div>
+    <div><b id="stat-ovr">—</b>OVR total</div>
     <button class="btn-reset" id="btn-reset">RECOMEÇAR</button>
   </div>
 </header>
@@ -401,12 +399,6 @@
 <main class="game">
   <aside class="panel dice-panel">
     <h2>DADO DO ELENCO</h2>
-    <div class="mode-seg full grid4" id="tipo-seg">
-      <button class="active" data-tipo="todos">TODOS</button>
-      <button data-tipo="selecao">SELEÇÕES</button>
-      <button data-tipo="brasileiro">BR</button>
-      <button data-tipo="europeu">EUROPA</button>
-    </div>
     <div class="dice-inline" id="dice">🎲</div>
     <button class="roll-btn full" id="btn-roll">ROLAR O DADO</button>
     <div class="reveal-team" id="reveal">
@@ -431,14 +423,6 @@
     <h2>SEU XI</h2>
     <input type="text" id="team-name" class="team-name-input" placeholder="Nome do seu time" maxlength="32" value="XI DOS SONHOS"/>
     <div class="lineup-list" id="lineup-list"></div>
-    <div class="comp-block">
-      <div class="comp-label">COMPETIÇÃO</div>
-      <div class="mode-seg full" id="comp-seg">
-        <button class="active" data-comp="amistoso">AMISTOSO</button>
-        <button data-comp="brasileirao">BRASILEIRÃO</button>
-        <button data-comp="copa">COPA</button>
-      </div>
-    </div>
     <button class="sim-btn" id="btn-sim" disabled>SIMULAR</button>
   </aside>
 </main>
@@ -498,11 +482,11 @@ const TIMES = [
     {n:'Zito',pos:'MEI',r:88},{n:'Didi',pos:'MEI',r:93},{n:'Zagallo',pos:'MEI',r:88},
     {n:'Garrincha',pos:'ATA',r:97},{n:'Vavá',pos:'ATA',r:90},{n:'Amarildo',pos:'ATA',r:88}]},
   { id:'br70', tipo:'selecao', nome:'Brasil 1970', era:'Copa do Mundo · México', cores:['#fde047','#16a34a'], jogadores:[
-    {n:'Félix',pos:'GOL',r:82},{n:'Carlos Alberto',pos:'DEF',r:94},{n:'Brito',pos:'DEF',r:86},{n:'Piazza',pos:'DEF',r:85},{n:'Everaldo',pos:'DEF',r:84},
+    {n:'Félix',pos:'GOL',r:82},{n:'Carlos Alberto',pos:'DEF',pos2:'MEI',r:94},{n:'Brito',pos:'DEF',r:86},{n:'Piazza',pos:'DEF',r:85},{n:'Everaldo',pos:'DEF',r:84},
     {n:'Clodoaldo',pos:'MEI',r:88},{n:'Gérson',pos:'MEI',r:93},{n:'Rivelino',pos:'MEI',r:94},
     {n:'Jairzinho',pos:'ATA',r:94},{n:'Pelé',pos:'ATA',r:99},{n:'Tostão',pos:'ATA',r:93}]},
   { id:'br82', tipo:'selecao', nome:'Brasil 1982', era:'Copa do Mundo · Espanha', cores:['#fde047','#16a34a'], jogadores:[
-    {n:'W. Peres',pos:'GOL',r:80},{n:'Leandro',pos:'DEF',r:91},{n:'Oscar',pos:'DEF',r:89},{n:'Luizinho',pos:'DEF',r:86},{n:'Júnior',pos:'DEF',r:92},
+    {n:'W. Peres',pos:'GOL',r:80},{n:'Leandro',pos:'DEF',pos2:'MEI',r:91},{n:'Oscar',pos:'DEF',r:89},{n:'Luizinho',pos:'DEF',r:86},{n:'Júnior',pos:'DEF',pos2:'MEI',r:92},
     {n:'Cerezo',pos:'MEI',r:88},{n:'Falcão',pos:'MEI',r:94},{n:'Sócrates',pos:'MEI',r:95},{n:'Zico',pos:'MEI',r:96},
     {n:'Éder',pos:'ATA',r:90},{n:'Serginho',pos:'ATA',r:82}]},
   { id:'br94', tipo:'selecao', nome:'Brasil 1994', era:'Copa do Mundo · EUA', cores:['#fde047','#16a34a'], jogadores:[
@@ -510,7 +494,7 @@ const TIMES = [
     {n:'M. Silva',pos:'MEI',r:90},{n:'Dunga',pos:'MEI',r:91},{n:'Mazinho',pos:'MEI',r:85},{n:'Zinho',pos:'MEI',r:86},
     {n:'Bebeto',pos:'ATA',r:92},{n:'Romário',pos:'ATA',r:97}]},
   { id:'br02', tipo:'selecao', nome:'Brasil 2002', era:'Copa do Mundo · Coreia/Japão', cores:['#fde047','#16a34a'], jogadores:[
-    {n:'Marcos',pos:'GOL',r:88},{n:'Cafu',pos:'DEF',r:94},{n:'Lúcio',pos:'DEF',r:91},{n:'Edmílson',pos:'DEF',r:87},{n:'R. Carlos',pos:'DEF',r:95},
+    {n:'Marcos',pos:'GOL',r:88},{n:'Cafu',pos:'DEF',pos2:'MEI',r:94},{n:'Lúcio',pos:'DEF',r:91},{n:'Edmílson',pos:'DEF',pos2:'MEI',r:87},{n:'R. Carlos',pos:'DEF',pos2:'MEI',r:95},
     {n:'G. Silva',pos:'MEI',r:88},{n:'Kléberson',pos:'MEI',r:82},{n:'Juninho P.',pos:'MEI',r:84},
     {n:'Ronaldinho',pos:'MEI',r:96},{n:'Rivaldo',pos:'MEI',r:95},{n:'Ronaldo',pos:'ATA',r:98},{n:'Luizão',pos:'ATA',r:82}]},
   { id:'br22', tipo:'selecao', nome:'Brasil 2022', era:'Copa do Mundo · Catar', cores:['#fde047','#16a34a'], jogadores:[
@@ -628,7 +612,7 @@ const TIMES = [
     {n:'Diguinho',pos:'MEI',r:84},{n:'Jean',pos:'MEI',r:83},{n:'Thiago Neves',pos:'MEI',r:88},{n:'Deco',pos:'MEI',r:88},
     {n:'Fred',pos:'ATA',r:90},{n:'Wellington Nem',pos:'ATA',r:84}]},
   { id:'flu23', tipo:'brasileiro', nome:'Fluminense 2023', era:'Libertadores · Maracanã', cores:['#0f766e','#7f1d1d'], jogadores:[
-    {n:'Fábio',pos:'GOL',r:89},{n:'Samuel Xavier',pos:'DEF',r:84},{n:'Nino',pos:'DEF',r:86},{n:'Marlon',pos:'DEF',r:84},{n:'Marcelo',pos:'DEF',r:88},
+    {n:'Fábio',pos:'GOL',r:89},{n:'Samuel Xavier',pos:'DEF',r:84},{n:'Nino',pos:'DEF',r:86},{n:'Marlon',pos:'DEF',r:84},{n:'Marcelo',pos:'DEF',pos2:'MEI',r:88},
     {n:'A. Vargas',pos:'MEI',r:85},{n:'Martinelli',pos:'MEI',r:84},{n:'P.H. Ganso',pos:'MEI',r:87},
     {n:'Cano',pos:'ATA',r:88},{n:'Arias',pos:'ATA',r:85},{n:'Keno',pos:'ATA',r:84}]},
   { id:'bot24', tipo:'brasileiro', nome:'Botafogo 2024', era:'Tri da América', cores:['#000','#fff'], jogadores:[
@@ -642,11 +626,11 @@ const TIMES = [
     {n:'Makelele',pos:'MEI',r:91},{n:'Zidane',pos:'MEI',r:97},{n:'Figo',pos:'MEI',r:94},
     {n:'Raúl',pos:'ATA',r:94},{n:'Ronaldo',pos:'ATA',r:97},{n:'McManaman',pos:'ATA',r:85}]},
   { id:'rm18', tipo:'europeu', nome:'Real Madrid 2018', era:'Tri Champions', cores:['#fff','#1d4ed8'], jogadores:[
-    {n:'K. Navas',pos:'GOL',r:88},{n:'Carvajal',pos:'DEF',r:87},{n:'Varane',pos:'DEF',r:88},{n:'S. Ramos',pos:'DEF',r:91},{n:'Marcelo',pos:'DEF',r:88},
+    {n:'K. Navas',pos:'GOL',r:88},{n:'Carvajal',pos:'DEF',r:87},{n:'Varane',pos:'DEF',r:88},{n:'S. Ramos',pos:'DEF',r:91},{n:'Marcelo',pos:'DEF',pos2:'MEI',r:88},
     {n:'Casemiro',pos:'MEI',r:90},{n:'Kroos',pos:'MEI',r:92},{n:'Modric',pos:'MEI',r:94},
     {n:'Bale',pos:'ATA',r:90},{n:'Benzema',pos:'ATA',r:90},{n:'C. Ronaldo',pos:'ATA',r:97}]},
   { id:'bar09', tipo:'europeu', nome:'Barcelona 2009', era:'Sextete · Guardiola', cores:['#dc2626','#1d4ed8'], jogadores:[
-    {n:'Valdés',pos:'GOL',r:87},{n:'D. Alves',pos:'DEF',r:90},{n:'Piqué',pos:'DEF',r:88},{n:'Puyol',pos:'DEF',r:90},{n:'Abidal',pos:'DEF',r:86},
+    {n:'Valdés',pos:'GOL',r:87},{n:'D. Alves',pos:'DEF',pos2:'MEI',r:90},{n:'Piqué',pos:'DEF',r:88},{n:'Puyol',pos:'DEF',r:90},{n:'Abidal',pos:'DEF',r:86},
     {n:'Busquets',pos:'MEI',r:87},{n:'Xavi',pos:'MEI',r:95},{n:'Iniesta',pos:'MEI',r:94},
     {n:'Messi',pos:'ATA',r:96},{n:'Eto’o',pos:'ATA',r:90},{n:'Henry',pos:'ATA',r:89}]},
   { id:'bar15', tipo:'europeu', nome:'Barcelona 2015', era:'MSN · Champions', cores:['#dc2626','#1d4ed8'], jogadores:[
@@ -659,7 +643,7 @@ const TIMES = [
     {n:'Turan',pos:'MEI',r:86},{n:'D. Costa',pos:'ATA',r:90},{n:'Villa',pos:'ATA',r:87},{n:'Adrián',pos:'ATA',r:82}]},
   { id:'mu99', tipo:'europeu', nome:'Man United 1999', era:'Treble · Ferguson', cores:['#dc2626','#fde047'], jogadores:[
     {n:'Schmeichel',pos:'GOL',r:93},{n:'G. Neville',pos:'DEF',r:87},{n:'J. Stam',pos:'DEF',r:89},{n:'Johnsen',pos:'DEF',r:84},{n:'Irwin',pos:'DEF',r:86},
-    {n:'Beckham',pos:'MEI',r:91},{n:'R. Keane',pos:'MEI',r:93},{n:'Scholes',pos:'MEI',r:90},{n:'Giggs',pos:'MEI',r:92},
+    {n:'Beckham',pos:'MEI',pos2:'ATA',r:91},{n:'R. Keane',pos:'MEI',r:93},{n:'Scholes',pos:'MEI',r:90},{n:'Giggs',pos:'MEI',r:92},
     {n:'A. Cole',pos:'ATA',r:88},{n:'Yorke',pos:'ATA',r:88}]},
   { id:'mc23', tipo:'europeu', nome:'Man City 2023', era:'Treble · Guardiola', cores:['#7dd3fc','#fff'], jogadores:[
     {n:'Ederson',pos:'GOL',r:91},{n:'Walker',pos:'DEF',r:86},{n:'Stones',pos:'DEF',r:87},{n:'Dias',pos:'DEF',r:89},{n:'Aké',pos:'DEF',r:84},
@@ -826,12 +810,19 @@ function renderLineup(){
   }).join('');
 }
 function updateStats(){
-  const n = state.lineup.filter(Boolean).length;
+  const filled = state.lineup.filter(Boolean);
+  const n = filled.length;
   $('#stat-filled').textContent = n;
   $('#stat-rolls').textContent = state.rolls;
   $('#meter-fill').style.width = (n/11*100)+'%';
   $('#meter-pct').textContent = Math.round(n/11*100)+'%';
   $('#btn-sim').disabled = n!==11;
+  if(n===0){ $('#stat-ovr').textContent='—'; }
+  else {
+    const sum = filled.reduce((a,p)=>a+(p.r||0),0);
+    const avg = Math.round(sum/n);
+    $('#stat-ovr').textContent = n===11 ? `${avg}` : `${avg}*`;
+  }
 }
 
 function rollDice(){
@@ -875,16 +866,19 @@ function renderRoster(){
   const filledCount = pos => SLOTS.filter((s,i)=>s.pos===pos && state.lineup[i]).length;
   const maxPos = {GOL:0, DEF:0, MEI:0, ATA:0};
   SLOTS.forEach(s=>maxPos[s.pos]++);
+  const positionsOf = p => p.pos2 ? [p.pos, p.pos2] : [p.pos];
   const head = `<div class="roster-head" style="grid-column:1/-1">${crestHTML(team,'tiny')} <b>${team.nome}</b> · escolha 1 jogador</div>`;
   $('#player-list').innerHTML = head + team.jogadores.map((p,i)=>{
-    const cheia = filledCount(p.pos) >= maxPos[p.pos];
+    const positions = positionsOf(p);
+    const allCheia = positions.every(pos => filledCount(pos) >= maxPos[pos]);
     const jaNoXI = state.lineup.some(l=>l && l.n===p.n && l.team===team.nome);
-    const locked = cheia || jaNoXI;
+    const locked = allCheia || jaNoXI;
     const rating = isPro?'<span class="rt hidden">??</span>':`<div class="rt">${p.r}</div>`;
-    return `<div class="pl ${locked?'locked':''}" data-i="${i}" title="${jaNoXI?'já está no XI':(cheia?'vaga de '+p.pos+' lotada':'')}">
+    const posTag = positions.join('/');
+    return `<div class="pl ${locked?'locked':''}" data-i="${i}" title="${jaNoXI?'já está no XI':(allCheia?'vagas de '+posTag+' lotadas':'')}">
       <div class="av">${p.pos==='GOL'?1:p.pos==='DEF'?'D':p.pos==='MEI'?'M':'A'}</div>
       <div class="info"><div class="nm">${p.n}</div></div>
-      <div class="pl-pos">${p.pos}</div>
+      <div class="pl-pos">${posTag}</div>
       ${rating}
     </div>`;
   }).join('');
@@ -892,9 +886,14 @@ function renderRoster(){
     if(el.classList.contains('locked')) return;
     el.onclick = ()=>{
       const p = team.jogadores[+el.dataset.i];
-      const slotIdx = SLOTS.findIndex((s,i)=>s.pos===p.pos && !state.lineup[i]);
-      if(slotIdx<0){ toast('Posição '+p.pos+' já está lotada'); return; }
-      state.lineup[slotIdx] = {...p, team:team.nome, teamShort:team.id.toUpperCase(), cores:team.cores, crestLabel:crestLabel(team)};
+      const positions = positionsOf(p);
+      let slotIdx = -1, usedPos = p.pos;
+      for(const pos of positions){
+        const idx = SLOTS.findIndex((s,i)=>s.pos===pos && !state.lineup[i]);
+        if(idx>=0){ slotIdx = idx; usedPos = pos; break; }
+      }
+      if(slotIdx<0){ toast('Vagas de '+positions.join('/')+' lotadas'); return; }
+      state.lineup[slotIdx] = {...p, pos:usedPos, team:team.nome, teamShort:team.id.toUpperCase(), cores:team.cores, crestLabel:crestLabel(team)};
       state.pickedThisRoll = true;
       $('#btn-roll').textContent = 'ROLAR DE NOVO';
       if(state.mode==='pro') toast(`${p.n} revelado · OVER ${p.r}`);
@@ -1091,6 +1090,7 @@ function simBackgroundRound(t){
 function showRoundEndUI(){
   const t = state.tournament;
   const v = $('#verdict'); v.classList.add('show');
+  setTimeout(()=>v.scrollIntoView({behavior:'smooth',block:'center'}),60);
   v.classList.remove('win','lose','draw');
   const sorted = Object.values(t.table).sort(cmpTable);
   const myPos = sorted.findIndex(r=>r.t.nome===t.meName)+1;
@@ -1307,31 +1307,8 @@ $('#btn-keep').onclick = ()=>$('#match').classList.remove('open');
 $('#btn-new-match').onclick = ()=>{$('#btn-sim').click()};
 $('#btn-restart').onclick = ()=>{state.lineup=Array(11).fill(null);state.rolls=0;renderPitch();$('#match').classList.remove('open')};
 
-document.querySelector('#mode-seg').addEventListener('click',e=>{
-  if(e.target.tagName!=='BUTTON') return;
-  document.querySelectorAll('#mode-seg button').forEach(b=>b.classList.remove('active'));
-  e.target.classList.add('active');
-  state.mode = e.target.dataset.mode;
-  toast('Modo: '+(state.mode==='pro'?'PRO (overs ocultos)':'CLÁSSICO'));
-  renderRoster();
-});
-document.querySelector('#tipo-seg').addEventListener('click',e=>{
-  if(e.target.tagName!=='BUTTON') return;
-  document.querySelectorAll('#tipo-seg button').forEach(b=>b.classList.remove('active'));
-  e.target.classList.add('active');
-  state.tipo = e.target.dataset.tipo;
-  const labels = {todos:'Todos os times', selecao:'Seleções nacionais', brasileiro:'Times brasileiros'};
-  toast('Filtro: '+labels[state.tipo]);
-});
 document.querySelector('#team-name').addEventListener('input',e=>{
   state.teamName = e.target.value.trim() || 'XI DOS SONHOS';
-});
-document.querySelector('#comp-seg').addEventListener('click',e=>{
-  if(e.target.tagName!=='BUTTON') return;
-  document.querySelectorAll('#comp-seg button').forEach(b=>b.classList.remove('active'));
-  e.target.classList.add('active');
-  state.comp = e.target.dataset.comp;
-  $('#btn-sim').textContent = state.comp==='brasileirao'?'JOGAR BRASILEIRÃO':state.comp==='copa'?'JOGAR COPA':'SIMULAR';
 });
 document.querySelector('#speed-seg').addEventListener('click',e=>{
   if(e.target.tagName!=='BUTTON') return;
@@ -1411,9 +1388,6 @@ $('#setup-go').onclick = ()=>{
   state.lineup = Array(SLOTS.length).fill(null);
   $('#field-formation').textContent = state.formation;
   $('.field-head .hint').textContent = `${STYLE[state.style].label} · ${state.mode==='pro'?'PRO':'CLÁSSICO'} · ${state.comp.toUpperCase()}`;
-  $$('#mode-seg button').forEach(b=>b.classList.toggle('active', b.dataset.mode===state.mode));
-  $$('#tipo-seg button').forEach(b=>b.classList.toggle('active', b.dataset.tipo===state.tipo));
-  $$('#comp-seg button').forEach(b=>b.classList.toggle('active', b.dataset.comp===state.comp));
   $('#btn-sim').textContent = state.comp==='brasileirao'?'JOGAR BRASILEIRÃO':state.comp==='copa'?'JOGAR COPA':'SIMULAR';
   $('#setup').classList.remove('open');
   renderPitch();
