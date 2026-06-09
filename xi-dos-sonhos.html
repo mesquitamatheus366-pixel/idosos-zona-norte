@@ -174,10 +174,16 @@
   .dice-panel{position:sticky;top:80px;max-height:calc(100vh - 100px);overflow-y:auto}
   .dice-panel::-webkit-scrollbar{width:6px}
   .dice-panel::-webkit-scrollbar-thumb{background:var(--line);border-radius:99px}
-  .dice-inline{width:110px;height:110px;margin:8px auto 14px;border-radius:22px;background:linear-gradient(180deg,#fff,#e9eef7);color:#0b0d12;display:flex;align-items:center;justify-content:center;font-size:70px;animation:float 3s ease-in-out infinite;
-    box-shadow:0 14px 32px rgba(0,0,0,.55),inset 0 -8px 0 rgba(0,0,0,.08);transition:transform .15s}
+  .dice-wrap{text-align:center;margin-bottom:6px}
+  .dice-inline{width:90px;height:90px;margin:4px auto 8px;border-radius:18px;background:linear-gradient(180deg,#fff,#e9eef7);color:#0b0d12;display:flex;align-items:center;justify-content:center;font-size:56px;animation:float 3s ease-in-out infinite;
+    box-shadow:0 10px 24px rgba(0,0,0,.55),inset 0 -6px 0 rgba(0,0,0,.08);transition:transform .15s}
   .dice-inline.rolling{animation:dice .08s infinite}
+  .rolls-left{font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;color:var(--neon);letter-spacing:.5px}
+  .rolls-left.danger{color:var(--red);animation:pulse-soft 1s ease infinite}
+  .rolls-left.dead{color:var(--muted);opacity:.6}
+  .skip-warn{font-size:11px;color:var(--gold);text-align:center;padding:6px 8px;margin:6px 0;border:1px dashed var(--gold);border-radius:6px;background:rgba(245,200,66,.06);line-height:1.4}
   .roll-btn.full{width:100%;display:block}
+  .roll-btn.full:disabled{opacity:.4;cursor:not-allowed;background:#2a2f3d;color:#666;box-shadow:none}
   .mode-seg.full{width:100%;margin-bottom:12px}
   .mode-seg.full button{flex:1;padding:8px 4px;font-size:10px}
   .team-name-input{width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1.8px;margin:10px 0 14px;text-transform:uppercase;outline:none;transition:.2s}
@@ -195,7 +201,7 @@
   .setup-section{margin-bottom:22px;animation:slide-in .4s ease both}
   .setup-section:nth-child(1){animation-delay:.05s} .setup-section:nth-child(2){animation-delay:.12s}
   .setup-section:nth-child(3){animation-delay:.19s} .setup-section:nth-child(4){animation-delay:.26s}
-  .setup-section:nth-child(5){animation-delay:.33s} .setup-section:nth-child(6){animation-delay:.40s}
+  .setup-section:nth-child(5){animation-delay:.33s} .setup-section:nth-child(6){animation-delay:.40s} .setup-section:nth-child(7){animation-delay:.47s}
   .setup-label{font-family:'Outfit',sans-serif;font-weight:700;letter-spacing:.5px;font-size:12px;color:var(--neon);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;padding-left:8px;border-left:3px solid var(--neon)}
   .setup-input{width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;text-transform:uppercase;outline:none;transition:.2s}
   .setup-input:focus{border-color:var(--neon);background:#0d1018}
@@ -329,21 +335,43 @@
     </div>
 
     <div class="setup-section">
-      <div class="setup-label">4 · MODO DE DIFICULDADE</div>
+      <div class="setup-label">4 · VISIBILIDADE</div>
       <div class="setup-grid style-grid two" id="setup-mode">
         <button class="setup-card active" data-md="classico">
           <div class="sc-icon">🎯</div><div class="sc-ttl">CLÁSSICO</div>
-          <div class="sc-desc">Mostra o over de cada jogador. Você sabe quem está escalando.</div>
+          <div class="sc-desc">Mostra o over de cada jogador.</div>
         </button>
         <button class="setup-card" data-md="pro">
           <div class="sc-icon">🎲</div><div class="sc-ttl">PRO</div>
-          <div class="sc-desc">Over oculto até escolher. Confia no nome — o over só aparece depois.</div>
+          <div class="sc-desc">Over oculto até escolher.</div>
         </button>
       </div>
     </div>
 
     <div class="setup-section">
-      <div class="setup-label">5 · DE ONDE VÃO VIR OS JOGADORES?</div>
+      <div class="setup-label">5 · DIFICULDADE (limite de rolagens)</div>
+      <div class="setup-grid style-grid four" id="setup-diff">
+        <button class="setup-card" data-diff="facil">
+          <div class="sc-icon">😎</div><div class="sc-ttl">FÁCIL</div>
+          <div class="sc-desc">25 rolagens. Muito espaço pra escolher.</div>
+        </button>
+        <button class="setup-card active" data-diff="normal">
+          <div class="sc-icon">💪</div><div class="sc-ttl">NORMAL</div>
+          <div class="sc-desc">16 rolagens. Pule com cuidado.</div>
+        </button>
+        <button class="setup-card" data-diff="dificil">
+          <div class="sc-icon">🔥</div><div class="sc-ttl">DIFÍCIL</div>
+          <div class="sc-desc">13 rolagens. Quase sem margem.</div>
+        </button>
+        <button class="setup-card" data-diff="lendario">
+          <div class="sc-icon">💀</div><div class="sc-ttl">LENDÁRIO</div>
+          <div class="sc-desc">11 rolagens. Obrigatório pegar todo dado.</div>
+        </button>
+      </div>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-label">6 · DE ONDE VÃO VIR OS JOGADORES?</div>
       <div class="setup-grid style-grid four" id="setup-tipo">
         <button class="setup-card active" data-tipo="todos">
           <div class="sc-icon">🌐</div><div class="sc-ttl">TODOS</div>
@@ -365,7 +393,7 @@
     </div>
 
     <div class="setup-section">
-      <div class="setup-label">6 · COMPETIÇÃO</div>
+      <div class="setup-label">7 · COMPETIÇÃO</div>
       <div class="setup-grid style-grid" id="setup-comp">
         <button class="setup-card active" data-comp="amistoso">
           <div class="sc-icon">⚽</div><div class="sc-ttl">MATA-MATA</div>
@@ -390,7 +418,7 @@
   <div class="brand"><div class="dot"></div> XI DOS SONHOS <small id="brand-setup">· editar configuração</small></div>
   <div class="stats">
     <div><b id="stat-filled">0</b>/11 escalados</div>
-    <div><b id="stat-rolls">0</b>dados rolados</div>
+    <div><b id="stat-rolls">0</b>/ <span id="stat-max">16</span> rolagens</div>
     <div><b id="stat-ovr">—</b>OVR total</div>
     <button class="btn-reset" id="btn-reset">RECOMEÇAR</button>
   </div>
@@ -399,8 +427,12 @@
 <main class="game">
   <aside class="panel dice-panel">
     <h2>DADO DO ELENCO</h2>
-    <div class="dice-inline" id="dice">🎲</div>
+    <div class="dice-wrap">
+      <div class="dice-inline" id="dice">🎲</div>
+      <div class="rolls-left" id="rolls-left">16 rolagens restantes</div>
+    </div>
     <button class="roll-btn full" id="btn-roll">ROLAR O DADO</button>
+    <div id="skip-warn" class="skip-warn" style="display:none"></div>
     <div class="reveal-team" id="reveal">
       <div class="lab">ELENCO SORTEADO</div>
       <div class="nm" id="reveal-name">—</div>
@@ -767,7 +799,8 @@ const STYLE = {
   defensivo:   {mulOur:0.85, mulTheir:0.70, label:'DEFENSIVO'},
 };
 
-const state = { lineup: Array(11).fill(null), rolls:0, mode:'classico', currentTeam:null, tipo:'todos', teamName:'XI DOS SONHOS', comp:'amistoso', pickedThisRoll:false, speed:110, formation:'4-3-3', style:'equilibrado' };
+const DIFF = {facil:25, normal:16, dificil:13, lendario:11};
+const state = { lineup: Array(11).fill(null), rolls:0, mode:'classico', currentTeam:null, tipo:'todos', teamName:'XI DOS SONHOS', comp:'amistoso', pickedThisRoll:false, speed:110, formation:'4-3-3', style:'equilibrado', diff:'normal', maxRolls:16 };
 const $ = s=>document.querySelector(s);
 const $$= s=>document.querySelectorAll(s);
 const pick = a=>a[Math.floor(Math.random()*a.length)];
@@ -814,6 +847,7 @@ function updateStats(){
   const n = filled.length;
   $('#stat-filled').textContent = n;
   $('#stat-rolls').textContent = state.rolls;
+  $('#stat-max').textContent = state.maxRolls;
   $('#meter-fill').style.width = (n/11*100)+'%';
   $('#meter-pct').textContent = Math.round(n/11*100)+'%';
   $('#btn-sim').disabled = n!==11;
@@ -825,7 +859,33 @@ function updateStats(){
   }
 }
 
+function updateRollsLeft(){
+  const remaining = state.maxRolls - state.rolls;
+  const filled = state.lineup.filter(Boolean).length;
+  const need = 11 - filled;
+  const el = $('#rolls-left');
+  el.textContent = `${remaining} rolagem${remaining!==1?'ns':''} restante${remaining!==1?'s':''}`;
+  el.classList.toggle('danger', remaining <= need + 1 && remaining > 0);
+  el.classList.toggle('dead', remaining <= 0);
+  const warn = $('#skip-warn');
+  if(remaining <= need && remaining > 0 && filled < 11){
+    warn.style.display = 'block';
+    warn.textContent = remaining === need
+      ? '⚠ Sem margem! Você PRECISA pegar de cada rolagem agora.'
+      : `⚠ Restam ${remaining} rolagens para ${need} vagas. Cuidado!`;
+  } else {
+    warn.style.display = 'none';
+  }
+  if(remaining <= 0 && filled < 11){
+    $('#btn-roll').disabled = true;
+    $('#btn-roll').textContent = 'SEM ROLAGENS';
+    warn.style.display = 'block';
+    warn.innerHTML = '💀 Rolagens esgotadas! Faltam jogadores.<br><button onclick="state.rolls=0;state.lineup=Array(SLOTS.length).fill(null);renderPitch();updateStats();updateRollsLeft();$(\'#btn-roll\').disabled=false;$(\'#btn-roll\').textContent=\'ROLAR O DADO\';$(\'#reveal\').classList.remove(\'shown\');$(\'#player-list\').innerHTML=\'\'" style="margin-top:6px;background:var(--red);color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-weight:700;font-size:11px">RECOMEÇAR ESCALAÇÃO</button>';
+  }
+}
 function rollDice(){
+  const remaining = state.maxRolls - state.rolls;
+  if(remaining <= 0){ toast('Rolagens esgotadas!'); return; }
   state.rolls++;
   state.pickedThisRoll = false;
   const dice = $('#dice');
@@ -852,6 +912,7 @@ function rollDice(){
       $('#btn-roll').disabled=false;
       $('#btn-roll').textContent='ROLAR DE NOVO';
       updateStats();
+      updateRollsLeft();
     }
   },70);
 }
@@ -900,6 +961,8 @@ function renderRoster(){
       else toast(`${p.n} entrou no XI`);
       renderPitch();
       renderRoster();
+      updateStats();
+      updateRollsLeft();
       if(state.lineup.filter(Boolean).length===11) toast('Escalação completa! Hora de simular ⚽');
     };
   });
@@ -934,7 +997,10 @@ function toast(t){const el=document.createElement('div');el.className='toast';el
 
 $('#btn-reset').onclick = ()=>{
   if(state.lineup.filter(Boolean).length>0 && !confirm('Limpar toda a escalação?')) return;
-  state.lineup = Array(11).fill(null); state.rolls=0; renderPitch();
+  state.lineup = Array(SLOTS.length).fill(null); state.rolls=0;
+  renderPitch(); updateStats(); updateRollsLeft();
+  $('#btn-roll').disabled=false; $('#btn-roll').textContent='ROLAR O DADO';
+  $('#reveal').classList.remove('shown'); $('#player-list').innerHTML='';
 };
 
 $('#btn-sim').onclick = ()=>{
@@ -1305,7 +1371,7 @@ function weighted(items,weights){const t=weights.reduce((s,w)=>s+w,0);let r=Math
 function addEv(m,h,c=''){const f=$('#feed');const d=document.createElement('div');d.className='ev '+c;d.innerHTML=`<span class="mn">${String(m).padStart(2,'0')}'</span>${h}`;f.appendChild(d);f.scrollTop=f.scrollHeight;}
 $('#btn-keep').onclick = ()=>$('#match').classList.remove('open');
 $('#btn-new-match').onclick = ()=>{$('#btn-sim').click()};
-$('#btn-restart').onclick = ()=>{state.lineup=Array(11).fill(null);state.rolls=0;renderPitch();$('#match').classList.remove('open')};
+$('#btn-restart').onclick = ()=>{state.lineup=Array(SLOTS.length).fill(null);state.rolls=0;renderPitch();updateStats();updateRollsLeft();$('#btn-roll').disabled=false;$('#btn-roll').textContent='ROLAR O DADO';$('#reveal').classList.remove('shown');$('#player-list').innerHTML='';$('#match').classList.remove('open')};
 
 document.querySelector('#team-name').addEventListener('input',e=>{
   state.teamName = e.target.value.trim() || 'XI DOS SONHOS';
@@ -1361,6 +1427,14 @@ $$('#setup-mode .setup-card').forEach(c=>{
     state.mode = c.dataset.md;
   };
 });
+$$('#setup-diff .setup-card').forEach(c=>{
+  c.onclick = ()=>{
+    $$('#setup-diff .setup-card').forEach(x=>x.classList.remove('active'));
+    c.classList.add('active');
+    state.diff = c.dataset.diff;
+    state.maxRolls = DIFF[state.diff];
+  };
+});
 $$('#setup-tipo .setup-card').forEach(c=>{
   c.onclick = ()=>{
     $$('#setup-tipo .setup-card').forEach(x=>x.classList.remove('active'));
@@ -1384,13 +1458,18 @@ $('#setup-go').onclick = ()=>{
   const nm = $('#setup-name').value.trim();
   state.teamName = (nm || 'XI DOS SONHOS').toUpperCase();
   $('#team-name').value = state.teamName;
+  state.rolls = 0;
+  state.maxRolls = DIFF[state.diff];
   applyFormation(state.formation);
   state.lineup = Array(SLOTS.length).fill(null);
   $('#field-formation').textContent = state.formation;
-  $('.field-head .hint').textContent = `${STYLE[state.style].label} · ${state.mode==='pro'?'PRO':'CLÁSSICO'} · ${state.comp.toUpperCase()}`;
+  const diffLabel = {facil:'FÁCIL',normal:'NORMAL',dificil:'DIFÍCIL',lendario:'LENDÁRIO'}[state.diff];
+  $('.field-head .hint').textContent = `${STYLE[state.style].label} · ${state.mode==='pro'?'PRO':'CLÁSSICO'} · ${diffLabel} · ${state.comp.toUpperCase()}`;
   $('#btn-sim').textContent = state.comp==='brasileirao'?'JOGAR BRASILEIRÃO':state.comp==='copa'?'JOGAR COPA':'SIMULAR';
+  updateRollsLeft();
   $('#setup').classList.remove('open');
   renderPitch();
+  updateStats();
 };
 
 applyFormation(state.formation);
