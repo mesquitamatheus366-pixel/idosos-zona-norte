@@ -215,6 +215,8 @@
   .setup-head .brand{justify-content:center;font-size:22px}
   .setup-sub{color:var(--muted);margin-top:4px;font-size:11px;letter-spacing:1px}
   .setup-section{margin-bottom:12px;animation:slide-in .4s ease both}
+  .setup-section.locked{opacity:.55;pointer-events:none;position:relative}
+  .setup-section.locked::after{content:"🔒 definido pela competição";position:absolute;top:0;right:0;font-size:9px;color:var(--gold);background:rgba(245,200,66,.1);padding:2px 8px;border-radius:99px;border:1px solid rgba(245,200,66,.3);letter-spacing:.5px}
   .setup-section:nth-child(1){animation-delay:.05s} .setup-section:nth-child(2){animation-delay:.12s}
   .setup-section:nth-child(3){animation-delay:.19s} .setup-section:nth-child(4){animation-delay:.26s}
   .setup-section:nth-child(5){animation-delay:.33s} .setup-section:nth-child(6){animation-delay:.40s} .setup-section:nth-child(7){animation-delay:.47s}
@@ -303,6 +305,66 @@
   #standings td.nm{display:flex;align-items:center;gap:8px}
   #standings .pts{font-family:'Bebas Neue';color:var(--neon);text-align:center;width:38px;font-size:14px}
   #standings .num{width:28px;text-align:center;color:var(--muted)}
+
+  /* Capitão armband */
+  .cap-band{position:absolute;top:-7px;left:-8px;width:18px;height:18px;border-radius:50%;background:linear-gradient(180deg,#fde047,#facc15);color:#1a1206;font-family:'Bebas Neue',sans-serif;font-size:11px;display:flex;align-items:center;justify-content:center;font-weight:800;box-shadow:0 2px 6px rgba(245,200,66,.6),0 0 0 2px #0a141a;border:1.5px solid #fff;letter-spacing:0;padding-top:1px}
+  .cap-list{display:flex;flex-direction:column;gap:5px;max-height:380px;overflow-y:auto}
+  .cap-opt{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);cursor:pointer;transition:.15s;font-family:inherit;color:var(--ink);text-align:left}
+  .cap-opt:hover{border-color:var(--gold);background:#1a1f2e;transform:translateX(3px)}
+  .cap-opt .pos-chip{width:32px;text-align:center;background:#0a1018;border-radius:6px;padding:3px 0;font-weight:800;font-size:10px;color:var(--neon);font-family:'Outfit',sans-serif}
+  .cap-opt .nm{flex:1;font-weight:700;font-size:13px}
+  .cap-opt .rt{font-family:'Bebas Neue',sans-serif;font-size:15px;color:var(--gold)}
+
+  /* Top scorers */
+  .top-scorers{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:10px;background:rgba(34,211,238,.04);text-align:left}
+  .ts-head{font-family:'Bebas Neue',sans-serif;letter-spacing:1.2px;color:var(--neon);font-size:12px;margin-bottom:6px;text-align:center}
+  .ts-row{display:flex;align-items:center;gap:8px;padding:4px 6px;font-size:11px;border-bottom:1px dashed rgba(255,255,255,.04)}
+  .ts-row:last-child{border:0}
+  .ts-row.first{background:rgba(245,200,66,.06);border-radius:6px}
+  .ts-pos{width:20px;color:var(--muted);font-weight:700}
+  .ts-row.first .ts-pos{color:var(--gold)}
+  .ts-name{flex:1;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ts-team{font-size:10px;color:var(--muted);letter-spacing:.3px}
+  .ts-goals{font-family:'Bebas Neue',sans-serif;color:var(--gold);font-size:16px;min-width:22px;text-align:right}
+
+  /* Conquistas */
+  .ach-summary{text-align:center;padding:12px;margin-bottom:12px;border:1px solid var(--gold);border-radius:10px;background:rgba(245,200,66,.06)}
+  .ach-summary b{font-family:'Bebas Neue',sans-serif;color:var(--gold);font-size:28px;letter-spacing:1px}
+  .ach-summary small{color:var(--muted);font-size:11px;display:block;margin-top:2px}
+  .ach-list{display:flex;flex-direction:column;gap:6px}
+  .ach-entry{display:flex;align-items:center;gap:12px;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2);transition:.2s}
+  .ach-entry.got{border-color:var(--gold);background:rgba(245,200,66,.04)}
+  .ach-entry.locked{opacity:.5}
+  .ach-icon-lg{font-size:28px;width:44px;text-align:center}
+  .ach-info{flex:1;min-width:0}
+  .ach-title{font-family:'Bebas Neue',sans-serif;letter-spacing:1px;font-size:15px;color:#fff;margin-bottom:2px}
+  .ach-entry.got .ach-title{color:var(--gold)}
+  .ach-sub{font-size:11px;color:var(--muted)}
+
+  /* Toast de conquista */
+  .ach-toast{position:fixed;top:80px;right:-360px;width:340px;background:linear-gradient(135deg,#1a1206,#332408);border:2px solid var(--gold);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px;z-index:1000;box-shadow:0 12px 40px rgba(245,200,66,.4);transition:right .4s cubic-bezier(.16,1,.3,1)}
+  .ach-toast.show{right:20px}
+  .ach-toast .ach-icon{font-size:36px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))}
+  .ach-toast .ach-lbl{font-family:'Bebas Neue',sans-serif;letter-spacing:1.5px;font-size:10px;color:var(--gold)}
+  .ach-toast .ach-name{font-family:'Bebas Neue',sans-serif;font-size:16px;color:#fff;letter-spacing:.5px}
+  .ach-toast .ach-desc{font-size:10.5px;color:#cbd5e1;margin-top:2px}
+
+  /* Share modal */
+  .share-lbl{font-family:'Outfit',sans-serif;font-weight:700;font-size:10px;color:var(--neon);letter-spacing:1px;text-transform:uppercase;display:block;margin:10px 0 4px;padding-left:6px;border-left:2px solid var(--neon)}
+  .share-row{display:flex;gap:6px;margin-bottom:4px}
+  .share-input{flex:1;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:9px 12px;color:var(--ink);font-family:'JetBrains Mono','Outfit',monospace;font-size:11px;outline:none;resize:none}
+  .share-input:focus{border-color:var(--neon)}
+  .share-code{font-size:10px;line-height:1.4;font-family:monospace}
+  .share-btn{background:linear-gradient(180deg,var(--neon),#0ea5cc);color:#031620;border:none;padding:8px 12px;font-weight:800;font-size:11px;letter-spacing:.5px;cursor:pointer;border-radius:8px;font-family:inherit;text-transform:uppercase;white-space:nowrap}
+  .share-btn:hover{transform:translateY(-1px)}
+
+  /* Challenge banner */
+  .challenge-banner{margin-top:10px;padding:10px;background:linear-gradient(135deg,rgba(236,72,153,.15),rgba(245,200,66,.1));border:1px solid var(--pink);border-radius:10px;font-size:12px;color:#fff;text-align:center;animation:pulse-soft 2s ease infinite}
+  .challenge-banner b{color:var(--gold)}
+
+  /* Setup foot */
+  .setup-foot{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px}
+  @media (max-width:480px){.setup-foot{grid-template-columns:1fr}}
 
   /* Libertadores groups */
   .liberta-groups{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
@@ -616,14 +678,18 @@
     <div class="setup-section">
       <div class="setup-label">7 · COMPETIÇÃO</div>
       <div class="setup-grid style-grid" id="setup-comp">
-        <button class="setup-card mini active" data-comp="amistoso" title="1 partida contra 1 adversário"><div class="sc-icon">⚽</div><div class="sc-ttl">MATA-MATA</div><div class="sc-tag">1 partida</div></button>
-        <button class="setup-card mini" data-comp="brasileirao" title="Brasileirão de 38 rodadas + chance de ir pra Libertadores e Mundial"><div class="sc-icon">🏆</div><div class="sc-ttl">BRASILEIRÃO</div><div class="sc-tag">38 rodadas</div></button>
-        <button class="setup-card mini" data-comp="copa" title="Só seleções · grupos + mata-mata"><div class="sc-icon">🌍</div><div class="sc-ttl">COPA DO MUNDO</div><div class="sc-tag">só seleções</div></button>
+        <button class="setup-card mini active" data-comp="brasileirao" title="38 rodadas + chance de ir pra Libertadores e Mundial"><div class="sc-icon">🏆</div><div class="sc-ttl">BRASILEIRÃO</div><div class="sc-tag">só BR</div></button>
+        <button class="setup-card mini" data-comp="copa" title="Só seleções · grupos + mata-mata até a final"><div class="sc-icon">🌍</div><div class="sc-ttl">COPA DO MUNDO</div><div class="sc-tag">só seleções</div></button>
+        <button class="setup-card mini" data-comp="confronto" title="Jogue contra o XI de outra pessoa via link compartilhado"><div class="sc-icon">⚔️</div><div class="sc-ttl">CONFRONTO</div><div class="sc-tag">multiplayer</div></button>
       </div>
     </div>
 
     <button class="setup-go" id="setup-go">COMEÇAR A MONTAR →</button>
-    <button class="history-btn" id="btn-history">📊 Ver histórico de partidas</button>
+    <div class="setup-foot">
+      <button class="history-btn" id="btn-history">📊 Histórico</button>
+      <button class="history-btn" id="btn-ach">🏅 Conquistas</button>
+      <button class="history-btn" id="challenge-paste">⚔️ Colar desafio</button>
+    </div>
   </div>
 </div>
 
@@ -710,6 +776,53 @@
     <button class="btn-reset" id="btn-reset">RECOMEÇAR</button>
   </div>
 </header>
+
+<!-- CAPITÃO -->
+<div class="modal-bg" id="captain-modal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-head">
+      <span class="ttl">🅒 ESCOLHA O CAPITÃO</span>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--muted);font-size:12px;text-align:center;margin-bottom:12px">Capitão ganha <b style="color:var(--gold)">+5 OVR</b> e bate todos os pênaltis.</p>
+      <div id="cap-list" class="cap-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CONQUISTAS -->
+<div class="modal-bg" id="ach-modal">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-head">
+      <span class="ttl">🏅 CONQUISTAS</span>
+      <button class="x" id="ach-close">&times;</button>
+    </div>
+    <div class="modal-body" id="ach-body"></div>
+  </div>
+</div>
+
+<!-- COMPARTILHAR XI -->
+<div class="modal-bg" id="share-modal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-head">
+      <span class="ttl">⚔️ COMPARTILHAR SEU XI</span>
+      <button class="x" id="share-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--muted);font-size:12px;text-align:center;margin-bottom:14px">Envie esse link pra alguém. Quando abrir, o XI dela vai enfrentar o seu.</p>
+      <label class="share-lbl">Link compartilhável</label>
+      <div class="share-row">
+        <input id="share-link" class="share-input" readonly />
+        <button class="share-btn" id="share-copy-link">📋 Copiar</button>
+      </div>
+      <label class="share-lbl">Código (texto)</label>
+      <div class="share-row">
+        <textarea id="share-code" class="share-input share-code" readonly rows="3"></textarea>
+        <button class="share-btn" id="share-copy-code">📋 Copiar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <main class="game">
   <aside class="panel dice-panel">
@@ -1240,7 +1353,7 @@ const STYLE = {
 };
 
 const DIFF = {facil:25, normal:16, dificil:13, lendario:11};
-const state = { lineup: Array(11).fill(null), rolls:0, mode:'classico', currentTeam:null, tipo:'todos', teamName:'XI DOS SONHOS', comp:'amistoso', pickedThisRoll:false, speed:110, formation:'4-3-3', style:'equilibrado', diff:'normal', maxRolls:16, buff:null, pendingPlayer:null };
+const state = { lineup: Array(11).fill(null), rolls:0, mode:'classico', currentTeam:null, tipo:'brasileiro', teamName:'XI DOS SONHOS', comp:'brasileirao', pickedThisRoll:false, speed:110, formation:'4-3-3', style:'equilibrado', diff:'normal', maxRolls:16, buff:null, pendingPlayer:null, captain:-1, challenge:null };
 const $ = s=>document.querySelector(s);
 const $$= s=>document.querySelectorAll(s);
 const pick = a=>a[Math.floor(Math.random()*a.length)];
@@ -1267,12 +1380,14 @@ function renderPitch(){
       discCls='col-team';
     }
     let buffBadge = '';
+    let capBand = '';
     if(p){
       const eff = effectiveR(p, s.idx);
       if(eff > p.r) buffBadge = `<div class="buff-badge">+${eff-p.r}</div>`;
+      if(s.idx === state.captain) capBand = `<div class="cap-band">C</div>`;
     }
     el.innerHTML = `
-      <div class="disc ${discCls}" style="${discStyle}">${p?s.num:'?'}${buffBadge}</div>
+      <div class="disc ${discCls}" style="${discStyle}">${p?s.num:'?'}${buffBadge}${capBand}</div>
       <div class="pos-tag">${s.pos}</div>
       <div class="label">${p?p.n:s.label}</div>
       ${p?`<div class="team">${p.teamShort}</div>`:''}`;
@@ -1319,7 +1434,7 @@ function updateStats(){
     sim.textContent = `Faltam ${11-n} jogador${11-n>1?'es':''}`;
     sim.classList.add('waiting');
   } else {
-    sim.textContent = state.comp==='brasileirao'?'JOGAR BRASILEIRÃO':state.comp==='copa'?'JOGAR COPA':'SIMULAR PARTIDA';
+    sim.textContent = state.comp==='brasileirao'?'JOGAR BRASILEIRÃO':state.comp==='copa'?'JOGAR COPA':state.challenge?`JOGAR vs ${state.challenge.n}`:'COMPARTILHAR XI';
     sim.classList.remove('waiting');
   }
   if(n===0){ $('#stat-ovr').textContent='—'; }
@@ -1447,8 +1562,9 @@ function placePlayer(p, team, slotIdx){
   updateStats();
   updateRollsLeft();
   if(state.lineup.filter(Boolean).length===11){
-    toast('Escalação completa! Hora de simular ⚽');
-    setTimeout(()=>grantBuff(), 500);
+    toast('Escalação completa! Hora de escolher o capitão.');
+    checkXICompletionAchievements();
+    setTimeout(()=>openCaptainPicker(), 400);
   }
 }
 
@@ -1509,13 +1625,17 @@ function toast(t){const el=document.createElement('div');el.className='toast';el
 
 $('#btn-reset').onclick = ()=>{
   if(state.lineup.filter(Boolean).length>0 && !confirm('Limpar toda a escalação?')) return;
-  state.lineup = Array(SLOTS.length).fill(null); state.rolls=0; state.buff=null; state.pendingPlayer=null;
+  state.lineup = Array(SLOTS.length).fill(null); state.rolls=0; state.buff=null; state.pendingPlayer=null; state.captain=-1; state.matchScorers=null; state.campaign=null;
   renderPitch(); updateStats(); updateRollsLeft(); renderBuffPanel();
   $('#btn-roll').disabled=false; $('#btn-roll').textContent='ROLAR O DADO';
   $('#reveal').classList.remove('shown'); $('#player-list').innerHTML='';
 };
 
 $('#btn-sim').onclick = ()=>{
+  // Confronto sem desafio recebido: abre tela de compartilhar
+  if(state.comp==='confronto' && !state.challenge){
+    return openShareModal();
+  }
   $('#match').classList.add('open');
   $('#verdict').classList.remove('show','win','lose','draw');
   $('#feed').innerHTML='';
@@ -1533,6 +1653,7 @@ $('#btn-sim').onclick = ()=>{
 
   if(state.comp==='brasileirao') return simBrasileirao();
   if(state.comp==='copa') return simCopa();
+  if(state.comp==='confronto') return simConfronto();
   return simAmistoso();
 };
 
@@ -1540,10 +1661,12 @@ function effectiveR(p,i){
   if(!p) return 0;
   let r = p.r;
   const b = state.buff;
-  if(!b) return r;
-  if(b.type==='all') r += b.amount;
-  else if(b.type==='allPos' && p.pos===b.pos) r += b.amount;
-  else if(b.type==='single' && b.target===i) r += b.amount;
+  if(b){
+    if(b.type==='all') r += b.amount;
+    else if(b.type==='allPos' && p.pos===b.pos) r += b.amount;
+    else if(b.type==='single' && b.target===i) r += b.amount;
+  }
+  if(i===state.captain) r += 5;
   return Math.min(99, r);
 }
 function calcTeamR(){
@@ -1572,7 +1695,38 @@ function simAmistoso(){
     else if(d===0){v.classList.add('draw');$('#v-title').textContent='🤝 EMPATE';}
     else{v.classList.add('lose');$('#v-title').textContent='💔 DERROTA';}
     const pts = saveToHistory({type:'amistoso', outcome, detail:`${state.teamName} ${score[0]} x ${score[1]} ${foe.nome}`, badge:outcome==='win'?'VITÓRIA':outcome==='draw'?'EMPATE':'DERROTA', badgeClass:outcome==='win'?'win':outcome==='draw'?'ok':'lose'});
-    $('#v-text').textContent=`${state.teamName} ${score[0]} x ${score[1]} ${foe.nome}. (+${pts} pts)`;
+    $('#v-text').innerHTML=`${state.teamName} ${score[0]} x ${score[1]} ${foe.nome}. (+${pts} pts)` + renderTopScorers();
+    checkMatchAchievements(score, outcome);
+  });
+}
+
+function simConfronto(){
+  if(!state.challenge){
+    // Sem desafio recebido — mostra modal de compartilhar
+    openShareModal();
+    return;
+  }
+  // Construir time inimigo a partir do desafio
+  const c = state.challenge;
+  const foe = buildTeamFromChallenge(c);
+  if(!foe){ toast('Erro ao carregar desafio'); return; }
+  $('#match').classList.add('open');
+  $('#feed').innerHTML='';
+  $('#sc-a').textContent='0'; $('#sc-b').textContent='0';
+  $('#verdict').classList.remove('show','win','lose','draw');
+  setFoeUI(foe);
+  addEv(0,`<strong>⚔️ CONFRONTO</strong> · ${state.teamName} x ${foe.nome}`,'goal');
+  runLiveMatch(foe, (score)=>{
+    const v=$('#verdict'); v.classList.add('show');
+    const d=score[0]-score[1];
+    const outcome = d>0?'win':d===0?'draw':'lose';
+    if(d>0){v.classList.add('win');$('#v-title').textContent='🏆 VITÓRIA NO CONFRONTO!';}
+    else if(d===0){v.classList.add('draw');$('#v-title').textContent='🤝 EMPATE';}
+    else{v.classList.add('lose');$('#v-title').textContent='💔 DERROTA';}
+    const pts = saveToHistory({type:'confronto', outcome, detail:`Confronto: ${state.teamName} ${score[0]} x ${score[1]} ${foe.nome}`, badge:outcome==='win'?'VENCEU':outcome==='draw'?'EMPATE':'PERDEU', badgeClass:outcome==='win'?'win':outcome==='draw'?'ok':'lose'});
+    $('#v-text').innerHTML=`${state.teamName} ${score[0]} x ${score[1]} ${foe.nome}. (+${pts} pts)` + renderTopScorers();
+    checkMatchAchievements(score, outcome);
+    if(outcome==='win') unlockAchievement('confronto-win');
   });
 }
 
@@ -1592,7 +1746,11 @@ function runLiveMatch(foe, onEnd){
   const theirChance= Math.max(.04,((foeR-teamR+8)/100)*0.30 + 0.07) * sty.mulTheir * theirMul;
   let score=[0,0], minute=0;
   const scorers = state.lineup.filter(p=>p.pos==='ATA'||p.pos==='MEI');
-  const w = scorers.map(p=>p.r);
+  const w = scorers.map((p,idx)=>{
+    const slotIdx = state.lineup.indexOf(p);
+    return effectiveR(p, slotIdx);
+  });
+  const captain = state.captain>=0 ? state.lineup[state.captain] : null;
   const speed = state.speed;
   const tick = setInterval(()=>{
     minute++;
@@ -1601,18 +1759,27 @@ function runLiveMatch(foe, onEnd){
     if(Math.random()<ourChance/12){
       const sc = weighted(scorers,w);
       score[0]++; $('#sc-a').textContent=score[0];
-      addEv(minute,`<strong>⚽ GOL!</strong> ${sc.n} marca! ${score[0]}-${score[1]}`,'goal');
+      const capIcon = (captain && captain.n===sc.n) ? ' 🅒' : '';
+      addEv(minute,`<strong>⚽ GOL!</strong> ${sc.n}${capIcon} marca! ${score[0]}-${score[1]}`,'goal');
       pitchEffect('GOL!','goal','right');
+      trackScorer(sc, state.teamName);
     } else if(Math.random()<theirChance/12){
       score[1]++; $('#sc-b').textContent=score[1];
       const sc = pick(foe.jogadores.filter(p=>p.pos==='ATA'||p.pos==='MEI'));
       addEv(minute,`<strong>Gol do adversário</strong> · ${sc.n} (${foe.nome}) · ${score[0]}-${score[1]}`,'bad');
       pitchEffect('GOL','goal','left');
+      trackScorer(sc, foe.nome);
     } else if(Math.random()<0.04){
-      const ev = pick(['yellow','yellow','red','save','save','foul']);
+      const ev = pick(['yellow','yellow','red','save','save','foul','pen-our','pen-our']);
       if(ev==='yellow'){addEv(minute,`🟨 Amarelo · ${pick(state.lineup).n}`);pitchEffect('🟨','yel');}
       else if(ev==='red'){addEv(minute,`🟥 VERMELHO · ${pick(state.lineup).n} expulso!`,'bad');pitchEffect('🟥','red');}
       else if(ev==='save'){const gk=state.lineup[0];addEv(minute,`🧤 Defesa de pênalti! ${gk.n} pega!`,'goal');pitchEffect('DEFENDEU!','save');}
+      else if(ev==='pen-our' && captain){
+        score[0]++; $('#sc-a').textContent=score[0];
+        addEv(minute,`<strong>⚽ PÊNALTI · GOL!</strong> ${captain.n} 🅒 bate firme! ${score[0]}-${score[1]}`,'goal');
+        pitchEffect('PÊNALTI!','goal','right');
+        trackScorer(captain, state.teamName);
+      }
       else addEv(minute,'Falta perigosa próxima à área.');
     }
     if(minute>=90){
@@ -1760,7 +1927,12 @@ function finishBrasileirao(){
   else if(myPos>=17){v.classList.add('lose');$('#v-title').textContent=`💔 ${myPos}º · REBAIXADO`;badge='REBAIXADO';badgeClass='lose';}
   else {v.classList.add('draw');$('#v-title').textContent=`🤝 ${myPos}º LUGAR`;badge=myPos+'º LUGAR';badgeClass='ok';}
   const pts = saveToHistory({type:'brasileirao', position:myPos, detail:`${myPos}º lugar · ${myPts} pontos em 38 rodadas`, badge, badgeClass});
-  $('#v-text').textContent = `${myPts} pontos em 38 rodadas. (+${pts} pts)`;
+  $('#v-text').innerHTML = `${myPts} pontos em 38 rodadas. (+${pts} pts)` + renderTopScorers();
+  // Conquistas
+  if(myPos===1) unlockAchievement('first-bra');
+  const myStats = sorted.find(r=>r.t.nome===t.meName);
+  if(myStats && myStats.d===0) unlockAchievement('invicto');
+  trackCampaign('bra-champ', myPos===1);
   const libertaBtn = myPos<=4 ? `<button id="btn-go-liberta">🌎 IR PARA A LIBERTADORES</button>` : '';
   $('#verdict .actions').innerHTML = `
     ${libertaBtn}
@@ -1776,7 +1948,7 @@ function finishBrasileirao(){
 function rebindEndButtons(){
   $('#btn-keep').onclick = ()=>{$('#match').classList.remove('open'); state.tournament=null;};
   $('#btn-new-match').onclick = ()=>{$('#btn-sim').click()};
-  $('#btn-restart').onclick = ()=>{state.lineup=Array(11).fill(null);state.rolls=0;state.buff=null;renderPitch();renderBuffPanel();$('#match').classList.remove('open');state.tournament=null;};
+  $('#btn-restart').onclick = ()=>{state.lineup=Array(11).fill(null);state.rolls=0;state.buff=null;state.captain=-1;renderPitch();renderBuffPanel();$('#match').classList.remove('open');state.tournament=null;};
 }
 
 // ============ JANELA DE TRANSFERÊNCIAS (3 rolagens, 3 trocas) ============
@@ -2102,7 +2274,9 @@ function finishLibertadores(won, lastStage){
     badge='Eliminado'; badgeClass='lose';
   }
   const pts = saveToHistory({type:'copa', stage:won?'CAMPEÃO':lastStage, detail:won?'Campeão da Libertadores':`Caiu nas/no ${lastStage} da Libertadores`, badge, badgeClass});
-  $('#v-text').textContent = won ? `Tri da América! (+${pts} pts) Vamos pro Mundial?` : `(+${pts} pts)`;
+  $('#v-text').innerHTML = (won ? `Tri da América! (+${pts} pts) Vamos pro Mundial?` : `(+${pts} pts)`) + renderTopScorers();
+  if(won) unlockAchievement('first-liberta');
+  trackCampaign('liberta-champ', won);
   const mundialBtn = won ? `<button id="btn-go-mundial">🌐 IR PARA O MUNDIAL DE CLUBES</button>` : '';
   $('#verdict .actions').innerHTML = `
     ${mundialBtn}
@@ -2203,7 +2377,11 @@ function finishMundial(won, lastStage){
     badge=lastStage==='FINAL'?'VICE':'Eliminado'; badgeClass=lastStage==='FINAL'?'ok':'lose';
   }
   const pts = saveToHistory({type:'copa', stage:won?'CAMPEÃO':lastStage, detail:won?'Campeão Mundial de Clubes!':`Caiu na ${lastStage} do Mundial`, badge, badgeClass});
-  $('#v-text').textContent = `(+${pts} pts)`;
+  $('#v-text').innerHTML = `(+${pts} pts)` + renderTopScorers();
+  if(won){
+    unlockAchievement('first-mundial');
+    if(state.campaign && state.campaign['bra-champ'] && state.campaign['liberta-champ']) unlockAchievement('tri');
+  }
   $('#verdict .actions').innerHTML = `
     <button class="ghost" id="btn-new-match">NOVO CAMPEONATO</button>
     <button class="ghost" id="btn-keep">VOLTAR AO CAMPO</button>
@@ -2366,13 +2544,14 @@ function finishCopa(results, last){
   else if(last==='FINAL'){v.classList.add('lose');$('#v-title').textContent='🥈 VICE-CAMPEÃO';badge='VICE';badgeClass='ok';detail='Final perdida.';}
   else {v.classList.add('lose');$('#v-title').textContent=`Eliminado nas/no ${last}`;badge='Eliminado';badgeClass='lose';detail=`Caiu nas/no ${last}.`;}
   const pts = saveToHistory({type:'copa', stage:last==='CAMPEÃO'?'CAMPEÃO':last, detail, badge, badgeClass});
-  $('#v-text').textContent = detail + ` (+${pts} pts)`;
+  $('#v-text').innerHTML = detail + ` (+${pts} pts)` + renderTopScorers();
+  if(last==='CAMPEÃO') unlockAchievement('first-copa');
 }
 function weighted(items,weights){const t=weights.reduce((s,w)=>s+w,0);let r=Math.random()*t;for(let i=0;i<items.length;i++){r-=weights[i];if(r<=0)return items[i]}return items[0];}
 function addEv(m,h,c=''){const f=$('#feed');const d=document.createElement('div');d.className='ev '+c;d.innerHTML=`<span class="mn">${String(m).padStart(2,'0')}'</span>${h}`;f.appendChild(d);f.scrollTop=f.scrollHeight;}
 $('#btn-keep').onclick = ()=>$('#match').classList.remove('open');
 $('#btn-new-match').onclick = ()=>{$('#btn-sim').click()};
-$('#btn-restart').onclick = ()=>{state.lineup=Array(SLOTS.length).fill(null);state.rolls=0;state.buff=null;renderPitch();updateStats();updateRollsLeft();renderBuffPanel();$('#btn-roll').disabled=false;$('#btn-roll').textContent='ROLAR O DADO';$('#reveal').classList.remove('shown');$('#player-list').innerHTML='';$('#match').classList.remove('open')};
+$('#btn-restart').onclick = ()=>{state.lineup=Array(SLOTS.length).fill(null);state.rolls=0;state.buff=null;state.captain=-1;renderPitch();updateStats();updateRollsLeft();renderBuffPanel();$('#btn-roll').disabled=false;$('#btn-roll').textContent='ROLAR O DADO';$('#reveal').classList.remove('shown');$('#player-list').innerHTML='';$('#match').classList.remove('open')};
 
 document.querySelector('#team-name').addEventListener('input',e=>{
   state.teamName = e.target.value.trim() || 'XI DOS SONHOS';
@@ -2443,18 +2622,30 @@ $$('#setup-tipo .setup-card').forEach(c=>{
     state.tipo = c.dataset.tipo;
   };
 });
+function syncTipoFromComp(){
+  const tipoSection = $('#setup-tipo').closest('.setup-section');
+  if(state.comp==='brasileirao'){
+    state.tipo='brasileiro';
+    $$('#setup-tipo .setup-card').forEach(x=>x.classList.toggle('active', x.dataset.tipo==='brasileiro'));
+    tipoSection.classList.add('locked');
+  } else if(state.comp==='copa'){
+    state.tipo='selecao';
+    $$('#setup-tipo .setup-card').forEach(x=>x.classList.toggle('active', x.dataset.tipo==='selecao'));
+    tipoSection.classList.add('locked');
+  } else {
+    tipoSection.classList.remove('locked');
+  }
+}
 $$('#setup-comp .setup-card').forEach(c=>{
   c.onclick = ()=>{
     $$('#setup-comp .setup-card').forEach(x=>x.classList.remove('active'));
     c.classList.add('active');
     state.comp = c.dataset.comp;
-    // se copa, força filtro de seleções
-    if(state.comp==='copa'){
-      state.tipo='selecao';
-      $$('#setup-tipo .setup-card').forEach(x=>x.classList.toggle('active', x.dataset.tipo==='selecao'));
-    }
+    syncTipoFromComp();
   };
 });
+// inicializa default
+syncTipoFromComp();
 $('#setup-go').onclick = ()=>{
   const nm = $('#setup-name').value.trim();
   state.teamName = (nm || 'XI DOS SONHOS').toUpperCase();
@@ -2575,6 +2766,247 @@ function renderHistory(){
 
 $('#btn-history').onclick = ()=>{ renderHistory(); $('#history-modal').classList.add('open'); };
 $('#history-close').onclick = ()=>$('#history-modal').classList.remove('open');
+
+// ============ TRACKING DE ARTILHEIROS ============
+function trackScorer(player, teamName){
+  if(!state.tournament && !state.matchScorers) state.matchScorers = {};
+  const bucket = state.tournament ? (state.tournament.scorers = state.tournament.scorers || {}) : state.matchScorers;
+  const key = `${player.n}|${teamName}`;
+  bucket[key] = bucket[key] || {name:player.n, team:teamName, goals:0};
+  bucket[key].goals++;
+}
+
+function renderTopScorers(){
+  const bucket = state.tournament ? state.tournament.scorers : state.matchScorers;
+  if(!bucket) return '';
+  const arr = Object.values(bucket).sort((a,b)=>b.goals-a.goals).slice(0,5);
+  if(arr.length===0) return '';
+  let html = '<div class="top-scorers"><div class="ts-head">⚽ ARTILHEIROS</div>';
+  arr.forEach((s,i)=>{
+    html += `<div class="ts-row ${i===0?'first':''}">
+      <span class="ts-pos">${i+1}º</span>
+      <span class="ts-name">${s.name}</span>
+      <span class="ts-team">${s.team}</span>
+      <span class="ts-goals">${s.goals}</span>
+    </div>`;
+  });
+  html += '</div>';
+  state.matchScorers = null;
+  return html;
+}
+
+// ============ CAPITÃO ============
+function openCaptainPicker(){
+  const modal = $('#captain-modal');
+  const list = $('#cap-list');
+  list.innerHTML = state.lineup.map((p,i)=>{
+    if(!p) return '';
+    return `<button class="cap-opt" data-i="${i}">
+      <div class="pos-chip">${p.pos}</div>
+      <div class="nm">${p.n} <small style="color:var(--muted);font-weight:500">· ${p.teamShort}</small></div>
+      <div class="rt">${p.r}</div>
+    </button>`;
+  }).join('');
+  $$('#cap-list .cap-opt').forEach(b=>{
+    b.onclick = ()=>{
+      state.captain = +b.dataset.i;
+      modal.classList.remove('open');
+      const c = state.lineup[state.captain];
+      toast(`🅒 ${c.n} é o capitão!`);
+      renderPitch();
+      updateStats();
+      setTimeout(()=>grantBuff(), 400);
+    };
+  });
+  modal.classList.add('open');
+}
+
+// ============ CONQUISTAS ============
+const ACHIEVEMENTS = [
+  {id:'first-xi', name:'Primeiro XI', desc:'Complete sua primeira escalação', icon:'⭐'},
+  {id:'first-win', name:'Primeira Vitória', desc:'Vença sua primeira partida', icon:'🥇'},
+  {id:'first-bra', name:'Brasileiro', desc:'Conquiste o Brasileirão', icon:'🏆'},
+  {id:'first-liberta', name:'Glória Eterna', desc:'Conquiste a Libertadores', icon:'🌎'},
+  {id:'first-mundial', name:'Topo do Mundo', desc:'Conquiste o Mundial de Clubes', icon:'👑'},
+  {id:'first-copa', name:'Hexacampeão', desc:'Conquiste a Copa do Mundo', icon:'🌍'},
+  {id:'tri', name:'Tri Coroado', desc:'Brasileirão + Libertadores + Mundial em uma campanha', icon:'🏅'},
+  {id:'invicto', name:'Invicto', desc:'Termine o Brasileirão sem nenhuma derrota', icon:'🛡️'},
+  {id:'ovr-95', name:'Lenda Pura', desc:'Monte um XI com OVR médio 95+', icon:'💎'},
+  {id:'lendario', name:'Coragem Lendária', desc:'Complete um XI na dificuldade Lendário', icon:'💀'},
+  {id:'br-only', name:'Pátria Amada', desc:'Monte um XI 100% brasileiro', icon:'🇧🇷'},
+  {id:'selecao-only', name:'Patriota', desc:'Monte um XI 100% seleções nacionais', icon:'🏳️'},
+  {id:'big-win', name:'Goleada Histórica', desc:'Vença com 5+ gols de diferença', icon:'🎯'},
+  {id:'confronto-win', name:'Duelista', desc:'Vença um confronto contra outro jogador', icon:'⚔️'},
+  {id:'streak-5', name:'Sequência Quente', desc:'Vença 5 partidas seguidas', icon:'🔥'},
+];
+
+function getAchievements(){ return JSON.parse(localStorage.getItem('xi-achievements')||'{}'); }
+function getWinStreak(){ return parseInt(localStorage.getItem('xi-streak')||'0'); }
+function setWinStreak(v){ localStorage.setItem('xi-streak', String(v)); }
+
+function unlockAchievement(id){
+  const got = getAchievements();
+  if(got[id]) return;
+  const a = ACHIEVEMENTS.find(x=>x.id===id);
+  if(!a) return;
+  got[id] = Date.now();
+  localStorage.setItem('xi-achievements', JSON.stringify(got));
+  showAchievementToast(a);
+}
+
+function showAchievementToast(a){
+  const el = document.createElement('div');
+  el.className = 'ach-toast';
+  el.innerHTML = `<div class="ach-icon">${a.icon}</div><div><div class="ach-lbl">CONQUISTA</div><div class="ach-name">${a.name}</div><div class="ach-desc">${a.desc}</div></div>`;
+  document.body.appendChild(el);
+  setTimeout(()=>el.classList.add('show'),50);
+  setTimeout(()=>{el.classList.remove('show');setTimeout(()=>el.remove(),400)}, 4200);
+}
+
+function checkXICompletionAchievements(){
+  unlockAchievement('first-xi');
+  // OVR total
+  const avg = calcTeamR();
+  if(avg>=95) unlockAchievement('ovr-95');
+  // Lendário
+  if(state.diff==='lendario') unlockAchievement('lendario');
+  // Tipo único
+  const teams = state.lineup.map(p=>p && TIMES.find(t=>t.nome===p.team)).filter(Boolean);
+  if(teams.length===11){
+    if(teams.every(t=>t.tipo==='brasileiro')) unlockAchievement('br-only');
+    if(teams.every(t=>t.tipo==='selecao')) unlockAchievement('selecao-only');
+  }
+}
+
+function checkMatchAchievements(score, outcome){
+  const diff = Math.abs(score[0]-score[1]);
+  if(outcome==='win'){
+    unlockAchievement('first-win');
+    const streak = getWinStreak()+1;
+    setWinStreak(streak);
+    if(streak>=5) unlockAchievement('streak-5');
+    if(diff>=5 && score[0]>score[1]) unlockAchievement('big-win');
+  } else {
+    setWinStreak(0);
+  }
+}
+
+function trackCampaign(key, val){
+  state.campaign = state.campaign || {};
+  state.campaign[key] = val;
+}
+
+function renderAchievements(){
+  const got = getAchievements();
+  const body = $('#ach-body');
+  const unlocked = ACHIEVEMENTS.filter(a=>got[a.id]).length;
+  let html = `<div class="ach-summary"><b>${unlocked}/${ACHIEVEMENTS.length}</b><small>conquistas desbloqueadas</small></div>`;
+  html += '<div class="ach-list">';
+  ACHIEVEMENTS.forEach(a=>{
+    const has = !!got[a.id];
+    html += `<div class="ach-entry ${has?'got':'locked'}">
+      <div class="ach-icon-lg">${has?a.icon:'🔒'}</div>
+      <div class="ach-info">
+        <div class="ach-title">${a.name}</div>
+        <div class="ach-sub">${a.desc}</div>
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+  body.innerHTML = html;
+}
+
+// ============ MODO CONFRONTO ============
+function encodeXI(){
+  const data = {
+    n: state.teamName,
+    f: state.formation,
+    s: state.style,
+    c: state.captain,
+    l: state.lineup.map(p=>{
+      if(!p) return null;
+      const team = TIMES.find(t=>t.nome===p.team);
+      const pIdx = team ? team.jogadores.findIndex(x=>x.n===p.n) : -1;
+      return [team?team.id:'?', pIdx, p.pos];
+    })
+  };
+  return btoa(JSON.stringify(data)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+
+function decodeXI(code){
+  try {
+    const padded = code.replace(/-/g,'+').replace(/_/g,'/');
+    return JSON.parse(atob(padded));
+  } catch(e){ return null; }
+}
+
+function buildTeamFromChallenge(c){
+  const players = c.l.map(slot=>{
+    if(!slot) return null;
+    const [tid, pIdx, pos] = slot;
+    const team = TIMES.find(t=>t.id===tid);
+    if(!team) return null;
+    const orig = team.jogadores[pIdx];
+    if(!orig) return null;
+    return {...orig, pos, team:team.nome, teamShort:team.id.toUpperCase(), cores:team.cores, crestLabel:crestLabel(team)};
+  }).filter(Boolean);
+  if(players.length!==11) return null;
+  // Pega cores do time mais representado
+  const counts = {};
+  players.forEach(p=>{counts[p.team]=(counts[p.team]||0)+1});
+  const topTeam = TIMES.find(t=>t.nome===Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0]);
+  return {nome:c.n, jogadores:players, cores:topTeam?topTeam.cores:['#666','#999'], id:'foe'};
+}
+
+function openShareModal(){
+  const code = encodeXI();
+  const url = `${location.origin}${location.pathname}#vs=${code}`;
+  $('#share-link').value = url;
+  $('#share-code').value = code;
+  $('#share-modal').classList.add('open');
+}
+
+function checkChallengeFromURL(){
+  const m = location.hash.match(/#vs=([A-Za-z0-9_\-]+)/);
+  if(!m) return;
+  const data = decodeXI(m[1]);
+  if(!data) return;
+  state.challenge = data;
+  // força confronto
+  state.comp = 'confronto';
+  $$('#setup-comp .setup-card').forEach(x=>x.classList.toggle('active', x.dataset.comp==='confronto'));
+  syncTipoFromComp();
+  // mostra banner
+  const banner = document.createElement('div');
+  banner.className='challenge-banner';
+  banner.innerHTML = `🎯 <b>${data.n}</b> te desafia. Monte seu XI pra enfrentar!`;
+  $('#setup .setup-head').appendChild(banner);
+}
+checkChallengeFromURL();
+
+$('#btn-ach').onclick = ()=>{ renderAchievements(); $('#ach-modal').classList.add('open'); };
+$('#ach-close').onclick = ()=>$('#ach-modal').classList.remove('open');
+$('#share-close').onclick = ()=>$('#share-modal').classList.remove('open');
+$('#share-copy-link').onclick = ()=>{
+  $('#share-link').select();
+  navigator.clipboard.writeText($('#share-link').value);
+  toast('🔗 Link copiado!');
+};
+$('#share-copy-code').onclick = ()=>{
+  $('#share-code').select();
+  navigator.clipboard.writeText($('#share-code').value);
+  toast('📋 Código copiado!');
+};
+$('#challenge-paste').onclick = ()=>{
+  const txt = prompt('Cole o código ou link do desafio:');
+  if(!txt) return;
+  const m = txt.match(/[A-Za-z0-9_\-]+$/);
+  if(!m) return toast('Código inválido');
+  const data = decodeXI(m[0]);
+  if(!data) return toast('Código inválido');
+  state.challenge = data;
+  toast(`✓ Desafio aceito: ${data.n}`);
+};
 
 // ============ SISTEMA DE BUFFS ============
 const BUFFS = [
