@@ -32,15 +32,18 @@
   .topbar{display:flex;justify-content:space-between;align-items:center;padding:16px 28px;border-bottom:1px solid var(--line);background:rgba(11,13,18,.7);backdrop-filter:blur(8px);position:sticky;top:0;z-index:50}
   .brand{display:flex;align-items:center;gap:12px;font-family:'Bebas Neue',sans-serif;letter-spacing:1.5px;font-size:24px}
   .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--gold);box-shadow:0 0 14px var(--gold);animation:pulse-soft 2s ease infinite}
-  .brand small{color:var(--muted);font-family:'Outfit',sans-serif;letter-spacing:.3px;font-size:12px;margin-left:6px;font-weight:500;text-transform:none}
-  .stats{display:flex;gap:18px;align-items:center;font-size:12px;color:var(--muted);font-family:'Outfit',sans-serif;letter-spacing:.3px;font-weight:600}
-  .stats b{color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-right:6px}
+  .brand small{color:var(--muted);font-family:'Outfit',sans-serif;letter-spacing:.3px;font-size:11px;margin-left:8px;font-weight:600;text-transform:uppercase;padding:3px 8px;border:1px solid var(--line);border-radius:99px;transition:.15s}
+  .brand small:hover{color:var(--neon);border-color:var(--neon)}
+  .stats{display:flex;gap:14px;align-items:center;font-size:11px;color:var(--muted);font-family:'Outfit',sans-serif;letter-spacing:.3px;font-weight:600}
+  .stats > div{display:flex;align-items:baseline;gap:5px;padding:5px 11px;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:8px}
+  .stats b{color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.5px;margin:0;line-height:1}
+  .stats .lbl{font-size:9px;text-transform:uppercase;letter-spacing:1px}
   #stat-ovr{color:var(--neon)}
   .btn-reset{background:transparent;border:1px solid var(--line);color:var(--muted);padding:7px 12px;font-size:11px;letter-spacing:1px;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600;text-transform:uppercase;transition:.15s}
   .btn-reset:hover{border-color:var(--red);color:var(--red)}
 
-  .game{display:grid;grid-template-columns:320px 1fr 340px;gap:24px;padding:24px 28px;max-width:1500px;margin:0 auto;align-items:start}
-  .panel{background:linear-gradient(180deg,var(--panel),#0e1219);border:1px solid var(--line);border-radius:16px;padding:22px;position:relative;animation:slide-up .5s ease both;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+  .game{display:grid;grid-template-columns:300px 1fr 320px;gap:20px;padding:20px 24px;max-width:1500px;margin:0 auto;align-items:start}
+  .panel{background:linear-gradient(180deg,var(--panel),#0e1219);border:1px solid var(--line);border-radius:14px;padding:18px;position:relative;animation:slide-up .5s ease both;box-shadow:0 4px 20px rgba(0,0,0,.3)}
   .panel h2{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;margin-bottom:6px;color:#fff}
   .panel .sub{color:var(--muted);font-size:13px;line-height:1.55;margin-bottom:18px;font-weight:500}
   .step{display:flex;gap:12px;padding:10px 0;border-top:1px dashed var(--line);font-size:13px;color:#cbd5e1}
@@ -83,21 +86,27 @@
   .slot .team{font-family:'Outfit',sans-serif;font-size:11px;color:var(--gold-2);letter-spacing:1px}
 
 
-  .lineup-list{display:flex;flex-direction:column;gap:6px;margin-top:10px}
-  .lineup-item{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--panel-2);border:1px solid var(--line);border-radius:9px;font-size:13px;transition:.2s;animation:slide-in .3s ease both}
+  .lineup-list{display:flex;flex-direction:column;gap:5px;margin-top:10px}
+  .lineup-item{display:flex;align-items:center;gap:9px;padding:8px 11px;background:var(--panel-2);border:1px solid var(--line);border-radius:9px;font-size:13px;transition:.2s;animation:slide-in .3s ease both}
   .lineup-item:not(.empty):hover{border-color:var(--gold);background:#1a1f2e}
   .lineup-item .nm{font-weight:600}
-  .lineup-item .tm{font-family:'Outfit',sans-serif;font-weight:500;font-size:10.5px;letter-spacing:.3px;text-transform:uppercase}
-  .lineup-item.empty{opacity:.4}
+  .lineup-item .tm{font-family:'Outfit',sans-serif;font-weight:500;font-size:10px;letter-spacing:.3px;text-transform:uppercase;color:var(--muted)}
+  .lineup-item.empty{opacity:.45;background:transparent;border-style:dashed}
   .lineup-item .pos-chip{width:32px;text-align:center;background:#0a1018;border-radius:6px;padding:3px 0;font-weight:800;font-size:10px;color:var(--neon);letter-spacing:.5px;font-family:'Outfit',sans-serif}
-  .lineup-item .nm{flex:1;font-weight:700}
+  .lineup-item.empty .pos-chip{color:var(--muted);background:transparent;border:1px dashed var(--line)}
+  .lineup-item .nm{flex:1;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .lineup-item .rt{font-family:'Bebas Neue',sans-serif;font-size:15px;color:var(--gold);letter-spacing:0;display:flex;align-items:center;gap:3px}
+  .lineup-item .rt .boost{font-size:9px;color:#1a1206;background:linear-gradient(180deg,var(--gold),var(--gold-2));padding:1px 4px;border-radius:99px;font-family:'Outfit',sans-serif;font-weight:800;letter-spacing:0}
+  .lineup-item .slot-empty-label{color:var(--muted);font-weight:500;font-size:11.5px;font-style:italic}
+  .empty-crest{background:transparent!important;border:1px dashed rgba(255,255,255,.15)!important;box-shadow:none!important}
   .lineup-item .tm-old{color:var(--muted)}
   .sim-btn{width:100%;margin-top:16px;background:linear-gradient(180deg,var(--gold),var(--gold-2));color:#1a1206;border:none;padding:16px;font-weight:800;font-size:14px;letter-spacing:1.5px;cursor:pointer;border-radius:12px;font-family:'Outfit',sans-serif;text-transform:uppercase;transition:all .25s;box-shadow:0 8px 24px rgba(245,200,66,.3),inset 0 -3px 0 rgba(0,0,0,.15);position:relative;overflow:hidden}
   .sim-btn:not(:disabled):hover{animation:glow 1.5s ease infinite}
   .sim-btn:hover:not(:disabled){transform:translateY(-2px)}
-  .sim-btn:disabled{opacity:.35;cursor:not-allowed;background:#2a2f3d;color:#666;box-shadow:none}
+  .sim-btn:disabled{opacity:.6;cursor:not-allowed;background:#1a1f2e;color:var(--muted);box-shadow:none;border:1px dashed var(--line);font-size:12px;letter-spacing:1px}
+  .sim-btn.waiting{font-style:italic;font-weight:600;text-transform:none}
 
-  .modal-bg{position:fixed;inset:0;background:rgba(5,6,10,.85);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:100;padding:20px;animation:fade .2s}
+  .modal-bg{position:fixed;inset:0;background:rgba(5,6,10,.85);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:600;padding:20px;animation:fade .2s}
   .modal-bg.open{display:flex}
   @keyframes fade{from{opacity:0}to{opacity:1}}
   .modal{background:linear-gradient(180deg,#161a26,#0e111a);border:1px solid var(--line);border-radius:18px;width:100%;max-width:560px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;animation:pop .25s ease}
@@ -180,6 +189,7 @@
   .dice-panel{position:sticky;top:80px;max-height:calc(100vh - 100px);overflow-y:auto}
   .dice-panel::-webkit-scrollbar{width:6px}
   .dice-panel::-webkit-scrollbar-thumb{background:var(--line);border-radius:99px}
+  .dice-hint{font-size:11px;color:var(--muted);text-align:center;margin:-4px 0 10px;line-height:1.4;padding:0 6px}
   .dice-wrap{text-align:center;margin-bottom:6px}
   .dice-inline{width:90px;height:90px;margin:4px auto 8px;border-radius:18px;background:linear-gradient(180deg,#fff,#e9eef7);color:#0b0d12;display:flex;align-items:center;justify-content:center;font-size:56px;animation:float 3s ease-in-out infinite;
     box-shadow:0 10px 24px rgba(0,0,0,.55),inset 0 -6px 0 rgba(0,0,0,.08);transition:transform .15s}
@@ -204,11 +214,11 @@
   .setup-head{text-align:center;margin-bottom:28px;padding-bottom:18px;border-bottom:1px dashed var(--line)}
   .setup-head .brand{justify-content:center;font-size:30px}
   .setup-sub{color:var(--muted);margin-top:8px;font-size:13px;letter-spacing:1px}
-  .setup-section{margin-bottom:22px;animation:slide-in .4s ease both}
+  .setup-section{margin-bottom:16px;animation:slide-in .4s ease both}
   .setup-section:nth-child(1){animation-delay:.05s} .setup-section:nth-child(2){animation-delay:.12s}
   .setup-section:nth-child(3){animation-delay:.19s} .setup-section:nth-child(4){animation-delay:.26s}
   .setup-section:nth-child(5){animation-delay:.33s} .setup-section:nth-child(6){animation-delay:.40s} .setup-section:nth-child(7){animation-delay:.47s}
-  .setup-label{font-family:'Outfit',sans-serif;font-weight:700;letter-spacing:.5px;font-size:12px;color:var(--neon);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;padding-left:8px;border-left:3px solid var(--neon)}
+  .setup-label{font-family:'Outfit',sans-serif;font-weight:700;letter-spacing:.5px;font-size:11px;color:var(--neon);text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:8px;padding-left:8px;border-left:2px solid var(--neon)}
   .setup-input{width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;text-transform:uppercase;outline:none;transition:.2s}
   .setup-input:focus{border-color:var(--neon);background:#0d1018}
   .setup-grid{display:grid;gap:10px}
@@ -230,6 +240,13 @@
   .form-card{padding:12px;text-align:center}
   .form-card .fm-name{font-family:'Bebas Neue';font-size:22px;letter-spacing:1px;color:var(--gold)}
   .form-card .fm-desc{font-size:10px;color:var(--muted);margin-top:3px}
+  /* Cards compactos */
+  .setup-card.mini{padding:12px 10px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:72px}
+  .setup-card.mini .sc-icon{font-size:22px;margin-bottom:2px}
+  .setup-card.mini .sc-ttl{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1.2px;color:#e8eef8;margin:0;line-height:1}
+  .setup-card.mini.active .sc-ttl{color:var(--gold-2)}
+  .setup-card.mini .sc-tag{font-size:9.5px;color:var(--muted);font-weight:600;letter-spacing:.3px;text-transform:lowercase;margin-top:2px}
+  .setup-card.mini.active .sc-tag{color:var(--gold)}
   .form-mini{margin-top:8px;height:60px;position:relative;background:repeating-linear-gradient(0deg,var(--grass) 0 14%,var(--grass-2) 14% 28%);border-radius:4px;border:1px solid rgba(34,211,238,.15)}
   .fm-dot{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--gold);transform:translate(-50%,-50%);box-shadow:0 0 4px rgba(245,200,66,.6)}
   .setup-go{display:block;width:100%;margin-top:28px;background:linear-gradient(180deg,var(--gold) 0%,var(--gold-2) 100%);color:#1a1206;border:none;padding:20px;font-weight:800;font-size:16px;letter-spacing:2px;cursor:pointer;border-radius:14px;font-family:'Outfit',sans-serif;text-transform:uppercase;transition:all .25s;box-shadow:0 10px 30px rgba(245,200,66,.35),inset 0 -3px 0 rgba(0,0,0,.15);position:relative;overflow:hidden}
@@ -559,101 +576,53 @@
     </div>
 
     <div class="setup-section">
-      <div class="setup-label">3 · ESTILO DE JOGO</div>
+      <div class="setup-label">3 · ESTILO</div>
       <div class="setup-grid style-grid" id="setup-style">
-        <button class="setup-card" data-style="ofensivo">
-          <div class="sc-icon">⚔️</div><div class="sc-ttl">OFENSIVO</div>
-          <div class="sc-desc">Pressão alta, mais gols a favor — e contra.</div>
-        </button>
-        <button class="setup-card active" data-style="equilibrado">
-          <div class="sc-icon">⚖️</div><div class="sc-ttl">EQUILIBRADO</div>
-          <div class="sc-desc">Bom de bola e de marca. Padrão.</div>
-        </button>
-        <button class="setup-card" data-style="defensivo">
-          <div class="sc-icon">🛡️</div><div class="sc-ttl">DEFENSIVO</div>
-          <div class="sc-desc">Trinca atrás, sai no contra-ataque.</div>
-        </button>
+        <button class="setup-card mini" data-style="ofensivo" title="Pressão alta, mais gols a favor e contra"><div class="sc-icon">⚔️</div><div class="sc-ttl">OFENSIVO</div></button>
+        <button class="setup-card mini active" data-style="equilibrado" title="Padrão equilibrado"><div class="sc-icon">⚖️</div><div class="sc-ttl">EQUILIBRADO</div></button>
+        <button class="setup-card mini" data-style="defensivo" title="Trinca atrás, sai no contra-ataque"><div class="sc-icon">🛡️</div><div class="sc-ttl">DEFENSIVO</div></button>
       </div>
     </div>
 
     <div class="setup-section">
-      <div class="setup-label">4 · VISIBILIDADE</div>
+      <div class="setup-label">4 · MODO</div>
       <div class="setup-grid style-grid two" id="setup-mode">
-        <button class="setup-card active" data-md="classico">
-          <div class="sc-icon">🎯</div><div class="sc-ttl">CLÁSSICO</div>
-          <div class="sc-desc">Mostra o over de cada jogador.</div>
-        </button>
-        <button class="setup-card" data-md="pro">
-          <div class="sc-icon">🎲</div><div class="sc-ttl">PRO</div>
-          <div class="sc-desc">Over oculto até escolher.</div>
-        </button>
+        <button class="setup-card mini active" data-md="classico" title="Mostra o over de cada jogador antes de escolher"><div class="sc-icon">🎯</div><div class="sc-ttl">CLÁSSICO</div><div class="sc-tag">overs visíveis</div></button>
+        <button class="setup-card mini" data-md="pro" title="Over oculto — só revela depois que você escolher"><div class="sc-icon">🎲</div><div class="sc-ttl">PRO</div><div class="sc-tag">overs ocultos</div></button>
       </div>
     </div>
 
     <div class="setup-section">
-      <div class="setup-label">5 · DIFICULDADE (limite de rolagens)</div>
+      <div class="setup-label">5 · DIFICULDADE</div>
       <div class="setup-grid style-grid four" id="setup-diff">
-        <button class="setup-card" data-diff="facil">
-          <div class="sc-icon">😎</div><div class="sc-ttl">FÁCIL</div>
-          <div class="sc-desc">25 rolagens. Muito espaço pra escolher.</div>
-        </button>
-        <button class="setup-card active" data-diff="normal">
-          <div class="sc-icon">💪</div><div class="sc-ttl">NORMAL</div>
-          <div class="sc-desc">16 rolagens. Pule com cuidado.</div>
-        </button>
-        <button class="setup-card" data-diff="dificil">
-          <div class="sc-icon">🔥</div><div class="sc-ttl">DIFÍCIL</div>
-          <div class="sc-desc">13 rolagens. Quase sem margem.</div>
-        </button>
-        <button class="setup-card" data-diff="lendario">
-          <div class="sc-icon">💀</div><div class="sc-ttl">LENDÁRIO</div>
-          <div class="sc-desc">11 rolagens. Obrigatório pegar todo dado.</div>
-        </button>
+        <button class="setup-card mini" data-diff="facil" title="25 rolagens — bastante margem"><div class="sc-icon">😎</div><div class="sc-ttl">FÁCIL</div><div class="sc-tag">25 dados</div></button>
+        <button class="setup-card mini active" data-diff="normal" title="16 rolagens — equilibrado"><div class="sc-icon">💪</div><div class="sc-ttl">NORMAL</div><div class="sc-tag">16 dados</div></button>
+        <button class="setup-card mini" data-diff="dificil" title="13 rolagens — pouco espaço pra pular"><div class="sc-icon">🔥</div><div class="sc-ttl">DIFÍCIL</div><div class="sc-tag">13 dados</div></button>
+        <button class="setup-card mini" data-diff="lendario" title="11 rolagens — pegar de cada dado, sem pular"><div class="sc-icon">💀</div><div class="sc-ttl">LENDÁRIO</div><div class="sc-tag">11 dados</div></button>
       </div>
     </div>
 
     <div class="setup-section">
-      <div class="setup-label">6 · DE ONDE VÃO VIR OS JOGADORES?</div>
+      <div class="setup-label">6 · ELENCO</div>
       <div class="setup-grid style-grid four" id="setup-tipo">
-        <button class="setup-card active" data-tipo="todos">
-          <div class="sc-icon">🌐</div><div class="sc-ttl">TODOS</div>
-          <div class="sc-desc">Mistura tudo</div>
-        </button>
-        <button class="setup-card" data-tipo="selecao">
-          <div class="sc-icon">🏳️</div><div class="sc-ttl">SELEÇÕES</div>
-          <div class="sc-desc">Só nacionais</div>
-        </button>
-        <button class="setup-card" data-tipo="brasileiro">
-          <div class="sc-icon">🇧🇷</div><div class="sc-ttl">BRASIL</div>
-          <div class="sc-desc">Só clubes BR</div>
-        </button>
-        <button class="setup-card" data-tipo="europeu">
-          <div class="sc-icon">🇪🇺</div><div class="sc-ttl">EUROPA</div>
-          <div class="sc-desc">Só europeus</div>
-        </button>
+        <button class="setup-card mini active" data-tipo="todos" title="Mistura tudo: seleções + clubes BR + europeus"><div class="sc-icon">🌐</div><div class="sc-ttl">TODOS</div></button>
+        <button class="setup-card mini" data-tipo="selecao" title="Só seleções nacionais"><div class="sc-icon">🏳️</div><div class="sc-ttl">SELEÇÕES</div></button>
+        <button class="setup-card mini" data-tipo="brasileiro" title="Só clubes brasileiros"><div class="sc-icon">🇧🇷</div><div class="sc-ttl">BRASIL</div></button>
+        <button class="setup-card mini" data-tipo="europeu" title="Só clubes europeus"><div class="sc-icon">🇪🇺</div><div class="sc-ttl">EUROPA</div></button>
       </div>
     </div>
 
     <div class="setup-section">
       <div class="setup-label">7 · COMPETIÇÃO</div>
       <div class="setup-grid style-grid" id="setup-comp">
-        <button class="setup-card active" data-comp="amistoso">
-          <div class="sc-icon">⚽</div><div class="sc-ttl">MATA-MATA</div>
-          <div class="sc-desc">Vai pra cima de um adversário só. 1 partida.</div>
-        </button>
-        <button class="setup-card" data-comp="brasileirao">
-          <div class="sc-icon">🏆</div><div class="sc-ttl">38 RODADAS</div>
-          <div class="sc-desc">Brasileirão por pontos corridos. Liga inteira.</div>
-        </button>
-        <button class="setup-card" data-comp="copa">
-          <div class="sc-icon">🌍</div><div class="sc-ttl">COPA DO MUNDO</div>
-          <div class="sc-desc">Só seleções. Grupos + mata-mata até a final.</div>
-        </button>
+        <button class="setup-card mini active" data-comp="amistoso" title="1 partida contra 1 adversário"><div class="sc-icon">⚽</div><div class="sc-ttl">MATA-MATA</div><div class="sc-tag">1 partida</div></button>
+        <button class="setup-card mini" data-comp="brasileirao" title="Brasileirão de 38 rodadas + chance de ir pra Libertadores e Mundial"><div class="sc-icon">🏆</div><div class="sc-ttl">BRASILEIRÃO</div><div class="sc-tag">38 rodadas</div></button>
+        <button class="setup-card mini" data-comp="copa" title="Só seleções · grupos + mata-mata"><div class="sc-icon">🌍</div><div class="sc-ttl">COPA DO MUNDO</div><div class="sc-tag">só seleções</div></button>
       </div>
     </div>
 
     <button class="setup-go" id="setup-go">COMEÇAR A MONTAR →</button>
-    <button class="history-btn" id="btn-history">HISTÓRICO DE PONTUAÇÃO</button>
+    <button class="history-btn" id="btn-history">📊 Ver histórico de partidas</button>
   </div>
 </div>
 
@@ -732,11 +701,11 @@
 </div>
 
 <header class="topbar">
-  <div class="brand"><div class="dot"></div> XI DOS SONHOS <small id="brand-setup">· editar configuração</small></div>
+  <div class="brand"><div class="dot"></div> XI DOS SONHOS <small id="brand-setup" title="Mudar nome, formação, dificuldade etc.">⚙ editar</small></div>
   <div class="stats">
-    <div><b id="stat-filled">0</b>/11 escalados</div>
-    <div><b id="stat-rolls">0</b>/ <span id="stat-max">16</span> rolagens</div>
-    <div><b id="stat-ovr">—</b>OVR total</div>
+    <div><b id="stat-filled">0</b><span class="lbl">/11 ESCALADOS</span></div>
+    <div><b id="stat-rolls">0</b><span class="lbl">/<span id="stat-max">16</span> DADOS</span></div>
+    <div><b id="stat-ovr">—</b><span class="lbl">OVR</span></div>
     <button class="btn-reset" id="btn-reset">RECOMEÇAR</button>
   </div>
 </header>
@@ -744,6 +713,7 @@
 <main class="game">
   <aside class="panel dice-panel">
     <h2>DADO DO ELENCO</h2>
+    <div class="dice-hint">Role pra revelar um elenco. Escolha 1 jogador e arrasta pro campo.</div>
     <div class="dice-wrap">
       <div class="dice-inline" id="dice">🎲</div>
       <div class="rolls-left" id="rolls-left">16 rolagens restantes</div>
@@ -763,7 +733,7 @@
   <section class="field-wrap">
     <div class="field-head">
       <div class="title">CAMPO · <span id="field-formation">4-3-3</span></div>
-      <div class="hint">Role o dado e escolha um jogador</div>
+      <div class="hint" id="field-config">EQUILIBRADO · CLÁSSICO · NORMAL · AMISTOSO</div>
     </div>
     <div class="pitch" id="pitch"><div class="mid"></div><div class="circle"></div></div>
   </section>
@@ -1323,10 +1293,13 @@ function renderPitch(){
 function renderLineup(){
   $('#lineup-list').innerHTML = SLOTS.map(s=>{
     const p = state.lineup[s.idx];
+    const eff = p ? effectiveR(p, s.idx) : 0;
+    const boost = p && eff>p.r ? `<span class="boost">+${eff-p.r}</span>` : '';
     return `<div class="lineup-item ${p?'':'empty'}">
       <div class="pos-chip">${s.pos}</div>
-      ${p?crestFromPlayer(p,'tiny'):'<span class="crest tiny" style="--c1:#222;--c2:#333"></span>'}
-      <div class="nm">${p?p.n:'—'}</div>
+      ${p?crestFromPlayer(p,'tiny'):'<span class="crest tiny empty-crest"></span>'}
+      <div class="nm">${p?p.n:`<span class="slot-empty-label">${s.label}</span>`}</div>
+      ${p?`<div class="rt">${eff}${boost}</div>`:''}
       <div class="tm">${p?p.teamShort:''}</div>
     </div>`;
   }).join('');
@@ -1340,6 +1313,14 @@ function updateStats(){
   $('#meter-fill').style.width = (n/11*100)+'%';
   $('#meter-pct').textContent = Math.round(n/11*100)+'%';
   $('#btn-sim').disabled = n!==11;
+  const sim = $('#btn-sim');
+  if(n<11){
+    sim.textContent = `Faltam ${11-n} jogador${11-n>1?'es':''}`;
+    sim.classList.add('waiting');
+  } else {
+    sim.textContent = state.comp==='brasileirao'?'JOGAR BRASILEIRÃO':state.comp==='copa'?'JOGAR COPA':'SIMULAR PARTIDA';
+    sim.classList.remove('waiting');
+  }
   if(n===0){ $('#stat-ovr').textContent='—'; }
   else {
     const sum = state.lineup.reduce((a,p,i)=>a+(p?effectiveR(p,i):0),0);
