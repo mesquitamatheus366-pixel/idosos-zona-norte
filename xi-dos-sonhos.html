@@ -286,6 +286,22 @@
   #standings .pts{font-family:'Bebas Neue';color:var(--neon);text-align:center;width:38px;font-size:14px}
   #standings .num{width:28px;text-align:center;color:var(--muted)}
 
+  /* Libertadores groups */
+  .liberta-groups{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+  .lg-group h4{font-family:'Bebas Neue',sans-serif;font-size:13px;color:var(--neon);margin-bottom:4px;letter-spacing:1px}
+  .lg-group table{width:100%;font-size:10.5px;border-collapse:collapse}
+  .lg-group td{padding:4px 4px;border-bottom:1px solid var(--line)}
+  .lg-group td.pos{width:18px;color:var(--muted);text-align:center}
+  .lg-group td.nm{display:flex;align-items:center;gap:5px}
+  .lg-group td.pts{font-family:'Bebas Neue',sans-serif;color:var(--neon);width:24px;text-align:center;font-size:13px}
+  .lg-group tr.qualif{background:rgba(34,197,94,.08)}
+  .lg-group tr.me td{background:rgba(245,200,66,.12);color:var(--gold);font-weight:800}
+  @media (max-width:640px){
+    .liberta-groups{grid-template-columns:1fr;gap:6px}
+    .lg-group table{font-size:9.5px}
+    .lg-group td{padding:3px}
+  }
+
   /* Bracket Copa */
   .bracket{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px}
   .bracket-col{display:flex;flex-direction:column;gap:8px;justify-content:space-around}
@@ -1882,39 +1898,174 @@ function finishTransfer(){
 
 $('#tf-continue').onclick = ()=>finishTransfer();
 
-// ============ LIBERTADORES (knockout) ============
+// ============ LIBERTADORES (Grupos + Mata-Mata) ============
 function startLibertadores(){
   const meTeam = {nome:state.teamName, cores:[$('#m-crest-a').style.getPropertyValue('--c1')||'#f5c842','#22d3ee'], id:'me', me:true, jogadores:state.lineup.filter(Boolean)};
-  // 15 adversários: SÓ clubes históricos da Libertadores (brasileiros + sul-americanos)
   const brasileiros = TIMES.filter(t=>t.tipo==='brasileiro' && t.nome!==state.teamName);
   const sulam = TIMES.filter(t=>t.tipo==='sulam' && t.nome!==state.teamName);
   let pool = shuffle([...brasileiros, ...sulam]).slice(0,15);
-  const teams = shuffle([meTeam, ...pool]);
-  state.tournament = {mode:'libertadores', round:'Oitavas', bracket:teams, results:[]};
+  // 16 times em 4 grupos de 4 — meu time sempre no grupo A
+  const others = shuffle(pool);
+  const groups = [
+    {name:'A', teams:[meTeam, others[0], others[1], others[2]]},
+    {name:'B', teams:[others[3], others[4], others[5], others[6]]},
+    {name:'C', teams:[others[7], others[8], others[9], others[10]]},
+    {name:'D', teams:[others[11], others[12], others[13], others[14]]},
+  ];
+  const tables = {};
+  groups.forEach(g=>{
+    tables[g.name] = {};
+    g.teams.forEach(t=>tables[g.name][t.nome]={t,j:0,v:0,e:0,d:0,gp:0,gc:0,pts:0});
+  });
+  const groupFixture = groups.map(g=>buildRoundRobin(g.teams));
+  state.tournament = {
+    mode:'libertadores', phase:'groups', round:1, totalRounds:3,
+    groups, groupFixture, tables, meName:state.teamName, results:[]
+  };
   $('#match').classList.add('open');
   $('#feed').innerHTML='';
   $('#standings').style.display='none';
   $('#sc-a').textContent='0'; $('#sc-b').textContent='0';
   $('#verdict').classList.remove('show','win','lose','draw');
-  addEv(0,`<strong>🌎 LIBERTADORES · OITAVAS DE FINAL</strong>`,'goal');
+  addEv(0,`<strong>🌎 LIBERTADORES · FASE DE GRUPOS</strong>`,'goal');
+  playLibertaGroupRound();
+}
+
+function playLibertaGroupRound(){
+  const t = state.tournament;
+  if(t.round > t.totalRounds){ return startLibertaKnockout(); }
+  // Meu grupo
+  const meGroupIdx = t.groups.findIndex(g=>g.teams.some(x=>x.me));
+  const meGroup = t.groups[meGroupIdx];
+  const myRoundMatches = t.groupFixture[meGroupIdx][t.round-1];
+  const myMatch = myRoundMatches.find(m=>(m.a&&m.a.me)||(m.b&&m.b.me));
+  if(!myMatch){
+    // bye nessa rodada — apenas simula outros e avança
+    t.groups.forEach((g, gi)=>{
+      const rd = t.groupFixture[gi][t.round-1];
+      rd.forEach(m=>{
+        if(!m.a||!m.b) return;
+        const sc = simScore('x', avgR(m.a.jogadores), avgR(m.b.jogadores));
+        recordMatch(t.tables[g.name], m.a.nome, m.b.nome, sc[0], sc[1]);
+      });
+    });
+    t.round++;
+    return playLibertaGroupRound();
+  }
+  const foe = myMatch.a.me ? myMatch.b : myMatch.a;
+  $('#feed').innerHTML='';
+  $('#sc-a').textContent='0'; $('#sc-b').textContent='0';
+  $('#verdict').classList.remove('show','win','lose','draw');
+  setFoeUI(foe);
+  addEv(0,`<strong>🌎 GRUPO ${meGroup.name} · RODADA ${t.round}/3</strong> · ${state.teamName} x ${foe.nome}`,'goal');
+  // simula outros jogos de todos os grupos
+  t.groups.forEach((g, gi)=>{
+    const rd = t.groupFixture[gi][t.round-1];
+    rd.forEach(m=>{
+      if(m===myMatch || !m.a || !m.b) return;
+      const sc = simScore('x', avgR(m.a.jogadores), avgR(m.b.jogadores));
+      recordMatch(t.tables[g.name], m.a.nome, m.b.nome, sc[0], sc[1]);
+    });
+  });
+  runLiveMatch(foe, (score)=>{
+    const t2 = state.tournament;
+    recordMatch(t2.tables[meGroup.name], t2.meName, foe.nome, score[0], score[1]);
+    showLibertaGroupStandings();
+    showLibertaGroupEndUI();
+  });
+}
+
+function showLibertaGroupStandings(){
+  const t = state.tournament;
+  let html = '<div class="liberta-groups">';
+  t.groups.forEach(g=>{
+    const sorted = Object.values(t.tables[g.name]).sort(cmpTable);
+    html += `<div class="lg-group"><h4>GRUPO ${g.name}</h4>
+      <table>
+      ${sorted.map((r,i)=>{
+        const isMe = r.t.nome===t.meName;
+        const qualif = i<2 ? 'qualif' : '';
+        return `<tr class="${isMe?'me':''} ${qualif}">
+          <td class="pos">${i+1}</td>
+          <td class="nm">${crestHTML(r.t,'tiny')} ${r.t.nome}</td>
+          <td class="pts">${r.pts}</td>
+        </tr>`;
+      }).join('')}
+      </table></div>`;
+  });
+  html += '</div>';
+  $('#standings').innerHTML = html;
+  $('#standings').style.display='block';
+}
+
+function showLibertaGroupEndUI(){
+  const t = state.tournament;
+  const v = $('#verdict'); v.classList.add('show');
+  v.classList.remove('win','lose','draw');
+  const meGroup = t.groups.find(g=>g.teams.some(x=>x.me));
+  const sorted = Object.values(t.tables[meGroup.name]).sort(cmpTable);
+  const myPos = sorted.findIndex(r=>r.t.nome===t.meName)+1;
+  $('#v-title').textContent = `RODADA ${t.round}/3 · ${myPos}º NO GRUPO ${meGroup.name}`;
+  const remaining = t.totalRounds - t.round;
+  if(remaining>0){
+    $('#v-text').textContent = `Faltam ${remaining} rodada${remaining>1?'s':''}. Top 2 avança às quartas.`;
+    $('#verdict .actions').innerHTML = `
+      <button id="btn-next-grp">PRÓXIMA RODADA →</button>
+      <button class="ghost" id="btn-quit-tournament">DESISTIR</button>`;
+    $('#btn-next-grp').onclick = ()=>{ t.round++; playLibertaGroupRound(); };
+  } else {
+    if(myPos<=2){
+      v.classList.add('win');
+      $('#v-title').textContent = `✅ ${myPos}º LUGAR · CLASSIFICADO!`;
+      $('#v-text').textContent = `Você passou de fase. Hora do mata-mata.`;
+      $('#verdict .actions').innerHTML = `
+        <button id="btn-next-knock">IR PARA AS QUARTAS →</button>
+        <button class="ghost" id="btn-quit-tournament">DESISTIR</button>`;
+      $('#btn-next-knock').onclick = ()=>{ startLibertaKnockout(); };
+    } else {
+      v.classList.add('lose');
+      $('#v-title').textContent = `💔 ${myPos}º · ELIMINADO NA FASE DE GRUPOS`;
+      $('#v-text').textContent = `Não passou. Fim de campanha.`;
+      finishLibertadores(false, 'Grupos');
+      return;
+    }
+  }
+  $('#btn-quit-tournament').onclick = ()=>{ $('#match').classList.remove('open'); state.tournament=null; };
+  setTimeout(()=>v.scrollIntoView({behavior:'smooth',block:'center'}),60);
+}
+
+function startLibertaKnockout(){
+  const t = state.tournament;
+  const qualified = [];
+  t.groups.forEach(g=>{
+    const sorted = Object.values(t.tables[g.name]).sort(cmpTable);
+    qualified.push(sorted[0].t, sorted[1].t);
+  });
+  t.phase = 'knockout';
+  t.bracket = shuffle(qualified);
+  t.round = 'Quartas';
+  $('#feed').innerHTML='';
+  $('#standings').style.display='none';
+  $('#sc-a').textContent='0'; $('#sc-b').textContent='0';
+  $('#verdict').classList.remove('show','win','lose','draw');
+  addEv(0,`<strong>🌎 LIBERTADORES · QUARTAS DE FINAL</strong>`,'goal');
   playLibertaRound();
 }
 
 function playLibertaRound(){
   const t = state.tournament;
-  // encontra meu adversário
   const meIdx = t.bracket.findIndex(x=>x.me);
-  const pairIdx = meIdx%2===0 ? meIdx+1 : meIdx-1;
+  const myPairStart = meIdx - (meIdx % 2);
+  const pairIdx = (myPairStart===meIdx) ? meIdx+1 : meIdx-1;
   const foe = t.bracket[pairIdx];
   $('#feed').innerHTML='';
   $('#sc-a').textContent='0'; $('#sc-b').textContent='0';
   $('#verdict').classList.remove('show','win','lose','draw');
   setFoeUI(foe);
   addEv(0,`<strong>🌎 ${t.round.toUpperCase()}</strong> · ${state.teamName} x ${foe.nome}`,'goal');
-  // simula outras chaves
   const others = [];
   for(let i=0;i<t.bracket.length;i+=2){
-    if(i===meIdx || i===pairIdx-1 || i===pairIdx) continue;
+    if(i===myPairStart) continue;
     const a=t.bracket[i], b=t.bracket[i+1];
     if(!a||!b) continue;
     const sc = simScore('x', avgR(a.jogadores), avgR(b.jogadores));
@@ -1923,11 +2074,10 @@ function playLibertaRound(){
   runLiveMatch(foe,(score)=>{
     const t2 = state.tournament;
     if(score[0]>=score[1]){
-      // ganhei — avanço
       t2.results.push({stage:t2.round, foe, score, win:true});
       const meTeam = t2.bracket[meIdx];
       const winners = [meTeam, ...others.map(o=>o.winner)];
-      const nextRound = {Oitavas:'Quartas', Quartas:'Semi', Semi:'FINAL', FINAL:'CAMPEÃO'}[t2.round];
+      const nextRound = {Quartas:'Semi', Semi:'FINAL', FINAL:'CAMPEÃO'}[t2.round];
       if(nextRound==='CAMPEÃO'){
         finishLibertadores(true);
         return;
@@ -1981,70 +2131,80 @@ function finishLibertadores(won, lastStage){
   if(won) $('#btn-go-mundial').onclick = ()=>{ openTransferWindow('mundial'); };
 }
 
-// ============ MUNDIAL DE CLUBES ============
+// ============ MUNDIAL DE CLUBES (8 times, Quartas→Semi→Final) ============
 function startMundial(){
   const meTeam = {nome:state.teamName, cores:[$('#m-crest-a').style.getPropertyValue('--c1')||'#f5c842','#22d3ee'], id:'me', me:true, jogadores:state.lineup.filter(Boolean)};
-  // 4 times: me (CONMEBOL — campeão Libertadores) + 2 europeus (UEFA) + 1 de outro continente (CAF/AFC/CONCACAF/OFC)
-  const europeanPool = TIMES.filter(t=>t.tipo==='europeu');
-  const otherContinent = TIMES.filter(t=>t.tipo==='mundialx');
-  const euro1 = pick(europeanPool);
-  const euro2 = pick(europeanPool.filter(t=>t!==euro1));
-  const other = pick(otherContinent);
-  const adversaries = [euro1, euro2, other];
+  // 8 times: me (CONMEBOL) + 3 europeus (UEFA) + 1 brasileiro + 1 sul-americano + 2 outros continentes
+  const europeans = shuffle(TIMES.filter(t=>t.tipo==='europeu').slice()).slice(0,3);
+  const brasileirosPool = TIMES.filter(t=>t.tipo==='brasileiro' && t.nome!==state.teamName);
+  const sulamPool = TIMES.filter(t=>t.tipo==='sulam' && t.nome!==state.teamName);
+  const otherContinent = shuffle(TIMES.filter(t=>t.tipo==='mundialx').slice()).slice(0,2);
+  const br = pick(brasileirosPool);
+  const sa = pick(sulamPool);
+  const adversaries = [...europeans, br, sa, ...otherContinent];
   const teams = shuffle([meTeam, ...adversaries]);
-  state.tournament = {mode:'mundial', round:'Semi', bracket:teams, results:[]};
+  state.tournament = {mode:'mundial', round:'Quartas', bracket:teams, results:[]};
   $('#match').classList.add('open');
   $('#feed').innerHTML='';
   $('#standings').style.display='none';
   $('#sc-a').textContent='0'; $('#sc-b').textContent='0';
   $('#verdict').classList.remove('show','win','lose','draw');
-  addEv(0,`<strong>🌐 MUNDIAL DE CLUBES · SEMI</strong>`,'goal');
+  addEv(0,`<strong>🌐 MUNDIAL DE CLUBES · QUARTAS DE FINAL</strong>`,'goal');
   playMundialRound();
 }
 
 function playMundialRound(){
   const t = state.tournament;
   const meIdx = t.bracket.findIndex(x=>x.me);
-  const pairIdx = meIdx%2===0 ? meIdx+1 : meIdx-1;
+  const myPairStart = meIdx - (meIdx % 2);
+  const pairIdx = (myPairStart===meIdx) ? meIdx+1 : meIdx-1;
   const foe = t.bracket[pairIdx];
   $('#feed').innerHTML='';
   $('#sc-a').textContent='0'; $('#sc-b').textContent='0';
   $('#verdict').classList.remove('show','win','lose','draw');
   setFoeUI(foe);
-  addEv(0,`<strong>🌐 ${t.round}</strong> · ${state.teamName} x ${foe.nome}`,'goal');
-  const otherIdx = t.bracket.findIndex((x,i)=>i!==meIdx && i!==pairIdx);
-  const otherFoeIdx = t.bracket.findIndex((x,i)=>i!==meIdx && i!==pairIdx && i!==otherIdx);
-  let otherWinner = null;
-  if(otherIdx>=0 && otherFoeIdx>=0){
-    const a=t.bracket[otherIdx], b=t.bracket[otherFoeIdx];
+  addEv(0,`<strong>🌐 ${t.round.toUpperCase()}</strong> · ${state.teamName} x ${foe.nome}`,'goal');
+  const others = [];
+  for(let i=0;i<t.bracket.length;i+=2){
+    if(i===myPairStart) continue;
+    const a=t.bracket[i], b=t.bracket[i+1];
+    if(!a||!b) continue;
     const sc = simScore('x', avgR(a.jogadores), avgR(b.jogadores));
-    otherWinner = sc[0]>=sc[1]?a:b;
+    others.push({a, b, score:sc, winner: sc[0]>=sc[1]?a:b});
   }
   runLiveMatch(foe,(score)=>{
     const t2 = state.tournament;
     if(score[0]>=score[1]){
       t2.results.push({stage:t2.round, foe, score, win:true});
-      if(t2.round==='FINAL'){
+      const meTeam = t2.bracket[meIdx];
+      const winners = [meTeam, ...others.map(o=>o.winner)];
+      const nextRound = {Quartas:'Semi', Semi:'FINAL', FINAL:'CAMPEÃO'}[t2.round];
+      if(nextRound==='CAMPEÃO'){
         finishMundial(true);
         return;
       }
-      const meTeam = t2.bracket[meIdx];
-      t2.bracket = otherWinner ? [meTeam, otherWinner] : [meTeam];
-      t2.round = 'FINAL';
-      const v = $('#verdict'); v.classList.add('show','win');
-      $('#v-title').textContent = '✅ CLASSIFICADO PARA A FINAL';
-      $('#v-text').textContent = `Próximo: ${otherWinner?otherWinner.nome:'oponente'}`;
-      $('#verdict .actions').innerHTML = `
-        <button id="btn-next-mundial">JOGAR FINAL →</button>
-        <button class="ghost" id="btn-quit-tournament">DESISTIR</button>`;
-      $('#btn-next-mundial').onclick = ()=>{ playMundialRound(); };
-      $('#btn-quit-tournament').onclick = ()=>{ $('#match').classList.remove('open'); state.tournament=null; };
-      setTimeout(()=>v.scrollIntoView({behavior:'smooth',block:'center'}),60);
+      t2.bracket = shuffle(winners);
+      t2.round = nextRound;
+      showMundialRoundEnd();
     } else {
       t2.results.push({stage:t2.round, foe, score, win:false});
       finishMundial(false, t2.round);
     }
   });
+}
+
+function showMundialRoundEnd(){
+  const t = state.tournament;
+  const v = $('#verdict'); v.classList.add('show','win');
+  v.classList.remove('lose','draw');
+  $('#v-title').textContent = `✅ CLASSIFICADO PARA ${t.round.toUpperCase()}`;
+  $('#v-text').textContent = `Próxima fase do Mundial.`;
+  $('#verdict .actions').innerHTML = `
+    <button id="btn-next-mundial">PRÓXIMA FASE →</button>
+    <button class="ghost" id="btn-quit-tournament">DESISTIR</button>`;
+  $('#btn-next-mundial').onclick = ()=>{ playMundialRound(); };
+  $('#btn-quit-tournament').onclick = ()=>{ $('#match').classList.remove('open'); state.tournament=null; };
+  setTimeout(()=>v.scrollIntoView({behavior:'smooth',block:'center'}),60);
 }
 
 function finishMundial(won, lastStage){
