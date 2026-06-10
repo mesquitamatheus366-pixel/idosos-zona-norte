@@ -1732,7 +1732,19 @@ function simConfronto(){
 
 function runLiveMatch(foe, onEnd){
   const teamR = calcTeamR();
-  const foeR = foe.jogadores.reduce((s,p)=>s+p.r,0)/foe.jogadores.length;
+  let foeR = foe.jogadores.reduce((s,p)=>s+p.r,0)/foe.jogadores.length;
+  // Aumentar dificuldade nos mata-matas internacionais
+  if(state.tournament){
+    if(state.tournament.mode==='libertadores' && state.tournament.phase==='knockout'){
+      const bonus = {Quartas:4, Semi:6, FINAL:9}[state.tournament.round] || 0;
+      foeR += bonus;
+      if(bonus) addEv(0,`<i>⚠ ${foe.nome} está afiado (+${bonus} OVR de força)</i>`,'bad');
+    } else if(state.tournament.mode==='mundial'){
+      const bonus = {Quartas:6, Semi:8, FINAL:11}[state.tournament.round] || 0;
+      foeR += bonus;
+      if(bonus) addEv(0,`<i>⚠ Adversário no Mundial vem fortíssimo (+${bonus} OVR)</i>`,'bad');
+    }
+  }
   const sty = STYLE[state.style];
   const guaranteedWin = state.buff && state.buff.type==='guaranteedWin' && state.buff.charges>0;
   if(guaranteedWin){
@@ -1746,13 +1758,9 @@ function runLiveMatch(foe, onEnd){
   const theirChance= Math.max(.04,((foeR-teamR+8)/100)*0.30 + 0.07) * sty.mulTheir * theirMul;
   let score=[0,0], minute=0;
   const scorers = state.lineup.filter(p=>p.pos==='ATA'||p.pos==='MEI');
-  const w = scorers.map((p,idx)=>{
-    const slotIdx = state.lineup.indexOf(p);
-    return effectiveR(p, slotIdx);
-  });
+  const w = scorers.map((p)=>effectiveR(p, state.lineup.indexOf(p)));
   const captain = state.captain>=0 ? state.lineup[state.captain] : null;
-  const speed = state.speed;
-  const tick = setInterval(()=>{
+  const tickFn = ()=>{
     minute++;
     $('#m-clock').textContent = String(minute).padStart(2,'0')+"'";
     moveBall();
@@ -1783,11 +1791,15 @@ function runLiveMatch(foe, onEnd){
       else addEv(minute,'Falta perigosa próxima à área.');
     }
     if(minute>=90){
-      clearInterval(tick);
+      clearInterval(state.matchTick);
+      state.matchTick = null;
+      state.matchTickFn = null;
       addEv(90,'<strong>FIM DE JOGO</strong>','goal');
       onEnd(score);
     }
-  }, speed);
+  };
+  state.matchTickFn = tickFn;
+  state.matchTick = setInterval(tickFn, state.speed);
 }
 
 function moveBall(){
@@ -1867,6 +1879,8 @@ function playNextBrasRound(){
     if(m===myMatch) return;
     const sc = simScore('x', avgR(m.a.jogadores), avgR(m.b.jogadores));
     recordMatch(t.table, m.a.nome, m.b.nome, sc[0], sc[1]);
+    distributeGoalsForTeam(m.a, m.a.nome, sc[0]);
+    distributeGoalsForTeam(m.b, m.b.nome, sc[1]);
   });
   runLiveMatch(foe,(score)=>{
     recordMatch(t.table, t.meName, foe.nome, score[0], score[1]);
@@ -1897,20 +1911,42 @@ function showRoundEndUI(){
 function skipBrasToEnd(){
   const t = state.tournament;
   addEv(0,'<strong>⏩ Simulando restante…</strong>','goal');
+  // A rodada atual JÁ foi jogada (ao vivo). Pula pra próxima.
+  t.round++;
   while(t.round<=t.totalRounds){
     const roundMatches = t.fixture[t.round-1];
     roundMatches.forEach(m=>{
-      let ra, rb;
-      if(m.a.nome===t.meName){ ra=calcTeamR(); rb=avgR(m.b.jogadores); }
-      else if(m.b.nome===t.meName){ ra=avgR(m.a.jogadores); rb=calcTeamR(); }
+      let ra, rb, aIsMe = m.a.nome===t.meName, bIsMe = m.b.nome===t.meName;
+      if(aIsMe){ ra=calcTeamR(); rb=avgR(m.b.jogadores); }
+      else if(bIsMe){ ra=avgR(m.a.jogadores); rb=calcTeamR(); }
       else { ra=avgR(m.a.jogadores); rb=avgR(m.b.jogadores); }
       const sc = simScore('x', ra, rb);
       recordMatch(t.table, m.a.nome, m.b.nome, sc[0], sc[1]);
+      // Distribui gols pros artilheiros
+      distributeGoalsForTeam(aIsMe ? null : m.a, m.a.nome, sc[0]);
+      distributeGoalsForTeam(bIsMe ? null : m.b, m.b.nome, sc[1]);
     });
     t.round++;
   }
   showStandings(t.table, t.meName, t.allTeams);
   finishBrasileirao();
+}
+
+function distributeGoalsForTeam(team, teamName, goals){
+  if(goals<=0) return;
+  if(!state.tournament) return;
+  state.tournament.scorers = state.tournament.scorers || {};
+  // se for meu time (team===null), usa state.lineup
+  const candidates = team ? team.jogadores.filter(p=>p.pos==='ATA'||p.pos==='MEI')
+                          : state.lineup.filter(p=>p && (p.pos==='ATA'||p.pos==='MEI'));
+  if(candidates.length===0) return;
+  const weights = candidates.map(p=>p.r||80);
+  for(let g=0; g<goals; g++){
+    const scorer = weighted(candidates, weights);
+    const key = `${scorer.n}|${teamName}`;
+    state.tournament.scorers[key] = state.tournament.scorers[key] || {name:scorer.n, team:teamName, goals:0};
+    state.tournament.scorers[key].goals++;
+  }
 }
 
 function finishBrasileirao(){
@@ -1953,7 +1989,7 @@ function rebindEndButtons(){
 
 // ============ JANELA DE TRANSFERÊNCIAS (3 rolagens, 3 trocas) ============
 function openTransferWindow(nextComp){
-  state.transfer = {nextComp, rollsLeft:3, swapsLeft:3, selectedIdx:-1, currentTeam:null};
+  state.transfer = {nextComp, swapsLeft:3, selectedIdx:-1, currentTeam:null};
   $('#match').classList.remove('open');
   $('#transfer-modal').classList.add('open');
   renderTransfer();
@@ -1963,7 +1999,7 @@ function renderTransfer(){
   const tf = state.transfer;
   const nextLabel = tf.nextComp==='libertadores'?'LIBERTADORES':'MUNDIAL DE CLUBES';
   $('#tf-title').textContent = `🔄 JANELA DE TRANSFERÊNCIAS · ${nextLabel}`;
-  $('#tf-info').textContent = `${tf.rollsLeft} rolagens e ${tf.swapsLeft} trocas disponíveis`;
+  $('#tf-info').textContent = `${tf.swapsLeft} troca${tf.swapsLeft!==1?'s':''} disponível${tf.swapsLeft!==1?'eis':''} · role o dado quantas vezes quiser`;
   // lineup atual
   $('#tf-lineup').innerHTML = state.lineup.map((p,i)=>{
     const slot = SLOTS[i];
@@ -1983,17 +2019,15 @@ function renderTransfer(){
   });
   // dado e roster
   const dice = $('#tf-dice-box');
-  if(tf.selectedIdx<0){
+  if(tf.swapsLeft<=0){
+    dice.innerHTML = '<p style="color:var(--gold);text-align:center;padding:14px;font-size:12px">Todas as trocas usadas. Clique em continuar.</p>';
+  } else if(tf.selectedIdx<0){
     dice.innerHTML = '<p style="color:var(--muted);text-align:center;padding:14px;font-size:12px">Selecione um jogador acima para trocar</p>';
-  } else if(tf.rollsLeft<=0){
-    dice.innerHTML = '<p style="color:var(--red);text-align:center;padding:14px;font-size:12px">Sem rolagens. Confirme as trocas para continuar.</p>';
   } else if(!tf.currentTeam){
-    dice.innerHTML = `<button class="roll-btn full" id="tf-roll">ROLAR DADO (${tf.rollsLeft} restante${tf.rollsLeft!==1?'s':''})</button>`;
+    dice.innerHTML = `<button class="roll-btn full" id="tf-roll">🎲 ROLAR DADO</button>`;
     $('#tf-roll').onclick = ()=>{
-      tf.rollsLeft--;
       const slotPos = SLOTS[tf.selectedIdx].pos;
       const positionsOK = p => (p.pos===slotPos) || (p.pos2===slotPos);
-      // sorteia time que tenha pelo menos 1 jogador da posição
       const pool = TIMES.filter(team => team.jogadores.some(positionsOK));
       tf.currentTeam = pick(pool);
       renderTransfer();
@@ -2033,7 +2067,7 @@ function renderTransfer(){
         toast(`✓ ${p.n} entrou no XI!`);
         renderPitch();
         updateStats();
-        if(tf.swapsLeft<=0 || tf.rollsLeft<=0) finishTransfer();
+        if(tf.swapsLeft<=0) finishTransfer();
         else renderTransfer();
       };
     });
@@ -2101,6 +2135,8 @@ function playLibertaGroupRound(){
         if(!m.a||!m.b) return;
         const sc = simScore('x', avgR(m.a.jogadores), avgR(m.b.jogadores));
         recordMatch(t.tables[g.name], m.a.nome, m.b.nome, sc[0], sc[1]);
+        distributeGoalsForTeam(m.a, m.a.nome, sc[0]);
+        distributeGoalsForTeam(m.b, m.b.nome, sc[1]);
       });
     });
     t.round++;
@@ -2119,6 +2155,8 @@ function playLibertaGroupRound(){
       if(m===myMatch || !m.a || !m.b) return;
       const sc = simScore('x', avgR(m.a.jogadores), avgR(m.b.jogadores));
       recordMatch(t.tables[g.name], m.a.nome, m.b.nome, sc[0], sc[1]);
+      distributeGoalsForTeam(m.a, m.a.nome, sc[0]);
+      distributeGoalsForTeam(m.b, m.b.nome, sc[1]);
     });
   });
   runLiveMatch(foe, (score)=>{
@@ -2561,6 +2599,11 @@ document.querySelector('#speed-seg').addEventListener('click',e=>{
   document.querySelectorAll('#speed-seg button').forEach(b=>b.classList.remove('active'));
   e.target.classList.add('active');
   state.speed = +e.target.dataset.sp;
+  // Reinicia o interval se uma partida estiver rolando
+  if(state.matchTick && state.matchTickFn){
+    clearInterval(state.matchTick);
+    state.matchTick = setInterval(state.matchTickFn, state.speed);
+  }
 });
 
 function isLight(hex){
