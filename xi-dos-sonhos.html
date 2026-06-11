@@ -395,6 +395,35 @@
   .camp-row.lose .camp-result{color:var(--red)}
   .camp-share-btn{width:100%;margin-top:14px;background:linear-gradient(180deg,var(--gold),var(--gold-2));color:#1a1206;border:none;padding:12px;font-weight:800;font-size:12px;letter-spacing:1.5px;cursor:pointer;border-radius:10px;font-family:'Outfit',sans-serif;text-transform:uppercase}
   .verdict button.camp-btn{background:transparent;border:1px solid var(--gold);color:var(--gold)}
+  .camp-row.draw{border-color:rgba(245,200,66,.5);background:linear-gradient(180deg,rgba(245,200,66,.08),rgba(245,200,66,0))}
+  .camp-row.draw .camp-stage{color:#f5c842}
+  /* Resumo */
+  .camp-summary{background:linear-gradient(180deg,rgba(245,200,66,.1),rgba(245,200,66,0));border:1px solid rgba(245,200,66,.4);border-radius:12px;padding:14px;margin-bottom:14px;position:relative}
+  .camp-trophy{font-size:32px;text-align:center;margin-bottom:6px}
+  .cs-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px dashed rgba(255,255,255,.06);font-size:12px}
+  .cs-row:last-child{border-bottom:none}
+  .cs-row span{color:var(--muted);letter-spacing:1px;font-family:'Outfit',sans-serif;font-size:10px;text-transform:uppercase}
+  .cs-row b{font-family:'Bebas Neue';font-size:18px;letter-spacing:.5px;color:#fff}
+  .cs-row b.win{color:#2ecc71}
+  .cs-row b.lose{color:var(--red)}
+  .cs-row b.ok{color:var(--gold)}
+  /* Grid compacto p/ liga */
+  .camp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+  @media(min-width:520px){.camp-grid{grid-template-columns:repeat(3,1fr)}}
+  .camp-mini{display:flex;align-items:center;gap:6px;padding:7px 9px;border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,.02);font-size:11px}
+  .camp-mini.win{border-color:rgba(46,204,113,.5);background:rgba(46,204,113,.07)}
+  .camp-mini.lose{border-color:rgba(239,68,68,.5);background:rgba(239,68,68,.07)}
+  .camp-mini.draw{border-color:rgba(245,200,66,.5);background:rgba(245,200,66,.07)}
+  .camp-mini .cm-rd{font-family:'Outfit',sans-serif;color:var(--muted);font-size:9px;letter-spacing:1px;min-width:22px}
+  .camp-mini .cm-crest{flex-shrink:0}
+  .camp-mini .cm-score{flex:1;font-family:'Bebas Neue';font-size:14px;color:#fff;letter-spacing:.5px}
+  .camp-mini.win .cm-score{color:#2ecc71}
+  .camp-mini.lose .cm-score{color:var(--red)}
+  .camp-mini.draw .cm-score{color:var(--gold)}
+  .camp-mini .cm-out{font-family:'Outfit',sans-serif;font-weight:800;font-size:10px;letter-spacing:1px}
+  .camp-mini.win .cm-out{color:#2ecc71}
+  .camp-mini.lose .cm-out{color:var(--red)}
+  .camp-mini.draw .cm-out{color:var(--gold)}
 
   /* Standings table */
   #standings{margin-top:8px;overflow:visible}
@@ -2189,7 +2218,7 @@ function simBrasileirao(){
   const fixture = [...turno, ...returno]; // 38 rodadas
   const table = {};
   all.forEach(t=>table[t.nome]={t,j:0,v:0,e:0,d:0,gp:0,gc:0,pts:0});
-  state.tournament = {mode:'brasileirao', round:1, fixture, table, pool, meName, allTeams:all, totalRounds:38};
+  state.tournament = {mode:'brasileirao', round:1, fixture, table, pool, meName, allTeams:all, totalRounds:38, results:[]};
   addEv(0,`<strong>🏆 BRASILEIRÃO · 38 RODADAS COMEÇOU</strong>`,'goal');
   playNextBrasRound();
 }
@@ -2217,6 +2246,7 @@ function playNextBrasRound(){
   });
   runLiveMatch(foe,(score)=>{
     recordMatch(t.table, t.meName, foe.nome, score[0], score[1]);
+    t.results.push({round:t.round, foe, score:score.slice(), outcome:score[0]>score[1]?'V':score[0]<score[1]?'D':'E'});
     showStandings(t.table, t.meName, t.allTeams);
     showRoundEndUI();
   });
@@ -2255,6 +2285,13 @@ function skipBrasToEnd(){
       else { ra=avgR(m.a.jogadores); rb=avgR(m.b.jogadores); }
       const sc = simScore('x', ra, rb);
       recordMatch(t.table, m.a.nome, m.b.nome, sc[0], sc[1]);
+      if(aIsMe){
+        const myScore=[sc[0],sc[1]];
+        t.results.push({round:t.round, foe:m.b, score:myScore, outcome:sc[0]>sc[1]?'V':sc[0]<sc[1]?'D':'E'});
+      } else if(bIsMe){
+        const myScore=[sc[1],sc[0]];
+        t.results.push({round:t.round, foe:m.a, score:myScore, outcome:sc[1]>sc[0]?'V':sc[1]<sc[0]?'D':'E'});
+      }
       // Distribui gols pros artilheiros
       distributeGoalsForTeam(aIsMe ? null : m.a, m.a.nome, sc[0]);
       distributeGoalsForTeam(bIsMe ? null : m.b, m.b.nome, sc[1]);
@@ -2303,8 +2340,13 @@ function finishBrasileirao(){
   if(myStats && myStats.d===0) unlockAchievement('invicto');
   trackCampaign('bra-champ', myPos===1);
   const libertaBtn = myPos<=4 ? `<button id="btn-go-liberta">🌎 IR PARA A LIBERTADORES</button>` : '';
+  const myStatsRow = sorted.find(r=>r.t.nome===t.meName);
+  const trophy = myPos===1?'🏆':myPos<=4?'✨':myPos>=17?'💔':'🤝';
+  const summary = {trophy, posLabel:`${myPos}º LUGAR`, posClass:myPos===1?'win':myPos>=17?'lose':'ok', pts:myStatsRow.pts, v:myStatsRow.v, e:myStatsRow.e, d:myStatsRow.d, gp:myStatsRow.gp, gc:myStatsRow.gc};
+  const campBtn = (t.results||[]).length ? `<button class="ghost camp-btn" id="btn-camp-bra">🗺️ VER CAMPANHA</button>` : '';
   $('#verdict .actions').innerHTML = `
     ${libertaBtn}
+    ${campBtn}
     <button class="ghost" id="btn-new-match">NOVO CAMPEONATO</button>
     <button class="ghost" id="btn-keep">VOLTAR AO CAMPO</button>
     <button class="ghost" id="btn-restart">RECOMEÇAR TUDO</button>`;
@@ -2312,6 +2354,7 @@ function finishBrasileirao(){
   if(myPos<=4){
     $('#btn-go-liberta').onclick = ()=>{ openTransferWindow('libertadores'); };
   }
+  if(campBtn) $('#btn-camp-bra').onclick = ()=>openCampaignModal('🏆 BRASILEIRÃO', t.results, {kind:'league', compact:true, summary});
 }
 
 function rebindEndButtons(){
@@ -2666,7 +2709,7 @@ function finishLibertadores(won, lastStage){
     <button class="ghost" id="btn-restart">RECOMEÇAR TUDO</button>`;
   rebindEndButtons();
   if(won) $('#btn-go-mundial').onclick = ()=>{ openTransferWindow('mundial'); };
-  if(camp.length) $('#btn-camp-libe').onclick = ()=>openCampaignModal('🌎 LIBERTADORES', camp);
+  if(camp.length) $('#btn-camp-libe').onclick = ()=>openCampaignModal('🌎 LIBERTADORES', camp, {kind:'knockout', summary:buildKnockoutSummary(camp, won)});
 }
 
 // ============ MUNDIAL DE CLUBES (8 times, Quartas→Semi→Final) ============
@@ -2778,7 +2821,7 @@ function finishMundial(won, lastStage){
     <button class="ghost" id="btn-keep">VOLTAR AO CAMPO</button>
     <button class="ghost" id="btn-restart">RECOMEÇAR TUDO</button>`;
   rebindEndButtons();
-  if(camp.length) $('#btn-camp-mun').onclick = ()=>openCampaignModal('🌐 MUNDIAL DE CLUBES', camp);
+  if(camp.length) $('#btn-camp-mun').onclick = ()=>openCampaignModal('🌐 MUNDIAL DE CLUBES', camp, {kind:'knockout', summary:buildKnockoutSummary(camp, won)});
 }
 
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a;}
@@ -2876,26 +2919,25 @@ function showCopaRoundEnd(elimStage){
   const t = state.tournament;
   const v=$('#verdict'); v.classList.add('show');
   v.classList.remove('win','lose','draw');
-  if(elimStage){
-    v.classList.add('lose');
-    $('#v-title').textContent = '💔 ELIMINADO';
-    $('#v-text').textContent = `Acabou na ${elimStage}.`;
+  const results = t.results || [];
+  const ended = elimStage || t.round===t.totalRounds;
+  if(ended){
+    const won = !elimStage;
+    if(won){ v.classList.add('win'); $('#v-title').textContent='🏆 CAMPEÃO MUNDIAL!'; $('#v-text').textContent = `${state.teamName} ergueu a taça!`; }
+    else { v.classList.add('lose'); $('#v-title').textContent = '💔 ELIMINADO'; $('#v-text').textContent = `Acabou na ${elimStage}.`; }
+    const v_=results.reduce((n,r)=>n+(r.score[0]>r.score[1]?1:0),0);
+    const e_=results.reduce((n,r)=>n+(r.score[0]===r.score[1]?1:0),0);
+    const d_=results.reduce((n,r)=>n+(r.score[0]<r.score[1]?1:0),0);
+    const gp=results.reduce((n,r)=>n+r.score[0],0), gc=results.reduce((n,r)=>n+r.score[1],0);
+    const summary = {trophy:won?'🏆':elimStage==='FINAL'?'🥈':'💔', posLabel:won?'CAMPEÃO':(elimStage||'ELIMINADO').toUpperCase(), posClass:won?'win':'lose', pts:v_*3+e_, v:v_, e:e_, d:d_, gp, gc};
+    const campBtn = results.length ? `<button class="ghost camp-btn" id="btn-camp-copa">🗺️ VER CAMPANHA</button>` : '';
     $('#verdict .actions').innerHTML = `
+      ${campBtn}
       <button id="btn-new-match">NOVA COPA</button>
       <button class="ghost" id="btn-keep">VOLTAR AO CAMPO</button>
       <button class="ghost" id="btn-restart">RECOMEÇAR TUDO</button>`;
     rebindEndButtons();
-    return;
-  }
-  if(t.round===t.totalRounds){
-    v.classList.add('win');
-    $('#v-title').textContent='🏆 CAMPEÃO MUNDIAL!';
-    $('#v-text').textContent = `${state.teamName} ergueu a taça!`;
-    $('#verdict .actions').innerHTML = `
-      <button id="btn-new-match">NOVA COPA</button>
-      <button class="ghost" id="btn-keep">VOLTAR AO CAMPO</button>
-      <button class="ghost" id="btn-restart">RECOMEÇAR TUDO</button>`;
-    rebindEndButtons();
+    if(campBtn) $('#btn-camp-copa').onclick = ()=>openCampaignModal('🏆 COPA DO MUNDO', results, {kind:'knockout', summary});
     return;
   }
   $('#v-title').textContent = `✅ AVANÇOU · ${t.fixture[t.round-1].stage}`;
@@ -3242,39 +3284,85 @@ $('#history-close').onclick = ()=>$('#history-modal').classList.remove('open');
 $('#campaign-close').onclick = ()=>$('#campaign-modal').classList.remove('open');
 $('#campaign-modal').onclick = (e)=>{ if(e.target.id==='campaign-modal') $('#campaign-modal').classList.remove('open'); };
 
-function openCampaignModal(title, campaign){
+function buildKnockoutSummary(camp, won){
+  if(!camp||!camp.length) return null;
+  const v_=camp.filter(c=>c.win).length;
+  const d_=camp.filter(c=>c.win===false).length;
+  const gp=camp.reduce((n,r)=>n+r.score[0],0), gc=camp.reduce((n,r)=>n+r.score[1],0);
+  const last = camp[camp.length-1];
+  let posLabel;
+  if(won) posLabel='CAMPEÃO';
+  else if(last && last.stage==='FINAL' && !last.win) posLabel='VICE-CAMPEÃO';
+  else posLabel = `ELIMINADO · ${last?last.stage:'?'}`;
+  return {trophy:won?'🏆':posLabel==='VICE-CAMPEÃO'?'🥈':'💔', posLabel, posClass:won?'win':posLabel==='VICE-CAMPEÃO'?'ok':'lose', pts:v_*3, v:v_, e:0, d:d_, gp, gc};
+}
+function openCampaignModal(title, campaign, opts={}){
   $('#campaign-title').textContent = title;
   const body = $('#campaign-body');
   if(!campaign || !campaign.length){
-    body.innerHTML = `<p style="color:var(--muted);text-align:center">Nenhuma partida de mata-mata jogada.</p>`;
-  } else {
-    const stageOrder = ['Quartas','Semi','FINAL'];
-    const stageLabel = {Quartas:'QUARTAS DE FINAL', Semi:'SEMIFINAL', FINAL:'FINAL'};
-    const rows = campaign.map(c=>{
-      const myCrest = crestHTML({id:'me', nome:state.teamName, cores:[$('#m-crest-a').style.getPropertyValue('--c1')||'#f5c842', $('#m-crest-a').style.getPropertyValue('--c2')||'#22d3ee'], me:true}, 'small');
-      const foeCrest = crestHTML(c.foe,'small');
-      const penStr = c.pen ? ` <span class="pen-tag">(pen. ${c.pen.mg}-${c.pen.fg})</span>` : '';
-      const cls = c.win ? 'win' : 'lose';
-      return `<div class="camp-row ${cls}">
-        <div class="camp-stage">${stageLabel[c.stage]||c.stage}</div>
-        <div class="camp-match">
-          <div class="camp-team"><span class="camp-nm">${state.teamName}</span> ${myCrest}</div>
-          <div class="camp-score">${c.score[0]}<span>:</span>${c.score[1]}${penStr}</div>
-          <div class="camp-team r">${foeCrest} <span class="camp-nm">${c.foe.nome}</span></div>
-        </div>
-        <div class="camp-result">${c.win?'CLASSIFICADO ✓':'ELIMINADO ✗'}</div>
-      </div>`;
-    }).join('');
-    body.innerHTML = `<div class="camp-path">${rows}</div>
-      <button class="camp-share-btn" id="camp-print">📸 SCREENSHOT DA CAMPANHA</button>`;
-    if($('#camp-print')) $('#camp-print').onclick = ()=>generateCampaignCard(title, campaign);
+    body.innerHTML = `<p style="color:var(--muted);text-align:center">Nenhuma partida registrada.</p>`;
+    $('#campaign-modal').classList.add('open');
+    return;
   }
+  const myCrestHTML = (s)=>crestHTML({id:'me', nome:state.teamName, cores:[$('#m-crest-a').style.getPropertyValue('--c1')||'#f5c842', $('#m-crest-a').style.getPropertyValue('--c2')||'#22d3ee'], me:true}, s||'small');
+  const stageLabel = {Quartas:'QUARTAS DE FINAL', Semi:'SEMIFINAL', FINAL:'FINAL'};
+  const outcomeOf = c => c.outcome ? c.outcome : (c.pen ? (c.win?'V':'D') : (c.win===true?'V':c.win===false?'D':(c.score[0]>c.score[1]?'V':c.score[0]<c.score[1]?'D':'E')));
+  let summaryHTML = '';
+  if(opts.summary){
+    const s = opts.summary;
+    const trophy = s.trophy ? `<div class="camp-trophy">${s.trophy}</div>` : '';
+    summaryHTML = `<div class="camp-summary">${trophy}
+      <div class="cs-row"><span>POSIÇÃO</span><b class="${s.posClass||''}">${s.posLabel||'—'}</b></div>
+      <div class="cs-row"><span>APROVEITAMENTO</span><b>${s.pts} pts · ${s.v}V ${s.e}E ${s.d}D</b></div>
+      <div class="cs-row"><span>GOLS</span><b>${s.gp} pró · ${s.gc} contra (SG ${s.gp-s.gc>=0?'+':''}${s.gp-s.gc})</b></div>
+    </div>`;
+  }
+  let rowsHTML;
+  if(opts.compact){
+    rowsHTML = `<div class="camp-grid">` + campaign.map(c=>{
+      const out = outcomeOf(c);
+      const cls = out==='V'?'win':out==='D'?'lose':'draw';
+      return `<div class="camp-mini ${cls}" title="${c.foe.nome} ${c.score[0]}-${c.score[1]}">
+        <div class="cm-rd">${c.round||c.stage||''}</div>
+        <div class="cm-crest">${crestHTML(c.foe,'tiny')}</div>
+        <div class="cm-score">${c.score[0]}-${c.score[1]}</div>
+        <div class="cm-out">${out}</div>
+      </div>`;
+    }).join('') + `</div>`;
+  } else {
+    rowsHTML = `<div class="camp-path">` + campaign.map(c=>{
+      const out = outcomeOf(c);
+      const win = out==='V', draw = out==='E';
+      const cls = win?'win':(draw?'draw':'lose');
+      const penStr = c.pen ? ` <span class="pen-tag">(pen. ${c.pen.mg}-${c.pen.fg})</span>` : '';
+      const resultTxt = win ? 'CLASSIFICADO ✓' : draw ? 'EMPATE' : 'ELIMINADO ✗';
+      return `<div class="camp-row ${cls}">
+        <div class="camp-stage">${stageLabel[c.stage]||c.stage||('Rodada '+c.round)}</div>
+        <div class="camp-match">
+          <div class="camp-team"><span class="camp-nm">${state.teamName}</span> ${myCrestHTML('small')}</div>
+          <div class="camp-score">${c.score[0]}<span>:</span>${c.score[1]}${penStr}</div>
+          <div class="camp-team r">${crestHTML(c.foe,'small')} <span class="camp-nm">${c.foe.nome}</span></div>
+        </div>
+        ${opts.kind==='knockout' ? `<div class="camp-result">${resultTxt}</div>` : ''}
+      </div>`;
+    }).join('') + `</div>`;
+  }
+  body.innerHTML = summaryHTML + rowsHTML + `<button class="camp-share-btn" id="camp-print">📸 SCREENSHOT DA CAMPANHA</button>`;
+  if($('#camp-print')) $('#camp-print').onclick = ()=>generateCampaignCard(title, campaign, opts);
   $('#campaign-modal').classList.add('open');
 }
 
-function generateCampaignCard(title, campaign){
+function generateCampaignCard(title, campaign, opts={}){
   const stageLabel = {Quartas:'QUARTAS', Semi:'SEMI', FINAL:'FINAL'};
-  const W=640, H=180+campaign.length*100;
+  const outcomeOf = c => c.outcome ? c.outcome : (c.win===true?'V':c.win===false?'D':(c.score[0]>c.score[1]?'V':c.score[0]<c.score[1]?'D':'E'));
+  const compact = !!opts.compact;
+  const summary = opts.summary;
+  const W = compact ? 720 : 640;
+  const headerH = 100 + (summary?80:0);
+  const rowH = compact ? 28 : 100;
+  const cols = compact ? 4 : 1;
+  const rows = Math.ceil(campaign.length/cols);
+  const H = headerH + rows*rowH + 40;
   const canvas=document.createElement('canvas');
   canvas.width=W; canvas.height=H;
   const ctx=canvas.getContext('2d');
@@ -3284,33 +3372,65 @@ function generateCampaignCard(title, campaign){
   ctx.strokeStyle='rgba(245,200,66,0.4)'; ctx.lineWidth=2;
   roundRect(ctx,8,8,W-16,H-16,12); ctx.stroke();
   ctx.fillStyle='#f5c842'; ctx.font='bold 26px Arial'; ctx.textAlign='center';
-  ctx.fillText(title, W/2, 50);
+  ctx.fillText(title, W/2, 46);
   ctx.fillStyle='#22d3ee'; ctx.font='bold 14px Arial';
-  ctx.fillText(state.teamName.toUpperCase(), W/2, 76);
-  ctx.strokeStyle='rgba(245,200,66,0.2)';
-  ctx.beginPath(); ctx.moveTo(40,96); ctx.lineTo(W-40,96); ctx.stroke();
-  campaign.forEach((c,i)=>{
-    const y = 130+i*100;
-    const ok = c.win;
-    ctx.fillStyle = ok ? 'rgba(46,204,113,0.1)' : 'rgba(239,68,68,0.1)';
-    roundRect(ctx,30,y-22,W-60,80,10); ctx.fill();
-    ctx.strokeStyle = ok ? 'rgba(46,204,113,0.5)' : 'rgba(239,68,68,0.5)';
-    ctx.lineWidth=1.5; roundRect(ctx,30,y-22,W-60,80,10); ctx.stroke();
-    ctx.fillStyle=ok?'#2ecc71':'#ef4444';
-    ctx.font='bold 12px Arial'; ctx.textAlign='left';
-    ctx.fillText(stageLabel[c.stage]||c.stage, 50, y-2);
-    ctx.fillStyle='#e2e8f0'; ctx.font='16px Arial'; ctx.textAlign='left';
-    ctx.fillText(state.teamName, 50, y+22);
-    ctx.textAlign='right';
-    ctx.fillText(c.foe.nome, W-50, y+22);
-    ctx.fillStyle=ok?'#2ecc71':'#ef4444';
-    ctx.font='bold 28px Arial'; ctx.textAlign='center';
-    const penStr = c.pen ? ` (pen ${c.pen.mg}-${c.pen.fg})` : '';
-    ctx.fillText(`${c.score[0]} : ${c.score[1]}${penStr}`, W/2, y+25);
-    ctx.fillStyle=ok?'#2ecc71':'#ef4444';
-    ctx.font='bold 11px Arial'; ctx.textAlign='center';
-    ctx.fillText(ok?'CLASSIFICADO':'ELIMINADO', W/2, y+50);
-  });
+  ctx.fillText(state.teamName.toUpperCase(), W/2, 70);
+  if(summary){
+    ctx.fillStyle='rgba(245,200,66,0.08)';
+    roundRect(ctx,30,86,W-60,68,10); ctx.fill();
+    ctx.strokeStyle='rgba(245,200,66,0.4)'; ctx.lineWidth=1;
+    roundRect(ctx,30,86,W-60,68,10); ctx.stroke();
+    ctx.fillStyle='#f5c842'; ctx.font='bold 20px Arial'; ctx.textAlign='center';
+    ctx.fillText(summary.posLabel || '—', W/2, 114);
+    ctx.fillStyle='#e2e8f0'; ctx.font='13px Arial';
+    ctx.fillText(`${summary.pts} pts · ${summary.v}V ${summary.e}E ${summary.d}D · GP ${summary.gp} · GC ${summary.gc}`, W/2, 140);
+  }
+  const startY = headerH + 20;
+  ctx.strokeStyle='rgba(245,200,66,0.15)';
+  ctx.beginPath(); ctx.moveTo(40,startY-12); ctx.lineTo(W-40,startY-12); ctx.stroke();
+  if(compact){
+    const cellW = (W-80)/cols;
+    campaign.forEach((c,i)=>{
+      const col = i%cols, row = Math.floor(i/cols);
+      const x = 40 + col*cellW, y = startY + row*rowH;
+      const out = outcomeOf(c);
+      const col1 = out==='V'?'rgba(46,204,113,0.18)':out==='D'?'rgba(239,68,68,0.18)':'rgba(245,200,66,0.13)';
+      const col2 = out==='V'?'#2ecc71':out==='D'?'#ef4444':'#f5c842';
+      ctx.fillStyle=col1; roundRect(ctx,x+3,y+2,cellW-6,rowH-6,6); ctx.fill();
+      ctx.fillStyle='#9ca3af'; ctx.font='bold 9px Arial'; ctx.textAlign='left';
+      ctx.fillText(`R${c.round||(i+1)}`, x+10, y+13);
+      ctx.fillStyle='#e2e8f0'; ctx.font='11px Arial'; ctx.textAlign='left';
+      const fn = c.foe.nome.length>14?c.foe.nome.slice(0,14)+'…':c.foe.nome;
+      ctx.fillText(fn, x+30, y+13);
+      ctx.fillStyle=col2; ctx.font='bold 12px Arial'; ctx.textAlign='right';
+      ctx.fillText(`${c.score[0]}-${c.score[1]}`, x+cellW-10, y+13);
+    });
+  } else {
+    campaign.forEach((c,i)=>{
+      const y = startY + 30 + i*rowH;
+      const out = outcomeOf(c);
+      const ok = out==='V', draw = out==='E';
+      const col1 = ok?'rgba(46,204,113,0.1)':draw?'rgba(245,200,66,0.1)':'rgba(239,68,68,0.1)';
+      const col2 = ok?'#2ecc71':draw?'#f5c842':'#ef4444';
+      ctx.fillStyle=col1; roundRect(ctx,30,y-22,W-60,80,10); ctx.fill();
+      ctx.strokeStyle=col2.replace(')',',0.5)').replace('rgb','rgba'); // crude
+      ctx.lineWidth=1.5; roundRect(ctx,30,y-22,W-60,80,10); ctx.stroke();
+      ctx.fillStyle=col2;
+      ctx.font='bold 12px Arial'; ctx.textAlign='left';
+      ctx.fillText(stageLabel[c.stage]||c.stage||`RODADA ${c.round}`, 50, y-2);
+      ctx.fillStyle='#e2e8f0'; ctx.font='16px Arial'; ctx.textAlign='left';
+      ctx.fillText(state.teamName, 50, y+22);
+      ctx.textAlign='right';
+      ctx.fillText(c.foe.nome, W-50, y+22);
+      ctx.fillStyle=col2;
+      ctx.font='bold 28px Arial'; ctx.textAlign='center';
+      const penStr = c.pen ? ` (pen ${c.pen.mg}-${c.pen.fg})` : '';
+      ctx.fillText(`${c.score[0]} : ${c.score[1]}${penStr}`, W/2, y+25);
+      ctx.fillStyle=col2;
+      ctx.font='bold 11px Arial'; ctx.textAlign='center';
+      ctx.fillText(ok?'CLASSIFICADO':draw?'EMPATE':'ELIMINADO', W/2, y+50);
+    });
+  }
   ctx.fillStyle='rgba(255,255,255,0.3)';
   ctx.font='10px Arial'; ctx.textAlign='center';
   ctx.fillText('XI DOS SONHOS', W/2, H-16);
@@ -3733,7 +3853,7 @@ function simLigaEuropeia(){
   const fixture = [...turno, ...returno];
   const table = {};
   all.forEach(t=>table[t.nome]={t,j:0,v:0,e:0,d:0,gp:0,gc:0,pts:0});
-  state.tournament = {mode:'liga-europeia', round:1, fixture, table, pool, meName, allTeams:all, totalRounds:38};
+  state.tournament = {mode:'liga-europeia', round:1, fixture, table, pool, meName, allTeams:all, totalRounds:38, results:[]};
   addEv(0,`<strong>⭐ LIGA EUROPEIA · 38 RODADAS COMEÇOU</strong>`,'goal');
   playNextEuroRound();
 }
@@ -3759,6 +3879,7 @@ function playNextEuroRound(){
   });
   runLiveMatch(foe,(score)=>{
     recordMatch(t.table, t.meName, foe.nome, score[0], score[1]);
+    t.results.push({round:t.round, foe, score:score.slice(), outcome:score[0]>score[1]?'V':score[0]<score[1]?'D':'E'});
     showStandings(t.table, t.meName, t.allTeams);
     showEuroRoundEndUI();
   });
@@ -3796,6 +3917,8 @@ function skipEuroToEnd(){
       else { ra=avgR(m.a.jogadores); rb=avgR(m.b.jogadores); }
       const sc = simScore('x', ra, rb);
       recordMatch(t.table, m.a.nome, m.b.nome, sc[0], sc[1]);
+      if(aIsMe) t.results.push({round:t.round, foe:m.b, score:[sc[0],sc[1]], outcome:sc[0]>sc[1]?'V':sc[0]<sc[1]?'D':'E'});
+      else if(bIsMe) t.results.push({round:t.round, foe:m.a, score:[sc[1],sc[0]], outcome:sc[1]>sc[0]?'V':sc[1]<sc[0]?'D':'E'});
       distributeGoalsForTeam(aIsMe?null:m.a, m.a.nome, sc[0]);
       distributeGoalsForTeam(bIsMe?null:m.b, m.b.nome, sc[1]);
     });
@@ -3822,13 +3945,19 @@ function finishLigaEuropeia(){
   $('#v-text').innerHTML = `${myPts} pontos em 38 rodadas. (+${pts} pts)` + renderTopScorers();
   if(myPos===1) unlockAchievement('first-bra');
   const champBtn = myPos<=4 ? `<button id="btn-go-champs">⭐ IR PARA A CHAMPIONS LEAGUE</button>` : '';
+  const myStatsRow = sorted.find(r=>r.t.nome===t.meName);
+  const trophy = myPos===1?'🏆':myPos<=4?'✨':myPos>=17?'💔':'🤝';
+  const summary = {trophy, posLabel:`${myPos}º LUGAR`, posClass:myPos===1?'win':myPos>=17?'lose':'ok', pts:myStatsRow.pts, v:myStatsRow.v, e:myStatsRow.e, d:myStatsRow.d, gp:myStatsRow.gp, gc:myStatsRow.gc};
+  const campBtn = (t.results||[]).length ? `<button class="ghost camp-btn" id="btn-camp-eur">🗺️ VER CAMPANHA</button>` : '';
   $('#verdict .actions').innerHTML = `
     ${champBtn}
+    ${campBtn}
     <button class="ghost" id="btn-new-match">NOVO CAMPEONATO</button>
     <button class="ghost" id="btn-keep">VOLTAR AO CAMPO</button>
     <button class="ghost" id="btn-restart">RECOMEÇAR TUDO</button>`;
   rebindEndButtons();
   if(myPos<=4) $('#btn-go-champs').onclick = ()=>{ openTransferWindow('champions'); };
+  if(campBtn) $('#btn-camp-eur').onclick = ()=>openCampaignModal('⭐ LIGA NACIONAL', t.results, {kind:'league', compact:true, summary});
 }
 
 // ============ CHAMPIONS LEAGUE (Grupos + Mata-Mata, só times europeus) ============
@@ -4039,7 +4168,7 @@ function finishChampions(won, lastStage){
     <button class="ghost" id="btn-keep">VOLTAR AO CAMPO</button>
     <button class="ghost" id="btn-restart">RECOMEÇAR TUDO</button>`;
   rebindEndButtons();
-  if(camp.length) $('#btn-camp-cha').onclick = ()=>openCampaignModal('⭐ CHAMPIONS LEAGUE', camp);
+  if(camp.length) $('#btn-camp-cha').onclick = ()=>openCampaignModal('⭐ CHAMPIONS LEAGUE', camp, {kind:'knockout', summary:buildKnockoutSummary(camp, won)});
 }
 
 // ============ CARD FUT EXPORT (Canvas API) ============
