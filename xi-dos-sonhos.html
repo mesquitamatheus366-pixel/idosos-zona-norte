@@ -397,7 +397,7 @@
   .verdict button.camp-btn{background:transparent;border:1px solid var(--gold);color:var(--gold)}
 
   /* Standings table */
-  #standings{margin-top:8px;max-height:340px;overflow-y:auto}
+  #standings{margin-top:8px;overflow:visible}
   #standings table{width:100%;border-collapse:collapse;font-size:12px}
   #standings th{background:#0a1018;color:var(--muted);font-family:'Outfit',sans-serif;font-weight:400;letter-spacing:1px;padding:6px;text-align:left;border-bottom:1px solid var(--line);position:sticky;top:0}
   #standings td{padding:6px;border-bottom:1px solid var(--line)}
@@ -708,7 +708,7 @@
     .verdict h3{font-size:16px}
     .verdict p{font-size:10px;margin-bottom:6px}
     .verdict button{padding:8px 12px;font-size:10px}
-    #standings{max-height:140px}
+    #standings{max-height:none}
     #standings table{font-size:10px}
     #standings th{padding:4px;font-size:9px}
     #standings td{padding:4px}
@@ -1886,6 +1886,7 @@ function crestLabel(team){
     lei16:'LEI',che05:'CHE',ajax95:'AJX',juv96:'JUV',bar92:'BAR',mu98:'MUN',bay20:'BAY',
     boca03:'BOC',riv18:'RIV',pen66:'PEÑ',nac80:'NAC',est69:'EDP',ind75:'IND',oli02:'OLI',atn16:'NAC',colo91:'COL',
     alahly:'AHL',mty19:'MTY',kashima:'KAS',wyd17:'WYD',auck14:'AUC'};
+  if(!team.id) return (team.nome||'XI').slice(0,3).toUpperCase();
   return map[team.id] || team.id.slice(0,3).toUpperCase();
 }
 function crestHTML(team, size=''){
@@ -3250,7 +3251,7 @@ function openCampaignModal(title, campaign){
     const stageOrder = ['Quartas','Semi','FINAL'];
     const stageLabel = {Quartas:'QUARTAS DE FINAL', Semi:'SEMIFINAL', FINAL:'FINAL'};
     const rows = campaign.map(c=>{
-      const myCrest = crestHTML({nome:state.teamName, cores:[$('#m-crest-a').style.getPropertyValue('--c1')||'#f5c842', $('#m-crest-a').style.getPropertyValue('--c2')||'#22d3ee'], me:true}, 'small');
+      const myCrest = crestHTML({id:'me', nome:state.teamName, cores:[$('#m-crest-a').style.getPropertyValue('--c1')||'#f5c842', $('#m-crest-a').style.getPropertyValue('--c2')||'#22d3ee'], me:true}, 'small');
       const foeCrest = crestHTML(c.foe,'small');
       const penStr = c.pen ? ` <span class="pen-tag">(pen. ${c.pen.mg}-${c.pen.fg})</span>` : '';
       const cls = c.win ? 'win' : 'lose';
