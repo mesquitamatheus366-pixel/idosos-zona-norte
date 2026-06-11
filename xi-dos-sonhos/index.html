@@ -93,6 +93,8 @@
   .lineup-item .tm{font-family:'Outfit',sans-serif;font-weight:500;font-size:10px;letter-spacing:.3px;text-transform:uppercase;color:var(--muted)}
   .lineup-item.empty{opacity:.45;background:transparent;border-style:dashed}
   .lineup-item .pos-chip{width:32px;text-align:center;background:#0a1018;border-radius:6px;padding:3px 0;font-weight:800;font-size:10px;color:var(--neon);letter-spacing:.5px;font-family:'Outfit',sans-serif}
+  .lineup-item .pos-chip.lat{color:#f97316;background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.3)}
+  .pl-pos.lat{color:#f97316!important;background:rgba(249,115,22,.12);border-color:rgba(249,115,22,.3)}
   .lineup-item.empty .pos-chip{color:var(--muted);background:transparent;border:1px dashed var(--line)}
   .lineup-item .nm{flex:1;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .lineup-item .rt{font-family:'Bebas Neue',sans-serif;font-size:15px;color:var(--gold);letter-spacing:0;display:flex;align-items:center;gap:3px}
@@ -1288,10 +1290,10 @@ const FORMATIONS = {
   '4-3-3': {label:'4-3-3', descr:'Ofensivo natural',
     defs:[
       {pos:'GOL',label:'Goleiro',num:1,x:50,y:86},
-      {pos:'DEF',label:'Lat. Esq.',num:6,x:14,y:73},
+      {pos:'LAT',label:'Lat. Esq.',num:6,x:14,y:73},
       {pos:'DEF',label:'Zagueiro',num:3,x:36,y:76},
       {pos:'DEF',label:'Zagueiro',num:4,x:64,y:76},
-      {pos:'DEF',label:'Lat. Dir.',num:2,x:86,y:73},
+      {pos:'LAT',label:'Lat. Dir.',num:2,x:86,y:73},
       {pos:'MEI',label:'Volante',num:5,x:25,y:52},
       {pos:'MEI',label:'Meia',num:8,x:50,y:55},
       {pos:'MEI',label:'Meia',num:10,x:75,y:52},
@@ -1302,10 +1304,10 @@ const FORMATIONS = {
   '4-4-2': {label:'4-4-2', descr:'Clássico equilibrado',
     defs:[
       {pos:'GOL',label:'Goleiro',num:1,x:50,y:86},
-      {pos:'DEF',label:'Lat. Esq.',num:6,x:14,y:73},
+      {pos:'LAT',label:'Lat. Esq.',num:6,x:14,y:73},
       {pos:'DEF',label:'Zagueiro',num:3,x:36,y:76},
       {pos:'DEF',label:'Zagueiro',num:4,x:64,y:76},
-      {pos:'DEF',label:'Lat. Dir.',num:2,x:86,y:73},
+      {pos:'LAT',label:'Lat. Dir.',num:2,x:86,y:73},
       {pos:'MEI',label:'Vol. Esq.',num:5,x:14,y:50},
       {pos:'MEI',label:'Meia',num:8,x:37,y:52},
       {pos:'MEI',label:'Meia',num:10,x:63,y:52},
@@ -1330,11 +1332,11 @@ const FORMATIONS = {
   '5-3-2': {label:'5-3-2', descr:'Postura defensiva',
     defs:[
       {pos:'GOL',label:'Goleiro',num:1,x:50,y:86},
-      {pos:'DEF',label:'Ala Esq.',num:6,x:10,y:72},
+      {pos:'LAT',label:'Ala Esq.',num:6,x:10,y:72},
       {pos:'DEF',label:'Zagueiro',num:3,x:28,y:76},
       {pos:'DEF',label:'Líbero',num:4,x:50,y:78},
       {pos:'DEF',label:'Zagueiro',num:5,x:72,y:76},
-      {pos:'DEF',label:'Ala Dir.',num:2,x:90,y:72},
+      {pos:'LAT',label:'Ala Dir.',num:2,x:90,y:72},
       {pos:'MEI',label:'Volante',num:8,x:28,y:50},
       {pos:'MEI',label:'Meia',num:10,x:50,y:52},
       {pos:'MEI',label:'Meia',num:7,x:72,y:50},
@@ -1344,10 +1346,10 @@ const FORMATIONS = {
   '4-2-3-1': {label:'4-2-3-1', descr:'Moderno',
     defs:[
       {pos:'GOL',label:'Goleiro',num:1,x:50,y:86},
-      {pos:'DEF',label:'Lat. Esq.',num:6,x:14,y:73},
+      {pos:'LAT',label:'Lat. Esq.',num:6,x:14,y:73},
       {pos:'DEF',label:'Zagueiro',num:3,x:36,y:76},
       {pos:'DEF',label:'Zagueiro',num:4,x:64,y:76},
-      {pos:'DEF',label:'Lat. Dir.',num:2,x:86,y:73},
+      {pos:'LAT',label:'Lat. Dir.',num:2,x:86,y:73},
       {pos:'MEI',label:'Volante',num:5,x:35,y:58},
       {pos:'MEI',label:'Volante',num:8,x:65,y:58},
       {pos:'MEI',label:'Meia E.',num:7,x:18,y:35},
@@ -1356,6 +1358,20 @@ const FORMATIONS = {
       {pos:'ATA',label:'Centroavante',num:9,x:50,y:15},
     ]},
 };
+
+// Normaliza laterais: 1º e último DEF de times com 4+ zagueiros → LAT
+(function normalizeLaterals(){
+  TIMES.forEach(t=>{
+    const defs=t.jogadores.filter(p=>p.pos==='DEF');
+    if(defs.length>=4){defs[0].pos='LAT';defs[defs.length-1].pos='LAT';}
+  });
+  // Correções manuais para times com estrutura defensiva atípica
+  const fix=(id,nm,pos)=>{const p=TIMES.find(t=>t.id===id)?.jogadores.find(p=>p.n===nm);if(p)p.pos=pos;};
+  // Holanda 1974: Krol=LB, Hulshoff=ZAG (auto marcaria Suurbier+Hulshoff)
+  fix('hol74','Krol','LAT'); fix('hol74','Hulshoff','DEF');
+  // Itália 2006: Grosso=LB, Nesta=ZAG (auto marcaria Zambrotta+Nesta, com 5 DEFs)
+  fix('ita06','Grosso','LAT'); fix('ita06','Nesta','DEF');
+})();
 
 let SLOTS = [];
 function applyFormation(name){
@@ -1428,7 +1444,7 @@ function renderLineup(){
     const eff = p ? effectiveR(p, s.idx) : 0;
     const boost = p && eff>p.r ? `<span class="boost">+${eff-p.r}</span>` : '';
     return `<div class="lineup-item ${p?'':'empty'}">
-      <div class="pos-chip">${s.pos}</div>
+      <div class="pos-chip ${s.pos==='LAT'?'lat':''}">${s.pos}</div>
       ${p?crestFromPlayer(p,'tiny'):'<span class="crest tiny empty-crest"></span>'}
       <div class="nm">${p?p.n:`<span class="slot-empty-label">${s.label}</span>`}</div>
       ${p?`<div class="rt">${eff}${boost}</div>`:''}
@@ -1530,21 +1546,23 @@ function renderRoster(){
   }
   const isPro = state.mode==='pro';
   const filledCount = pos => SLOTS.filter((s,i)=>s.pos===pos && state.lineup[i]).length;
-  const maxPos = {GOL:0, DEF:0, MEI:0, ATA:0};
-  SLOTS.forEach(s=>maxPos[s.pos]++);
+  const maxPos = {GOL:0, DEF:0, LAT:0, MEI:0, ATA:0};
+  SLOTS.forEach(s=>{ if(maxPos[s.pos]!==undefined) maxPos[s.pos]++; });
   const positionsOf = p => p.pos2 ? [p.pos, p.pos2] : [p.pos];
+  const posAvatar = p => p.pos==='GOL'?'1':p.pos==='LAT'?'L':p.pos==='DEF'?'D':p.pos==='MEI'?'M':'A';
   const head = `<div class="roster-head" style="grid-column:1/-1">${crestHTML(team,'tiny')} <b>${team.nome}</b> · escolha 1 jogador</div>`;
   $('#player-list').innerHTML = head + team.jogadores.map((p,i)=>{
     const positions = positionsOf(p);
-    const allCheia = positions.every(pos => filledCount(pos) >= maxPos[pos]);
+    const allCheia = positions.every(pos => filledCount(pos) >= (maxPos[pos]||0));
     const jaNoXI = state.lineup.some(l=>l && l.n===p.n && l.team===team.nome);
     const locked = allCheia || jaNoXI;
     const rating = isPro?'<span class="rt hidden">??</span>':`<div class="rt">${p.r}</div>`;
     const posTag = positions.join('/');
+    const isLat = p.pos==='LAT';
     return `<div class="pl ${locked?'locked':''}" data-i="${i}" title="${jaNoXI?'já está no XI':(allCheia?'vagas de '+posTag+' lotadas':'')}">
-      <div class="av">${p.pos==='GOL'?1:p.pos==='DEF'?'D':p.pos==='MEI'?'M':'A'}</div>
+      <div class="av">${posAvatar(p)}</div>
       <div class="info"><div class="nm">${p.n}</div></div>
-      <div class="pl-pos">${posTag}</div>
+      <div class="pl-pos ${isLat?'lat':''}">${posTag}</div>
       ${rating}
     </div>`;
   }).join('');
@@ -2066,9 +2084,9 @@ function renderTransfer(){
         ${valid.map((p,j)=>{
           const idx = team.jogadores.indexOf(p);
           return `<div class="pl" data-j="${idx}">
-            <div class="av">${p.pos==='GOL'?1:p.pos==='DEF'?'D':p.pos==='MEI'?'M':'A'}</div>
+            <div class="av">${p.pos==='GOL'?1:p.pos==='LAT'?'L':p.pos==='DEF'?'D':p.pos==='MEI'?'M':'A'}</div>
             <div class="info"><div class="nm">${p.n}</div></div>
-            <div class="pl-pos">${p.pos}${p.pos2?'/'+p.pos2:''}</div>
+            <div class="pl-pos ${p.pos==='LAT'?'lat':''}">${p.pos}${p.pos2?'/'+p.pos2:''}</div>
             <div class="rt">${p.r}</div>
           </div>`;
         }).join('')}
@@ -3533,7 +3551,7 @@ function generateCard(){
   ctx.beginPath(); ctx.moveTo(24,192); ctx.lineTo(W-24,192); ctx.stroke();
 
   // Jogadores
-  const posColors={GOL:'#f59e0b',DEF:'#22d3ee',MEI:'#a78bfa',ATA:'#f87171'};
+  const posColors={GOL:'#f59e0b',LAT:'#f97316',DEF:'#22d3ee',MEI:'#a78bfa',ATA:'#f87171'};
   const rowH=33, startY=200;
   state.lineup.forEach((p,i)=>{
     if(!p) return;
