@@ -366,8 +366,8 @@
   .challenge-banner b{color:var(--gold)}
 
   /* Setup foot */
-  .setup-foot{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px}
-  @media (max-width:480px){.setup-foot{grid-template-columns:1fr}}
+  .setup-foot{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+  @media (max-width:480px){.setup-foot{grid-template-columns:1fr 1fr}}
 
   /* Libertadores groups */
   .liberta-groups{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
@@ -415,6 +415,23 @@
   .h-summary{text-align:center;padding:14px;margin-bottom:12px;border:1px solid var(--line);border-radius:10px;background:rgba(34,211,238,.04)}
   .h-summary b{color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px}
   .h-summary small{color:var(--muted);font-size:11px;display:block;margin-top:2px}
+
+  /* Ranking */
+  .rank-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+  .rank-tab{background:var(--panel-2);border:1px solid var(--line);color:var(--muted);padding:9px;font-weight:700;font-size:11px;letter-spacing:1px;cursor:pointer;border-radius:8px;font-family:inherit;text-transform:uppercase;transition:.15s}
+  .rank-tab.active{background:linear-gradient(180deg,var(--gold),var(--gold-2));color:#1a1206;border-color:var(--gold)}
+  .rank-warn{background:rgba(245,200,66,.08);border:1px dashed var(--gold);color:var(--gold);padding:8px 10px;border-radius:8px;font-size:11px;text-align:center;margin-bottom:10px}
+  .rank-list{display:flex;flex-direction:column;gap:4px}
+  .rank-row{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--panel-2);border:1px solid var(--line);border-radius:8px}
+  .rank-row.me{border-color:var(--gold);background:rgba(245,200,66,.08);box-shadow:0 0 0 1px var(--gold)}
+  .rank-pos{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--muted);min-width:32px;text-align:center}
+  .rank-row.me .rank-pos{color:var(--gold)}
+  .rank-info{flex:1;min-width:0;overflow:hidden}
+  .rank-name{font-weight:700;font-size:13px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rank-row.me .rank-name{color:var(--gold)}
+  .rank-meta{font-size:10px;color:var(--muted);letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rank-score{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold);text-align:right;line-height:1}
+  .rank-score small{display:block;font-family:'Outfit',sans-serif;font-size:9px;color:var(--muted);letter-spacing:.5px}
 
   .buff-badge{position:absolute;top:-6px;right:-8px;background:linear-gradient(180deg,var(--gold),var(--gold-2));color:#1a1206;font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:0;padding:2px 5px;border-radius:99px;font-weight:800;box-shadow:0 2px 6px rgba(245,200,66,.5),0 0 0 2px #0a141a;animation:pulse-soft 1.5s ease infinite}
 
@@ -692,6 +709,7 @@
     <div class="setup-foot">
       <button class="history-btn" id="btn-history">📊 Histórico</button>
       <button class="history-btn" id="btn-ach">🏅 Conquistas</button>
+      <button class="history-btn" id="btn-rank">🏆 Ranking</button>
       <button class="history-btn" id="challenge-paste">⚔️ Colar desafio</button>
     </div>
   </div>
@@ -802,6 +820,17 @@
       <button class="x" id="ach-close">&times;</button>
     </div>
     <div class="modal-body" id="ach-body"></div>
+  </div>
+</div>
+
+<!-- RANKING TOP 100 -->
+<div class="modal-bg" id="rank-modal">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-head">
+      <span class="ttl">🏅 RANKING TOP 100</span>
+      <button class="x" id="rank-close">&times;</button>
+    </div>
+    <div class="modal-body" id="rank-body"></div>
   </div>
 </div>
 
@@ -1731,7 +1760,7 @@ function simAmistoso(){
     if(d>0){v.classList.add('win');$('#v-title').textContent='✅ VITÓRIA';}
     else if(d===0){v.classList.add('draw');$('#v-title').textContent='🤝 EMPATE';}
     else{v.classList.add('lose');$('#v-title').textContent='💔 DERROTA';}
-    const pts = saveToHistory({type:'amistoso', outcome, detail:`${state.teamName} ${score[0]} x ${score[1]} ${foe.nome}`, badge:outcome==='win'?'VITÓRIA':outcome==='draw'?'EMPATE':'DERROTA', badgeClass:outcome==='win'?'win':outcome==='draw'?'ok':'lose'});
+    const pts = saveToHistory({type:'amistoso', outcome, goals:score[0], detail:`${state.teamName} ${score[0]} x ${score[1]} ${foe.nome}`, badge:outcome==='win'?'VITÓRIA':outcome==='draw'?'EMPATE':'DERROTA', badgeClass:outcome==='win'?'win':outcome==='draw'?'ok':'lose'});
     $('#v-text').innerHTML=`${state.teamName} ${score[0]} x ${score[1]} ${foe.nome}. (+${pts} pts)` + renderTopScorers();
     checkMatchAchievements(score, outcome);
   });
@@ -1760,7 +1789,7 @@ function simConfronto(){
     if(d>0){v.classList.add('win');$('#v-title').textContent='🏆 VITÓRIA NO CONFRONTO!';}
     else if(d===0){v.classList.add('draw');$('#v-title').textContent='🤝 EMPATE';}
     else{v.classList.add('lose');$('#v-title').textContent='💔 DERROTA';}
-    const pts = saveToHistory({type:'confronto', outcome, detail:`Confronto: ${state.teamName} ${score[0]} x ${score[1]} ${foe.nome}`, badge:outcome==='win'?'VENCEU':outcome==='draw'?'EMPATE':'PERDEU', badgeClass:outcome==='win'?'win':outcome==='draw'?'ok':'lose'});
+    const pts = saveToHistory({type:'confronto', outcome, goals:score[0], detail:`Confronto: ${state.teamName} ${score[0]} x ${score[1]} ${foe.nome}`, badge:outcome==='win'?'VENCEU':outcome==='draw'?'EMPATE':'PERDEU', badgeClass:outcome==='win'?'win':outcome==='draw'?'ok':'lose'});
     $('#v-text').innerHTML=`${state.teamName} ${score[0]} x ${score[1]} ${foe.nome}. (+${pts} pts)` + renderTopScorers();
     checkMatchAchievements(score, outcome);
     if(outcome==='win') unlockAchievement('confronto-win');
@@ -2760,14 +2789,61 @@ $('#brand-setup').onclick = ()=>{
 
 // ============ SISTEMA DE PONTUAÇÃO E HISTÓRICO ============
 const DIFF_MULT = {facil:0.6, normal:1.0, dificil:1.5, lendario:2.0};
-const COMP_LABEL = {amistoso:'Mata-Mata', brasileirao:'Brasileirão', copa:'Copa do Mundo'};
+const COMP_LABEL = {amistoso:'Mata-Mata', brasileirao:'Brasileirão', copa:'Copa do Mundo', 'liga-europeia':'Liga Europeia', confronto:'Confronto'};
+
+// ============ RANKING GLOBAL (JSONBin.io) ============
+// Pra ativar o ranking global: crie conta grátis em jsonbin.io,
+// crie um bin com {"classic":[],"pro":[]} e preencha:
+const RANK_BIN_ID = '';       // ex: '6512abc...'
+const RANK_MASTER_KEY = '';   // ex: '$2a$10$...'
+const RANK_API = 'https://api.jsonbin.io/v3/b';
+const RANK_ENABLED = !!(RANK_BIN_ID && RANK_MASTER_KEY);
+
+async function fetchRanking(){
+  if(!RANK_ENABLED){
+    return JSON.parse(localStorage.getItem('xi-rank-local') || '{"classic":[],"pro":[]}');
+  }
+  try {
+    const r = await fetch(`${RANK_API}/${RANK_BIN_ID}/latest`, {
+      headers: {'X-Master-Key': RANK_MASTER_KEY}
+    });
+    const j = await r.json();
+    return j.record || {classic:[], pro:[]};
+  } catch(e){
+    return JSON.parse(localStorage.getItem('xi-rank-local') || '{"classic":[],"pro":[]}');
+  }
+}
+
+async function submitRanking(entry){
+  // entry: {name, score, team, ovr, diff, mode, comp, goals, result, date}
+  const data = await fetchRanking();
+  const board = entry.mode==='pro' ? 'pro' : 'classic';
+  data[board] = data[board] || [];
+  data[board].push(entry);
+  data[board].sort((a,b)=>b.score-a.score);
+  data[board] = data[board].slice(0,100);
+  if(!RANK_ENABLED){
+    localStorage.setItem('xi-rank-local', JSON.stringify(data));
+    return data;
+  }
+  try {
+    await fetch(`${RANK_API}/${RANK_BIN_ID}`, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':RANK_MASTER_KEY},
+      body: JSON.stringify(data)
+    });
+  } catch(e){
+    localStorage.setItem('xi-rank-local', JSON.stringify(data));
+  }
+  return data;
+}
 
 function calcScore(result){
   const ovr = calcTeamR();
   const diffMul = DIFF_MULT[state.diff] || 1;
   let base = Math.round(ovr * 10);
   let resultBonus = 0;
-  if(result.type==='amistoso'){
+  if(result.type==='amistoso' || result.type==='confronto'){
     if(result.outcome==='win') resultBonus = 200;
     else if(result.outcome==='draw') resultBonus = 80;
     else resultBonus = 20;
@@ -2786,7 +2862,12 @@ function calcScore(result){
     else if(result.stage==='Oitavas') resultBonus = 60;
     else resultBonus = 20;
   }
-  return Math.round((base + resultBonus) * diffMul);
+  // Bônus de gols (15 pts por gol marcado, contado em amistoso/confronto)
+  const goalBonus = (result.goals || 0) * 15;
+  let total = (base + resultBonus + goalBonus) * diffMul;
+  // Modo Pro = +20% (overs ocultos)
+  if(state.mode === 'pro') total *= 1.20;
+  return Math.round(total);
 }
 
 function saveToHistory(result){
@@ -2809,6 +2890,8 @@ function saveToHistory(result){
   history.unshift(entry);
   if(history.length > 50) history.length = 50;
   localStorage.setItem('xi-history', JSON.stringify(history));
+  // Submit ao ranking global (assíncrono, não bloqueia)
+  setTimeout(()=>promptAndSubmitRanking(entry, result), 800);
   return score;
 }
 
@@ -2851,6 +2934,72 @@ function renderHistory(){
 
 $('#btn-history').onclick = ()=>{ renderHistory(); $('#history-modal').classList.add('open'); };
 $('#history-close').onclick = ()=>$('#history-modal').classList.remove('open');
+
+// ============ RANKING UI ============
+function getNickname(){ return localStorage.getItem('xi-nick') || ''; }
+function setNickname(n){ localStorage.setItem('xi-nick', n); }
+
+async function promptAndSubmitRanking(entry, result){
+  let nick = getNickname();
+  if(!nick){
+    nick = (prompt('🏅 RANKING TOP 100\nQual seu nome/apelido pra entrar no ranking?\n(deixa em branco pra não entrar)') || '').trim().slice(0,20);
+    if(!nick) return;
+    setNickname(nick);
+  }
+  const rankEntry = {
+    n: nick,
+    s: entry.score,
+    t: entry.team,
+    ovr: entry.ovr,
+    diff: entry.diff,
+    mode: entry.mode,
+    comp: entry.comp,
+    g: result.goals || 0,
+    r: result.outcome || result.stage || result.badge || '',
+    d: entry.date
+  };
+  await submitRanking(rankEntry);
+  toast(`🏅 ${entry.score} pts no ranking ${entry.mode==='pro'?'PRO':'Clássico'}!`);
+}
+
+async function openRanking(){
+  $('#rank-modal').classList.add('open');
+  $('#rank-body').innerHTML = '<p style="color:var(--muted);text-align:center;padding:30px">Carregando ranking…</p>';
+  const data = await fetchRanking();
+  renderRanking(data, 'classic');
+}
+
+function renderRanking(data, board){
+  const list = (data[board] || []).slice(0,100);
+  const myNick = getNickname();
+  const diffLbl = {facil:'F',normal:'N',dificil:'D',lendario:'L'};
+  const tabs = `<div class="rank-tabs">
+    <button class="rank-tab ${board==='classic'?'active':''}" data-b="classic">🎯 Clássico</button>
+    <button class="rank-tab ${board==='pro'?'active':''}" data-b="pro">🎲 Pro</button>
+  </div>`;
+  const banner = !RANK_ENABLED ? `<div class="rank-warn">⚠ Modo local: configure JSONBin no topo do HTML pra ranking global.</div>` : '';
+  let rows;
+  if(list.length===0){
+    rows = '<p style="color:var(--muted);text-align:center;padding:30px">Ainda ninguém no ranking. Jogue uma partida pra entrar!</p>';
+  } else {
+    rows = '<div class="rank-list">' + list.map((e,i)=>{
+      const isMe = e.n===myNick;
+      const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+      return `<div class="rank-row ${isMe?'me':''}">
+        <div class="rank-pos">${medal||(i+1)}</div>
+        <div class="rank-info">
+          <div class="rank-name">${e.n}</div>
+          <div class="rank-meta">${e.t||''} · OVR ${e.ovr||'-'} · ${diffLbl[e.diff]||e.diff||'-'} · ${COMP_LABEL[e.comp]||e.comp||'-'}</div>
+        </div>
+        <div class="rank-score">${e.s}<small>PTS</small></div>
+      </div>`;
+    }).join('') + '</div>';
+  }
+  $('#rank-body').innerHTML = tabs + banner + rows;
+  $$('#rank-body .rank-tab').forEach(t=>{
+    t.onclick = ()=>renderRanking(data, t.dataset.b);
+  });
+}
 
 // ============ TRACKING DE ARTILHEIROS ============
 function trackScorer(player, teamName){
@@ -3078,6 +3227,8 @@ checkChallengeFromURL();
 
 $('#btn-ach').onclick = ()=>{ renderAchievements(); $('#ach-modal').classList.add('open'); };
 $('#ach-close').onclick = ()=>$('#ach-modal').classList.remove('open');
+$('#btn-rank').onclick = ()=>openRanking();
+$('#rank-close').onclick = ()=>$('#rank-modal').classList.remove('open');
 $('#share-close').onclick = ()=>$('#share-modal').classList.remove('open');
 $('#share-copy-link').onclick = ()=>{
   $('#share-link').select();
