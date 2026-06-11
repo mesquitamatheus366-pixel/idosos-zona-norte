@@ -92,10 +92,22 @@
   .lineup-item .nm{font-weight:600}
   .lineup-item .tm{font-family:'Outfit',sans-serif;font-weight:500;font-size:10px;letter-spacing:.3px;text-transform:uppercase;color:var(--muted)}
   .lineup-item.empty{opacity:.45;background:transparent;border-style:dashed}
-  .lineup-item .pos-chip{width:32px;text-align:center;background:#0a1018;border-radius:6px;padding:3px 0;font-weight:800;font-size:10px;color:var(--neon);letter-spacing:.5px;font-family:'Outfit',sans-serif}
-  .lineup-item .pos-chip.lat{color:#f97316;background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.3)}
-  .pl-pos.lat{color:#f97316!important;background:rgba(249,115,22,.12);border-color:rgba(249,115,22,.3)}
+  .lineup-item .pos-chip{width:34px;text-align:center;background:#0a1018;border-radius:6px;padding:3px 0;font-weight:800;font-size:10px;color:var(--neon);letter-spacing:.5px;font-family:'Outfit',sans-serif}
   .lineup-item.empty .pos-chip{color:var(--muted);background:transparent;border:1px dashed var(--line)}
+  /* position chip colors */
+  .pc-gol{color:#fbbf24;background:rgba(251,191,36,.13);border:1px solid rgba(251,191,36,.3)}
+  .pc-lat{color:#f97316;background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.3)}
+  .pc-zag{color:#22d3ee;background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.3)}
+  .pc-vol{color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.3)}
+  .pc-mei{color:#60a5fa;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.3)}
+  .pc-mei-l{color:#818cf8;background:rgba(129,140,248,.1);border:1px solid rgba(129,140,248,.3)}
+  .pc-vol-w{color:#c084fc;background:rgba(192,132,252,.1);border:1px solid rgba(192,132,252,.3)}
+  .pc-lib{color:#2dd4bf;background:rgba(45,212,191,.1);border:1px solid rgba(45,212,191,.3)}
+  .pc-ala{color:#fb923c;background:rgba(251,146,60,.1);border:1px solid rgba(251,146,60,.3)}
+  .pc-ponta{color:#f472b6;background:rgba(244,114,182,.1);border:1px solid rgba(244,114,182,.3)}
+  .pc-ca{color:#f87171;background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.35)}
+  .pc-ata{color:#ef4444;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3)}
+  .pl-pos.lat{color:#f97316!important;background:rgba(249,115,22,.12);border-color:rgba(249,115,22,.3)}
   .lineup-item .nm{flex:1;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .lineup-item .rt{font-family:'Bebas Neue',sans-serif;font-size:15px;color:var(--gold);letter-spacing:0;display:flex;align-items:center;gap:3px}
   .lineup-item .rt .boost{font-size:9px;color:#1a1206;background:linear-gradient(180deg,var(--gold),var(--gold-2));padding:1px 4px;border-radius:99px;font-family:'Outfit',sans-serif;font-weight:800;letter-spacing:0}
@@ -1449,7 +1461,7 @@ function renderPitch(){
     }
     el.innerHTML = `
       <div class="disc ${discCls}" style="${discStyle}">${p?s.num:'?'}${buffBadge}${capBand}</div>
-      <div class="pos-tag">${s.pos}</div>
+      <div class="pos-tag">${slotCode(s)}</div>
       <div class="label">${p?p.n:s.label}</div>
       ${p?`<div class="team">${p.teamShort}</div>`:''}`;
     if(isTarget){
@@ -1467,13 +1479,33 @@ function renderPitch(){
   renderLineup();
   updateStats();
 }
+const SLOT_CODE_MAP = {
+  'Goleiro':'GOL','Lat. Esq.':'LAT','Lat. Dir.':'LAT','Zagueiro':'ZAG','Líbero':'LIB',
+  'Volante':'VOL','Vol. Esq.':'VE','Vol. Dir.':'VD',
+  'Meia':'MEI','Meia E.':'ME','Meia D.':'MD',
+  'Ala Esq.':'AE','Ala Dir.':'AD',
+  'Ponta Esq.':'PE','Ponta Dir.':'PD',
+  'Centroavante':'CA','Atacante':'ATA'
+};
+const SLOT_CODE_CSS = {
+  GOL:'pc-gol', LAT:'pc-lat', ZAG:'pc-zag', LIB:'pc-lib',
+  VOL:'pc-vol', VE:'pc-vol-w', VD:'pc-vol-w',
+  MEI:'pc-mei', ME:'pc-mei-l', MD:'pc-mei-l',
+  AE:'pc-ala', AD:'pc-ala',
+  PE:'pc-ponta', PD:'pc-ponta',
+  CA:'pc-ca', ATA:'pc-ata'
+};
+function slotCode(s){ return SLOT_CODE_MAP[s.label] || s.pos; }
+function slotCss(s){ const c=slotCode(s); return SLOT_CODE_CSS[c]||''; }
 function renderLineup(){
   $('#lineup-list').innerHTML = SLOTS.map(s=>{
     const p = state.lineup[s.idx];
     const eff = p ? effectiveR(p, s.idx) : 0;
     const boost = p && eff>p.r ? `<span class="boost">+${eff-p.r}</span>` : '';
+    const code = slotCode(s);
+    const css = p ? slotCss(s) : '';
     return `<div class="lineup-item ${p?'':'empty'}">
-      <div class="pos-chip ${s.pos==='LAT'?'lat':''}">${s.pos}</div>
+      <div class="pos-chip ${css}">${code}</div>
       ${p?crestFromPlayer(p,'tiny'):'<span class="crest tiny empty-crest"></span>'}
       <div class="nm">${p?p.n:`<span class="slot-empty-label">${s.label}</span>`}</div>
       ${p?`<div class="rt">${eff}${boost}</div>`:''}
@@ -3702,23 +3734,28 @@ function generateCard(){
   ctx.beginPath(); ctx.moveTo(24,192); ctx.lineTo(W-24,192); ctx.stroke();
 
   // Jogadores
-  const posColors={GOL:'#f59e0b',LAT:'#f97316',DEF:'#22d3ee',MEI:'#a78bfa',ATA:'#f87171'};
+  const posColorsCard={GOL:'#fbbf24',LAT:'#f97316',ZAG:'#22d3ee',LIB:'#2dd4bf',
+    VOL:'#a78bfa',VE:'#c084fc',VD:'#c084fc',MEI:'#60a5fa',ME:'#818cf8',MD:'#818cf8',
+    AE:'#fb923c',AD:'#fb923c',PE:'#f472b6',PD:'#f472b6',CA:'#f87171',ATA:'#ef4444',
+    DEF:'#22d3ee'};
   const rowH=33, startY=200;
   state.lineup.forEach((p,i)=>{
     if(!p) return;
     const y=startY+i*rowH;
     const isCap=i===state.captain;
     const ovr=effectiveR(p,i);
+    const slotS=SLOTS[i];
+    const code=slotS?slotCode(slotS):p.pos;
 
     // fundo zebra
     if(i%2===0){ ctx.fillStyle='rgba(255,255,255,0.025)'; ctx.fillRect(24,y-1,W-48,rowH-2); }
 
     // pos badge
-    const pc=posColors[p.pos]||'#9ca3af';
+    const pc=posColorsCard[code]||posColorsCard[p.pos]||'#9ca3af';
     ctx.fillStyle=pc+'33';
     roundRect(ctx,28,y+5,32,18,4); ctx.fill();
     ctx.fillStyle=pc; ctx.font='bold 9px Arial'; ctx.textAlign='center';
-    ctx.fillText(p.pos,44,y+17);
+    ctx.fillText(code,44,y+17);
 
     // nome
     ctx.fillStyle=isCap?'#f5c842':'#e2e8f0';
