@@ -169,15 +169,18 @@
   .match-score .s{color:var(--gold);text-shadow:0 0 20px rgba(245,200,66,.4)}
   .match-score .s.r{color:var(--red);text-shadow:0 0 20px rgba(239,68,68,.4)}
   .match-clock{font-family:'Outfit',sans-serif;font-size:16px;color:var(--neon);letter-spacing:1.2px;margin-bottom:6px;font-weight:700}
-  .feed{text-align:left;max-height:130px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;padding:4px}
   .feed::-webkit-scrollbar{width:6px}
   .feed::-webkit-scrollbar-thumb{background:var(--line);border-radius:99px}
-  .ev{padding:5px 9px;background:rgba(255,255,255,.03);border-left:3px solid var(--line);border-radius:0 6px 6px 0;font-size:11.5px;color:#cbd5e1}
-  .ev.goal{border-color:var(--green);color:#fff}
-  .ev.goal strong{color:var(--green)}
-  .ev.bad{border-color:var(--red);color:#ffd9dc}
+  .ev{padding:8px 11px;background:linear-gradient(90deg,rgba(255,255,255,.04),rgba(255,255,255,.01));border-left:3px solid var(--line);border-radius:0 8px 8px 0;font-size:12px;color:#cbd5e1;display:flex;align-items:center;gap:10px;animation:evslide .3s ease both}
+  @keyframes evslide{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+  .ev.goal{border-color:var(--green);background:linear-gradient(90deg,rgba(46,204,113,.18),rgba(46,204,113,.03));color:#fff;font-weight:600}
+  .ev.goal strong{color:var(--green);text-shadow:0 0 10px rgba(46,204,113,.5)}
+  .ev.bad{border-color:var(--red);background:linear-gradient(90deg,rgba(239,68,68,.15),rgba(239,68,68,.02));color:#ffe1e3}
   .ev.bad strong{color:var(--red)}
-  .ev .mn{font-family:'Outfit',sans-serif;color:var(--muted);margin-right:8px;letter-spacing:1px}
+  .ev .mn{font-family:'Bebas Neue',sans-serif;color:var(--gold);letter-spacing:1px;font-size:14px;min-width:34px;text-align:right;flex-shrink:0}
+  .ev.goal .mn{color:var(--green)}
+  .ev.bad .mn{color:var(--red)}
+  .ev .txt{flex:1;min-width:0}
   .verdict{margin-top:10px;padding:12px;border-radius:10px;border:1px solid var(--gold);background:rgba(245,200,66,.08);display:none;position:sticky;bottom:0;backdrop-filter:blur(4px);z-index:5}
   .verdict.show{display:block;animation:pop .3s ease}
   .verdict h3{font-family:'Bebas Neue';font-size:20px;letter-spacing:1.2px;margin-bottom:3px}
@@ -284,33 +287,71 @@
   .comp-label{font-family:'Outfit',sans-serif;letter-spacing:1.2px;font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
 
   /* Match overlay melhorado */
-  .match-box.big{max-width:680px;padding:14px}
-  .match-head{margin-bottom:12px}
-  .t-side{display:flex;flex-direction:column;align-items:center;gap:6px}
-  .match-clock-row{display:flex;justify-content:space-between;align-items:center;margin-top:4px;padding:0 6px}
+  .match-box.big{max-width:1100px;padding:18px;text-align:left}
+  .match-box.big.with-standings{max-width:1180px}
+  .match-layout{display:grid;grid-template-columns:1fr;gap:16px}
+  .match-box.big.with-standings .match-layout{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr)}
+  .match-main{min-width:0}
+  .match-side{min-width:0;background:linear-gradient(180deg,#0b1322,#08101c);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px}
+  .match-side h4{font-family:'Outfit',sans-serif;font-size:11px;letter-spacing:2px;color:var(--muted);font-weight:600;display:flex;align-items:center;justify-content:space-between}
+  .match-side h4 .badge{background:rgba(34,211,238,.12);color:var(--neon);padding:2px 8px;border-radius:99px;font-size:9px;letter-spacing:1px;border:1px solid rgba(34,211,238,.3)}
+  .match-head{margin-bottom:10px;background:linear-gradient(180deg,rgba(34,211,238,.06),rgba(34,211,238,0));border:1px solid var(--line);border-radius:12px;padding:14px 12px 10px}
+  .t-side{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1}
+  .t-side .crest.big{transition:transform .35s;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+  .t-side .tn{font-size:14px}
+  .t-side .meta-ovr{font-family:'Outfit',sans-serif;font-size:9.5px;letter-spacing:1.5px;color:var(--muted)}
+  .t-side .meta-ovr b{color:var(--gold);font-family:'Bebas Neue';font-size:14px;letter-spacing:0;margin-left:4px}
+  .match-clock-row{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding:0 4px;gap:10px}
+  .match-clock{font-family:'Bebas Neue',sans-serif;font-size:22px;color:#fff;letter-spacing:1.5px;margin:0;font-weight:400;display:flex;align-items:center;gap:8px}
+  .match-clock::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red);animation:livepulse 1.4s ease infinite}
+  .match-clock.finished::before{background:var(--muted);box-shadow:none;animation:none}
+  @keyframes livepulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
   .speed-seg{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
-  .speed-seg button{background:transparent;color:var(--muted);border:none;padding:6px 10px;font-size:10px;font-weight:800;letter-spacing:1.5px;cursor:pointer;font-family:inherit}
+  .speed-seg button{background:transparent;color:var(--muted);border:none;padding:6px 10px;font-size:10px;font-weight:800;letter-spacing:1.5px;cursor:pointer;font-family:inherit;transition:.15s}
   .speed-seg button.active{background:var(--gold);color:#1a1206}
+  .speed-seg button:hover:not(.active){color:#fff;background:rgba(255,255,255,.05)}
 
   /* Mini campo da simulação */
-  .match-pitch{position:relative;width:100%;height:78px;border-radius:8px;border:1px solid rgba(34,211,238,.2);margin:6px 0;
-    background:repeating-linear-gradient(90deg,var(--grass) 0 10%,var(--grass-2) 10% 20%);overflow:hidden;box-shadow:inset 0 0 30px rgba(0,0,0,.5)}
-  .mp-mid{position:absolute;top:0;bottom:0;left:50%;width:2px;background:rgba(255,255,255,.18)}
-  .mp-circle{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60px;height:60px;border-radius:50%;border:2px solid rgba(255,255,255,.18)}
-  .mp-goal{position:absolute;top:50%;transform:translateY(-50%);width:18px;height:60px;border:2px solid rgba(255,255,255,.3)}
-  .mp-goal.mp-left{left:0;border-left:none}
-  .mp-goal.mp-right{right:0;border-right:none}
-  .mp-ball{position:absolute;top:50%;left:50%;width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff,#bbb);transform:translate(-50%,-50%);transition:left .4s ease,top .4s ease;box-shadow:0 0 8px rgba(255,255,255,.5);z-index:5}
-  .mp-effect{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;font-family:'Bebas Neue';font-size:38px;letter-spacing:1.2px;color:#fff;text-shadow:0 0 12px var(--green);transition:opacity .15s}
-  .mp-effect.show{opacity:1;animation:flash .5s ease}
-  @keyframes flash{0%{transform:scale(.6);opacity:0}40%{transform:scale(1.2);opacity:1}100%{transform:scale(1);opacity:1}}
-  .mp-effect.goal{color:#fff;text-shadow:0 0 16px var(--green),0 0 30px var(--green)}
+  .match-pitch{position:relative;width:100%;height:130px;border-radius:10px;border:1px solid rgba(34,211,238,.25);margin:8px 0;
+    background:
+      radial-gradient(ellipse at center,#1f6b3a 0%,#0f4a26 100%),
+      repeating-linear-gradient(90deg,rgba(0,0,0,.08) 0 8.33%,rgba(255,255,255,.04) 8.33% 16.66%);
+    background-blend-mode:multiply;overflow:hidden;
+    box-shadow:inset 0 0 50px rgba(0,0,0,.55),0 8px 24px rgba(0,0,0,.4)}
+  .match-pitch::before,.match-pitch::after{content:'';position:absolute;top:14%;height:72%;width:18%;border:2px solid rgba(255,255,255,.22);pointer-events:none}
+  .match-pitch::before{left:0;border-left:none}
+  .match-pitch::after{right:0;border-right:none}
+  .mp-mid{position:absolute;top:0;bottom:0;left:50%;width:2px;background:rgba(255,255,255,.22);transform:translateX(-50%)}
+  .mp-circle{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80px;height:80px;border-radius:50%;border:2px solid rgba(255,255,255,.22)}
+  .mp-goal{position:absolute;top:50%;transform:translateY(-50%);width:6px;height:42%;border:2px solid rgba(255,255,255,.4);background:repeating-linear-gradient(0deg,rgba(255,255,255,.18) 0 4px,transparent 4px 8px),repeating-linear-gradient(90deg,rgba(255,255,255,.18) 0 4px,transparent 4px 8px)}
+  .mp-goal.mp-left{left:0;border-left:none;border-top-right-radius:4px;border-bottom-right-radius:4px}
+  .mp-goal.mp-right{right:0;border-right:none;border-top-left-radius:4px;border-bottom-left-radius:4px}
+  .mp-ball{position:absolute;top:50%;left:50%;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff,#cbd5e1 60%,#94a3b8);transform:translate(-50%,-50%);transition:left .55s cubic-bezier(.4,1.5,.5,1),top .55s cubic-bezier(.4,1.5,.5,1);box-shadow:0 0 14px rgba(255,255,255,.7),0 2px 5px rgba(0,0,0,.5);z-index:5}
+  .mp-ball::after{content:'';position:absolute;left:50%;top:100%;transform:translateX(-50%);width:10px;height:3px;background:rgba(0,0,0,.35);border-radius:50%;filter:blur(1px)}
+  .mp-effect{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;font-family:'Bebas Neue';font-size:48px;letter-spacing:2px;color:#fff;text-shadow:0 0 18px var(--green);transition:opacity .15s;z-index:6}
+  .mp-effect.show{opacity:1;animation:flash .6s ease}
+  @keyframes flash{0%{transform:scale(.5);opacity:0}40%{transform:scale(1.3);opacity:1}100%{transform:scale(1);opacity:1}}
+  .mp-effect.goal{color:#fff;text-shadow:0 0 18px var(--green),0 0 40px var(--green),0 0 80px var(--green)}
   .mp-effect.yel{color:var(--gold)}
   .mp-effect.red{color:var(--red)}
   .mp-effect.save{color:var(--neon)}
+  .match-pitch.goal-flash{animation:goalflash .8s ease}
+  @keyframes goalflash{0%{box-shadow:inset 0 0 50px rgba(0,0,0,.55)}30%{box-shadow:inset 0 0 80px var(--green),0 0 40px var(--green)}100%{box-shadow:inset 0 0 50px rgba(0,0,0,.55)}}
+
+  /* Score com pulse no gol */
+  .match-score{font-family:'Bebas Neue';font-size:64px;line-height:1;display:flex;justify-content:center;align-items:center;gap:18px;margin:6px 0}
+  .match-score .s{transition:transform .3s;display:inline-block}
+  .match-score .s.bump{animation:scorebump .6s ease}
+  @keyframes scorebump{0%{transform:scale(1)}30%{transform:scale(1.4);text-shadow:0 0 40px currentColor}100%{transform:scale(1)}}
+
+  /* Feed melhorado */
+  .feed{text-align:left;max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:5px;padding:4px;scroll-behavior:smooth}
+  .feed h4{font-family:'Outfit',sans-serif;font-size:11px;letter-spacing:2px;color:var(--muted);font-weight:600;padding:4px 0 6px;display:flex;justify-content:space-between;align-items:center}
+  .feed h4 .live-dot{display:inline-flex;align-items:center;gap:5px;color:var(--red);font-size:9.5px;letter-spacing:1.5px}
+  .feed h4 .live-dot::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--red);box-shadow:0 0 6px var(--red);animation:livepulse 1.4s ease infinite}
 
   /* Standings table */
-  #standings{margin-top:8px;max-height:180px;overflow-y:auto}
+  #standings{margin-top:8px;max-height:340px;overflow-y:auto}
   #standings table{width:100%;border-collapse:collapse;font-size:12px}
   #standings th{background:#0a1018;color:var(--muted);font-family:'Outfit',sans-serif;font-weight:400;letter-spacing:1px;padding:6px;text-align:left;border-bottom:1px solid var(--line);position:sticky;top:0}
   #standings td{padding:6px;border-bottom:1px solid var(--line)}
@@ -598,20 +639,25 @@
     .match-overlay{padding:8px}
     .match-box{padding:12px;border-radius:12px}
     .match-box.big{max-width:100%;padding:10px}
+    .match-box.big.with-standings{max-width:100%}
+    .match-box.big.with-standings .match-layout{grid-template-columns:1fr}
+    .match-side{padding:10px}
+    .match-head{padding:10px 8px 8px}
     .match-teams .tn{font-size:12px}
     .match-teams .vs{font-size:10px}
-    .match-score{font-size:40px;gap:10px;margin:4px 0 2px}
-    .match-clock{font-size:13px}
-    .match-clock-row{padding:0;flex-direction:column;gap:4px;align-items:center}
+    .t-side .meta-ovr{font-size:9px}
+    .match-score{font-size:44px;gap:10px;margin:4px 0 2px}
+    .match-clock{font-size:18px}
+    .match-clock-row{padding:0;gap:8px}
     .speed-seg button{font-size:9px;padding:4px 8px}
-    .match-pitch{height:56px;border-radius:6px;margin:4px 0}
-    .mp-ball{width:10px;height:10px}
-    .mp-effect{font-size:22px}
-    .mp-goal{width:12px;height:40px}
-    .mp-circle{width:40px;height:40px}
-    .feed{max-height:100px}
-    .ev{padding:4px 7px;font-size:10px}
-    .ev .mn{font-size:9px}
+    .match-pitch{height:88px;border-radius:8px;margin:6px 0}
+    .mp-ball{width:12px;height:12px}
+    .mp-effect{font-size:30px}
+    .mp-goal{width:5px}
+    .mp-circle{width:54px;height:54px}
+    .feed{max-height:180px}
+    .ev{padding:6px 9px;font-size:11px}
+    .ev .mn{font-size:12px;min-width:30px}
     .verdict{padding:10px;margin-top:6px}
     .verdict h3{font-size:16px}
     .verdict p{font-size:10px;margin-bottom:6px}
@@ -921,34 +967,49 @@
 
 
 <div class="match-overlay" id="match">
-  <div class="match-box big">
-    <div class="match-head">
-      <div class="match-teams">
-        <div class="t-side"><div class="crest big" id="m-crest-a"></div><div class="tn" id="m-team-a">XI DOS SONHOS</div></div>
-        <div class="vs">VS</div>
-        <div class="t-side"><div class="crest big" id="m-crest-b"></div><div class="tn foe" id="foe-name">ADVERSÁRIO</div></div>
-      </div>
-      <div class="match-score"><span class="s" id="sc-a">0</span><span style="color:var(--muted)">:</span><span class="s r" id="sc-b">0</span></div>
-      <div class="match-clock-row">
-        <div class="match-clock" id="m-clock">00'</div>
-        <div class="speed-seg" id="speed-seg">
-          <button data-sp="200">LENTO</button>
-          <button class="active" data-sp="110">NORMAL</button>
-          <button data-sp="40">RÁPIDO</button>
+  <div class="match-box big" id="match-box">
+    <div class="match-layout">
+      <div class="match-main">
+        <div class="match-head">
+          <div class="match-teams">
+            <div class="t-side">
+              <div class="crest big" id="m-crest-a"></div>
+              <div class="tn" id="m-team-a">XI DOS SONHOS</div>
+              <div class="meta-ovr">OVR<b id="m-ovr-a">—</b></div>
+            </div>
+            <div class="vs">VS</div>
+            <div class="t-side">
+              <div class="crest big" id="m-crest-b"></div>
+              <div class="tn foe" id="foe-name">ADVERSÁRIO</div>
+              <div class="meta-ovr">OVR<b id="m-ovr-b">—</b></div>
+            </div>
+          </div>
+          <div class="match-score"><span class="s" id="sc-a">0</span><span style="color:var(--muted)">:</span><span class="s r" id="sc-b">0</span></div>
+          <div class="match-clock-row">
+            <div class="match-clock" id="m-clock">00'</div>
+            <div class="speed-seg" id="speed-seg">
+              <button data-sp="200">LENTO</button>
+              <button class="active" data-sp="110">NORMAL</button>
+              <button data-sp="40">RÁPIDO</button>
+            </div>
+          </div>
         </div>
+
+        <div class="match-pitch" id="match-pitch">
+          <div class="mp-mid"></div><div class="mp-circle"></div>
+          <div class="mp-goal mp-left"></div><div class="mp-goal mp-right"></div>
+          <div class="mp-ball" id="mp-ball"></div>
+          <div class="mp-effect" id="mp-effect"></div>
+        </div>
+
+        <div class="feed" id="feed"></div>
       </div>
+
+      <aside class="match-side" id="match-side" style="display:none">
+        <h4><span id="side-title">CLASSIFICAÇÃO</span><span class="badge" id="side-badge">AO VIVO</span></h4>
+        <div id="standings"></div>
+      </aside>
     </div>
-
-    <div class="match-pitch" id="match-pitch">
-      <div class="mp-mid"></div><div class="mp-circle"></div>
-      <div class="mp-goal mp-left"></div><div class="mp-goal mp-right"></div>
-      <div class="mp-ball" id="mp-ball"></div>
-      <div class="mp-effect" id="mp-effect"></div>
-    </div>
-
-    <div class="feed" id="feed"></div>
-
-    <div id="standings" style="display:none"></div>
 
     <div class="verdict" id="verdict">
       <h3 id="v-title">—</h3>
@@ -1430,6 +1491,19 @@ const state = { lineup: Array(11).fill(null), rolls:0, mode:'classico', currentT
 const $ = s=>document.querySelector(s);
 const $$= s=>document.querySelectorAll(s);
 const pick = a=>a[Math.floor(Math.random()*a.length)];
+function openSidePanel(title, badge){
+  const box = $('#match-box'), side = $('#match-side');
+  if(side) side.style.display='flex';
+  if(box) box.classList.add('with-standings');
+  if(title && $('#side-title')) $('#side-title').textContent = title;
+  if(badge!==undefined && $('#side-badge')) $('#side-badge').textContent = badge;
+}
+function closeSidePanel(){
+  const box = $('#match-box'), side = $('#match-side');
+  if(side) side.style.display='none';
+  if(box) box.classList.remove('with-standings');
+  if($('#standings')) $('#standings').innerHTML='';
+}
 
 function renderPitch(){
   const pitch = $('#pitch');
@@ -1736,7 +1810,7 @@ $('#btn-sim').onclick = ()=>{
   $('#match').classList.add('open');
   $('#verdict').classList.remove('show','win','lose','draw');
   $('#feed').innerHTML='';
-  $('#standings').style.display='none';
+  closeSidePanel();
   $('#standings').innerHTML='';
   $('#sc-a').textContent='0'; $('#sc-b').textContent='0'; $('#m-clock').textContent="00'";
   $('#m-team-a').textContent = state.teamName.toUpperCase();
@@ -1747,6 +1821,10 @@ $('#btn-sim').onclick = ()=>{
   const mainTeam = topTeam ? TIMES.find(t=>t.nome===topTeam[0]) : null;
   $('#m-crest-a').style.cssText = `--c1:${mainTeam?mainTeam.cores[0]:'#f5c842'};--c2:${mainTeam?mainTeam.cores[1]:'#22d3ee'}`;
   $('#m-crest-a').textContent = (state.teamName.slice(0,3)||'XI').toUpperCase();
+  const myOvr = Math.round(state.lineup.reduce((s,p,i)=>s+(p?effectiveR(p,i):0),0)/Math.max(1,state.lineup.filter(Boolean).length));
+  if($('#m-ovr-a')) $('#m-ovr-a').textContent = myOvr;
+  if($('#m-ovr-b')) $('#m-ovr-b').textContent = '—';
+  if($('#m-clock')) $('#m-clock').classList.remove('finished');
 
   if(state.comp==='brasileirao') return simBrasileirao();
   if(state.comp==='liga-europeia') return simLigaEuropeia();
@@ -1780,6 +1858,10 @@ function setFoeUI(foe){
   $('#foe-name').textContent = foe.nome.toUpperCase();
   $('#m-crest-b').style.cssText = `--c1:${foe.cores[0]};--c2:${foe.cores[1]}`;
   $('#m-crest-b').textContent = crestLabel(foe);
+  if($('#m-ovr-b')){
+    const ovr = foe.jogadores ? Math.round(foe.jogadores.reduce((s,p)=>s+p.r,0)/foe.jogadores.length) : '—';
+    $('#m-ovr-b').textContent = ovr;
+  }
 }
 
 function simAmistoso(){
@@ -1864,13 +1946,13 @@ function runLiveMatch(foe, onEnd){
     moveBall();
     if(Math.random()<ourChance/12){
       const sc = weighted(scorers,w);
-      score[0]++; $('#sc-a').textContent=score[0];
+      score[0]++; $('#sc-a').textContent=score[0]; bumpScore('sc-a');
       const capIcon = (captain && captain.n===sc.n) ? ' 🅒' : '';
       addEv(minute,`<strong>⚽ GOL!</strong> ${sc.n}${capIcon} marca! ${score[0]}-${score[1]}`,'goal');
       pitchEffect('GOL!','goal','right');
       trackScorer(sc, state.teamName);
     } else if(Math.random()<theirChance/12){
-      score[1]++; $('#sc-b').textContent=score[1];
+      score[1]++; $('#sc-b').textContent=score[1]; bumpScore('sc-b');
       const sc = pick(foe.jogadores.filter(p=>p.pos==='ATA'||p.pos==='MEI'));
       addEv(minute,`<strong>Gol do adversário</strong> · ${sc.n} (${foe.nome}) · ${score[0]}-${score[1]}`,'bad');
       pitchEffect('GOL','goal','left');
@@ -1881,7 +1963,7 @@ function runLiveMatch(foe, onEnd){
       else if(ev==='red'){addEv(minute,`🟥 VERMELHO · ${pick(state.lineup).n} expulso!`,'bad');pitchEffect('🟥','red');}
       else if(ev==='save'){const gk=state.lineup[0];addEv(minute,`🧤 Defesa de pênalti! ${gk.n} pega!`,'goal');pitchEffect('DEFENDEU!','save');}
       else if(ev==='pen-our' && captain){
-        score[0]++; $('#sc-a').textContent=score[0];
+        score[0]++; $('#sc-a').textContent=score[0]; bumpScore('sc-a');
         addEv(minute,`<strong>⚽ PÊNALTI · GOL!</strong> ${captain.n} 🅒 bate firme! ${score[0]}-${score[1]}`,'goal');
         pitchEffect('PÊNALTI!','goal','right');
         trackScorer(captain, state.teamName);
@@ -1892,7 +1974,7 @@ function runLiveMatch(foe, onEnd){
       clearInterval(state.matchTick);
       state.matchTick = null;
       state.matchTickFn = null;
-      addEv(90,'<strong>FIM DE JOGO</strong>','goal');
+      addEv(90,'<strong>FIM DE JOGO</strong>','goal'); $('#m-clock').classList.add('finished');
       onEnd(score);
     }
   };
@@ -1917,7 +1999,18 @@ function pitchEffect(txt, cls='', side=null){
     b.style.left = side==='left'?'4%':'94%';
     b.style.top = '50%';
   }
+  if(cls==='goal'){
+    const p = $('#match-pitch');
+    if(p){ p.classList.remove('goal-flash'); void p.offsetWidth; p.classList.add('goal-flash'); }
+  }
   setTimeout(()=>{ e.className='mp-effect '+cls; }, 600);
+}
+function bumpScore(id){
+  const el = $('#'+id);
+  if(!el) return;
+  el.classList.remove('bump');
+  void el.offsetWidth;
+  el.classList.add('bump');
 }
 
 // ============ BRASILEIRÃO 38 RODADAS ============
@@ -2211,7 +2304,7 @@ function startLibertadores(){
   };
   $('#match').classList.add('open');
   $('#feed').innerHTML='';
-  $('#standings').style.display='none';
+  closeSidePanel();
   $('#sc-a').textContent='0'; $('#sc-b').textContent='0';
   $('#verdict').classList.remove('show','win','lose','draw');
   addEv(0,`<strong>🌎 LIBERTADORES · FASE DE GRUPOS</strong>`,'goal');
@@ -2286,7 +2379,7 @@ function showLibertaGroupStandings(){
   });
   html += '</div>';
   $('#standings').innerHTML = html;
-  $('#standings').style.display='block';
+  openSidePanel();
 }
 
 function showLibertaGroupEndUI(){
@@ -2336,7 +2429,7 @@ function startLibertaKnockout(){
   t.bracket = shuffle(qualified);
   t.round = 'Quartas';
   $('#feed').innerHTML='';
-  $('#standings').style.display='none';
+  closeSidePanel();
   $('#sc-a').textContent='0'; $('#sc-b').textContent='0';
   $('#verdict').classList.remove('show','win','lose','draw');
   addEv(0,`<strong>🌎 LIBERTADORES · QUARTAS DE FINAL</strong>`,'goal');
@@ -2439,7 +2532,7 @@ function startMundial(){
   state.tournament = {mode:'mundial', round:'Quartas', bracket:teams, results:[]};
   $('#match').classList.add('open');
   $('#feed').innerHTML='';
-  $('#standings').style.display='none';
+  closeSidePanel();
   $('#sc-a').textContent='0'; $('#sc-b').textContent='0';
   $('#verdict').classList.remove('show','win','lose','draw');
   addEv(0,`<strong>🌐 MUNDIAL DE CLUBES · QUARTAS DE FINAL</strong>`,'goal');
@@ -2564,7 +2657,7 @@ function showStandings(table, meName, allTeams){
   $('#standings').innerHTML = `<table>
     <thead><tr><th></th><th>TIME</th><th>P</th><th>J</th><th>V</th><th>E</th><th>D</th><th>SG</th></tr></thead>
     <tbody>${rows}</tbody></table>`;
-  $('#standings').style.display='block';
+  openSidePanel();
 }
 
 // ============ COPA DO MUNDO ============
@@ -2672,7 +2765,7 @@ function showBracket(results, eliminated){
     </div>`;
   }).join('')+`</div>`).join('')+`</div>`;
   $('#standings').innerHTML = html;
-  $('#standings').style.display='block';
+  openSidePanel();
 }
 function finishCopa(results, last){
   const v=$('#verdict'); v.classList.add('show');
@@ -3498,7 +3591,7 @@ function startChampionsLeague(){
   };
   $('#match').classList.add('open');
   $('#feed').innerHTML='';
-  $('#standings').style.display='none';
+  closeSidePanel();
   $('#sc-a').textContent='0'; $('#sc-b').textContent='0';
   $('#verdict').classList.remove('show','win','lose','draw');
   addEv(0,`<strong>⭐ CHAMPIONS LEAGUE · FASE DE GRUPOS</strong>`,'goal');
@@ -3556,7 +3649,7 @@ function playChampionsGroupRound(){
     });
     html += '</div>';
     $('#standings').innerHTML = html;
-    $('#standings').style.display='block';
+    openSidePanel();
     showChampionsGroupEnd();
   });
 }
@@ -3608,7 +3701,7 @@ function startChampionsKnockout(){
   t.bracket=shuffle(qualified);
   t.round='Quartas';
   $('#feed').innerHTML='';
-  $('#standings').style.display='none';
+  closeSidePanel();
   $('#sc-a').textContent='0'; $('#sc-b').textContent='0';
   $('#verdict').classList.remove('show','win','lose','draw');
   addEv(0,`<strong>⭐ CHAMPIONS LEAGUE · QUARTAS DE FINAL</strong>`,'goal');
