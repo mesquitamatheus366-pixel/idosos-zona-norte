@@ -204,7 +204,7 @@
   .ev.goal .mn{color:var(--green)}
   .ev.bad .mn{color:var(--red)}
   .ev .txt{flex:1;min-width:0}
-  .verdict{margin-top:10px;padding:12px;border-radius:10px;border:1px solid var(--gold);background:rgba(245,200,66,.08);display:none;position:sticky;bottom:0;backdrop-filter:blur(4px);z-index:5}
+  .verdict{margin-top:12px;padding:14px;border-radius:10px;border:1px solid var(--gold);background:rgba(245,200,66,.08);display:none}
   .verdict.show{display:block;animation:pop .3s ease}
   .verdict h3{font-family:'Bebas Neue';font-size:20px;letter-spacing:1.2px;margin-bottom:3px}
   .verdict.win h3{color:var(--green)} .verdict.lose h3{color:var(--red)} .verdict.draw h3{color:var(--gold)}
@@ -1059,22 +1059,22 @@
         </div>
 
         <div class="feed" id="feed"></div>
+
+        <div class="verdict" id="verdict">
+          <h3 id="v-title">—</h3>
+          <p id="v-text">—</p>
+          <div class="actions">
+            <button id="btn-new-match">NOVA PARTIDA</button>
+            <button class="ghost" id="btn-keep">VOLTAR AO CAMPO</button>
+            <button class="ghost" id="btn-restart">RECOMEÇAR TUDO</button>
+          </div>
+        </div>
       </div>
 
       <aside class="match-side" id="match-side" style="display:none">
         <h4><span id="side-title">CLASSIFICAÇÃO</span><span class="badge" id="side-badge">AO VIVO</span></h4>
         <div id="standings"></div>
       </aside>
-    </div>
-
-    <div class="verdict" id="verdict">
-      <h3 id="v-title">—</h3>
-      <p id="v-text">—</p>
-      <div class="actions">
-        <button id="btn-new-match">NOVA PARTIDA</button>
-        <button class="ghost" id="btn-keep">VOLTAR AO CAMPO</button>
-        <button class="ghost" id="btn-restart">RECOMEÇAR TUDO</button>
-      </div>
     </div>
   </div>
 </div>
