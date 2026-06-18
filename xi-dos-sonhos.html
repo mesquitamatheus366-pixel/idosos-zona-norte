@@ -83,7 +83,14 @@
   .slot.filled .disc{animation:slide-up .4s ease}
   .slot.filled .disc{background:linear-gradient(180deg,#0c2a1a,#072014);border:2px solid var(--gold);color:var(--gold);box-shadow:0 0 18px rgba(245,200,66,.35),inset 0 -8px 0 rgba(0,0,0,.25)}
   .slot.filled:hover .disc{transform:scale(1.06);box-shadow:0 0 22px rgba(245,200,66,.55),inset 0 -8px 0 rgba(0,0,0,.25)}
-  .slot.filled:hover .label::after{content:' ✎';color:var(--neon);font-size:9px}
+  .slot.movable:hover{filter:drop-shadow(0 0 6px rgba(34,211,238,.4))}
+  .slot.selected-move .disc{border-color:var(--neon)!important;box-shadow:0 0 30px var(--neon),inset 0 -8px 0 rgba(0,0,0,.25)!important;animation:pulse-soft .8s ease infinite}
+  .slot.drop-target{animation:dropPulse 1s ease-in-out infinite;z-index:7}
+  .slot.drop-target .disc{border-color:#22d3ee!important;background:linear-gradient(180deg,rgba(34,211,238,.18),rgba(34,211,238,.04))!important;color:#7dd3fc!important;box-shadow:0 0 18px rgba(34,211,238,.5),inset 0 -8px 0 rgba(0,0,0,.25)!important;cursor:pointer!important}
+  .slot.drop-target.drop-hover .disc{box-shadow:0 0 28px rgba(34,211,238,.9)!important}
+  .slot.drop-target.drop-hover{transform:translate(-50%,-50%) scale(1.15)!important;animation:none}
+  .slot.drop-target .pos-tag{color:var(--neon)!important;font-weight:800!important}
+  @keyframes dropPulse{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.06)}}
   .slot .pos-tag{font-size:9px;letter-spacing:1px;color:rgba(255,255,255,.45);font-weight:700}
   .slot.filled .pos-tag{color:var(--neon-2)}
   .slot .label{font-size:11.5px;color:#fff;font-weight:700;text-shadow:0 1px 4px #000,0 0 2px #000;text-align:center;max-width:100px;line-height:1.2}
@@ -1713,6 +1720,11 @@ const TIMES = [
     {n:'Cafuringa',pos:'MEI',r:85},{n:'Dario',pos:'MEI',r:84},{n:'Gérson',pos:'MEI',r:92},
     {n:'Doval',pos:'ATA',r:85},{n:'Lula',pos:'ATA',r:84},{n:'Manfrini',pos:'ATA',r:82}]},
 
+  { id:'vas11', tipo:'brasileiro', nome:'Vasco 2011', era:'Copa do Brasil · Felipe', cores:['#000','#fff'], jogadores:[
+    {n:'F. Prass',pos:'GOL',r:86},{n:'Fagner',pos:'DEF',pos2:'MEI',r:84},{n:'Dedé',pos:'DEF',r:88},{n:'R. Silva',pos:'DEF',r:84},{n:'Ramon',pos:'DEF',pos2:'MEI',r:83},
+    {n:'Nilton',pos:'MEI',r:84},{n:'Felipe',pos:'MEI',pos2:'ATA',r:88},{n:'C. Alberto',pos:'MEI',pos2:'ATA',r:85},{n:'D. Souza',pos:'MEI',pos2:'ATA',r:87},
+    {n:'É. Luís',pos:'ATA',pos2:'MEI',r:84},{n:'Alecsandro',pos:'ATA',r:84}]},
+
   // Seleções
   { id:'fra84', tipo:'selecao', nome:'França 1984', era:'Eurocopa · Platini', cores:['#1d4ed8','#fff'], jogadores:[
     {n:'Bats',pos:'GOL',r:84},{n:'Battiston',pos:'DEF',r:85},{n:'Bossis',pos:'DEF',r:84},{n:'Le Roux',pos:'DEF',r:83},{n:'Amoros',pos:'DEF',pos2:'MEI',r:85},
@@ -1993,9 +2005,59 @@ function renderPitch(){
       const alts = compatibleSlots(p, s.idx);
       if(alts.length>0){
         el.style.pointerEvents = 'auto';
-        el.style.cursor = 'pointer';
-        el.title = 'Clique para mover de posição';
-        el.onclick = ()=>openMovePicker(s.idx, alts);
+        el.style.cursor = 'grab';
+        el.draggable = true;
+        el.title = 'Arraste para outra posição (ou clique pra selecionar)';
+        el.dataset.slotIdx = s.idx;
+        el.classList.add('movable');
+        if(state.movingFrom === s.idx) el.classList.add('selected-move');
+        el.ondragstart = (ev)=>{
+          state.movingFrom = s.idx;
+          state.movingAlts = new Set(alts);
+          ev.dataTransfer.effectAllowed = 'move';
+          try{ ev.dataTransfer.setData('text/plain', String(s.idx)); }catch(e){}
+          el.style.cursor = 'grabbing';
+          renderPitch();
+        };
+        el.ondragend = ()=>{
+          state.movingFrom = null; state.movingAlts = null;
+          renderPitch();
+        };
+        el.onclick = ()=>{
+          if(state.movingFrom === s.idx){
+            state.movingFrom = null; state.movingAlts = null;
+          } else if(state.movingFrom != null && state.movingAlts && state.movingAlts.has(s.idx)){
+            const from = state.movingFrom;
+            state.movingFrom = null; state.movingAlts = null;
+            movePlayer(from, s.idx);
+            return;
+          } else {
+            state.movingFrom = s.idx;
+            state.movingAlts = new Set(alts);
+          }
+          renderPitch();
+        };
+      }
+    }
+    // Slot é destino válido durante movimento
+    if(state.movingFrom != null && state.movingAlts && state.movingAlts.has(s.idx) && s.idx !== state.movingFrom){
+      el.classList.add('drop-target');
+      el.style.pointerEvents = 'auto';
+      el.style.cursor = 'pointer';
+      el.ondragover = (ev)=>{ ev.preventDefault(); ev.dataTransfer.dropEffect = 'move'; el.classList.add('drop-hover'); };
+      el.ondragleave = ()=>el.classList.remove('drop-hover');
+      el.ondrop = (ev)=>{
+        ev.preventDefault();
+        const from = state.movingFrom;
+        state.movingFrom = null; state.movingAlts = null;
+        if(from != null) movePlayer(from, s.idx);
+      };
+      if(!el.onclick){
+        el.onclick = ()=>{
+          const from = state.movingFrom;
+          state.movingFrom = null; state.movingAlts = null;
+          if(from != null) movePlayer(from, s.idx);
+        };
       }
     }
     pitch.appendChild(el);
