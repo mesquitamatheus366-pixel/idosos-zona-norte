@@ -951,6 +951,7 @@
   .press-opt{background:rgba(255,255,255,.04);border:1px solid var(--line);color:#e5e7eb;padding:10px 12px;border-radius:8px;cursor:pointer;text-align:left;font-family:'Outfit',sans-serif;font-size:13px;transition:all .15s}
   .press-opt:hover{background:rgba(34,211,238,.08);border-color:var(--neon)}
   .press-opt.picked.good{background:rgba(34,197,94,.15);border-color:#22c55e;color:#86efac}
+  .press-opt.picked.neutral{background:rgba(245,200,66,.12);border-color:var(--gold);color:var(--gold-2)}
   .press-opt.picked.bad{background:rgba(239,68,68,.15);border-color:var(--red);color:#fca5a5}
   .press-opt.disabled{opacity:.4;pointer-events:none}
   .press-summary{margin-top:14px;padding:14px;border-radius:10px;text-align:center;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;font-size:18px;display:none}
@@ -3002,19 +3003,52 @@ function renderMoralPill(){
 
 const PRESS_QUESTIONS = {
   win: [
-    {q:'O que você diz aos torcedores depois desta vitória?', a:[{t:'Vitória do grupo, ninguém maior que o time.', d:1}, {t:'Foi fácil, já era esperado.', d:-1}]},
-    {q:'Como avalia o desempenho do {GK}?', a:[{t:'Foi seguro, é peça fundamental do elenco.', d:1}, {t:'Poderia ter feito mais, vou cobrar.', d:-1}]},
-    {q:'O time pode brigar pelo título?', a:[{t:'Vamos com os pés no chão, jogo a jogo.', d:1}, {t:'Já somos favoritos, é nosso por direito.', d:-1}]}
+    {q:'O que você diz aos torcedores depois desta vitória?', a:[{t:'Vitória do grupo, ninguém maior que o time.', d:2}, {t:'Estamos no caminho, mas precisamos manter o foco.', d:1}, {t:'Foi fácil, já era esperado.', d:-2}]},
+    {q:'Como avalia o desempenho do {GK}?', a:[{t:'É peça fundamental do elenco, segura o time.', d:2}, {t:'Cumpriu o que precisava, sem brilho extra.', d:0}, {t:'Poderia ter feito mais, vou cobrar.', d:-2}]},
+    {q:'O time pode brigar pelo título?', a:[{t:'Vamos com os pés no chão, jogo a jogo.', d:2}, {t:'Estamos no páreo, mas o caminho é longo.', d:1}, {t:'Já somos favoritos, é nosso por direito.', d:-2}]},
+    {q:'O artilheiro {ATA} foi destaque hoje. Comentário?', a:[{t:'Ele é fundamental, mas o gol é fruto do coletivo.', d:2}, {t:'Está em ótima fase, merecido.', d:1}, {t:'Faz o trabalho dele, esperado pra quem ganha o que ganha.', d:-2}]},
+    {q:'Próximo jogo é contra um rival forte. Preparado?', a:[{t:'Respeitamos o adversário, vamos honrar a camisa.', d:2}, {t:'Vamos focar na nossa proposta de jogo.', d:1}, {t:'Vamos passar por cima deles também.', d:-2}]},
+    {q:'A imprensa estava cética com seu trabalho. O que diz?', a:[{t:'Imprensa faz o trabalho dela, eu faço o meu.', d:2}, {t:'O resultado fala por si só.', d:1}, {t:'Agora vão ter que engolir o que disseram.', d:-2}]},
+    {q:'Você poupou jogadores pensando no próximo jogo?', a:[{t:'Confio em todos do elenco, todos estão prontos.', d:2}, {t:'Foi uma decisão técnica baseada no físico.', d:1}, {t:'Os titulares estavam cansados, não tive escolha.', d:-1}]},
+    {q:'O que essa vitória representa pra temporada?', a:[{t:'Um passo importante, mas só um.', d:2}, {t:'Mostra que estamos no caminho certo.', d:1}, {t:'É a virada de chave que esperávamos.', d:0}]},
+    {q:'O capitão {CAP} liderou bem em campo?', a:[{t:'Liderança nata, ele puxa o time.', d:2}, {t:'Fez o esperado de um capitão.', d:0}, {t:'Esperava mais postura dele em alguns momentos.', d:-2}]},
+    {q:'Como foi a preparação pra esse jogo?', a:[{t:'Trabalhamos cada detalhe, mérito da comissão.', d:2}, {t:'Foi padrão, treinamos o que vínhamos treinando.', d:0}, {t:'Apertei demais, eles que entregaram em campo.', d:-1}]},
+    {q:'Quem foi seu jogador favorito na partida?', a:[{t:'Não escolho um, foi vitória de todos.', d:2}, {t:'Vou guardar pra mim, todos jogaram bem.', d:1}, {t:'O fulano (cita um nome só), os outros precisam acordar.', d:-2}]},
+    {q:'Tem alguma novidade do mercado pra anunciar?', a:[{t:'Foco total no time atual, não falo de mercado agora.', d:2}, {t:'Diretoria cuida disso, eu cuido do campo.', d:1}, {t:'Estamos negociando, em breve novidades.', d:-1}]},
+    {q:'A torcida cantou seu nome no final. Sentimento?', a:[{t:'Emocionante, vou retribuir com trabalho.', d:2}, {t:'Carinho importante, mas o foco é o próximo jogo.', d:1}, {t:'Mereço, vou seguir entregando.', d:-2}]},
+    {q:'Algum recado pra próxima rodada?', a:[{t:'Vamos com humildade, respeitando todo adversário.', d:2}, {t:'Quem vier vai pegar o melhor de nós.', d:0}, {t:'Não tem rival que nos pare nesse momento.', d:-2}]},
+    {q:'Esperava a vitória por essa diferença de placar?', a:[{t:'Não, o adversário dificultou bastante.', d:1}, {t:'Acreditava na vitória, o placar foi consequência.', d:1}, {t:'Era pra ter sido maior, faltou capricho.', d:-1}]}
   ],
   draw: [
-    {q:'O empate foi um resultado justo?', a:[{t:'Justo. Lutamos até o fim, ponto importante.', d:1}, {t:'Foi uma vergonha, deveríamos ter ganho.', d:-1}]},
-    {q:'A equipe está pronta para o próximo desafio?', a:[{t:'Estamos confiantes, trabalho continua.', d:1}, {t:'Não, precisamos rever várias coisas.', d:-1}]},
-    {q:'Você confia no elenco atual?', a:[{t:'Confio em cada um deles, somos um time.', d:1}, {t:'Faltam reforços, esse elenco é limitado.', d:-1}]}
+    {q:'O empate foi um resultado justo?', a:[{t:'Justo. Lutamos até o fim, ponto importante.', d:2}, {t:'Aceitável diante do que aconteceu em campo.', d:0}, {t:'Foi uma vergonha, deveríamos ter ganho.', d:-2}]},
+    {q:'A equipe está pronta para o próximo desafio?', a:[{t:'Estamos confiantes, trabalho continua.', d:2}, {t:'Vamos rever alguns pontos, mas sim.', d:1}, {t:'Não, precisamos rever várias coisas.', d:-2}]},
+    {q:'Você confia no elenco atual?', a:[{t:'Confio em cada um deles, somos um time.', d:2}, {t:'É o elenco que temos, vamos com ele.', d:0}, {t:'Faltam reforços, esse elenco é limitado.', d:-2}]},
+    {q:'O que faltou pra vencer?', a:[{t:'Faltou capricho na finalização, o time criou.', d:2}, {t:'Faltou um pouco de sorte nos detalhes.', d:1}, {t:'Faltou raça, simples assim.', d:-2}]},
+    {q:'O {ATA} desperdiçou chances claras. Vai conversar com ele?', a:[{t:'Ele é importante, vamos trabalhar a calma na finalização.', d:2}, {t:'Faz parte do jogo, ele vai voltar.', d:1}, {t:'Vou cobrar publicamente, não pode errar assim.', d:-2}]},
+    {q:'O árbitro influenciou o resultado?', a:[{t:'Não, prefiro não comentar arbitragem.', d:2}, {t:'Teve lances polêmicos, mas o foco é o nosso jogo.', d:1}, {t:'Foi um roubo, queriam o empate do outro lado.', d:-2}]},
+    {q:'Tem pressão sobre seu trabalho?', a:[{t:'Pressão faz parte, lido bem com ela.', d:2}, {t:'Toda profissão tem pressão, sei o que faço.', d:1}, {t:'Não sinto pressão de ninguém.', d:-2}]},
+    {q:'A torcida vaiou no final. O que diz?', a:[{t:'Torcida tem todo o direito, vamos dar resposta em campo.', d:2}, {t:'Entendo a frustração, é justa.', d:1}, {t:'A torcida deveria empurrar, não atrapalhar.', d:-2}]},
+    {q:'Vai mudar a escalação na próxima?', a:[{t:'Vamos analisar com calma os vídeos antes.', d:2}, {t:'Algumas peças talvez girem, é normal.', d:1}, {t:'Vou mexer em tudo, ninguém está garantido.', d:-1}]},
+    {q:'A imprensa cobra um sistema mais ofensivo. Concorda?', a:[{t:'Imprensa cobra, mas eu olho o jogo por inteiro.', d:2}, {t:'Vamos avaliar caso a caso.', d:1}, {t:'Imprensa não entende de futebol.', d:-2}]},
+    {q:'Houve algum problema interno antes do jogo?', a:[{t:'Vestiário tá unido, sem problema algum.', d:2}, {t:'Coisas internas ficam internas, mas tudo bem.', d:0}, {t:'Tivemos discussões, mas já resolvemos.', d:-1}]},
+    {q:'O adversário foi melhor em algum momento?', a:[{t:'Foi um jogo equilibrado, ambos tiveram chances.', d:2}, {t:'Em alguns momentos sim, em outros nós dominamos.', d:1}, {t:'Não, fomos superiores o jogo inteiro.', d:-2}]}
   ],
   lose: [
-    {q:'A culpa da derrota é de quem?', a:[{t:'A responsabilidade é minha, do treinador.', d:1}, {t:'Foi falha individual dos jogadores.', d:-1}]},
-    {q:'O que muda para a próxima partida?', a:[{t:'Vamos trabalhar duro e levantar a cabeça.', d:1}, {t:'Vou fazer mudanças drásticas no time.', d:-1}]},
-    {q:'A torcida pode cobrar mais?', a:[{t:'A torcida tem todo o direito, vamos honrar a camisa.', d:1}, {t:'A torcida atrapalhou com vaias.', d:-1}]}
+    {q:'A culpa da derrota é de quem?', a:[{t:'A responsabilidade é minha, do treinador.', d:2}, {t:'É de todos nós, ninguém se exime.', d:1}, {t:'Foi falha individual dos jogadores.', d:-2}]},
+    {q:'O que muda para a próxima partida?', a:[{t:'Vamos trabalhar duro e levantar a cabeça.', d:2}, {t:'Vou ajustar alguns pontos com calma.', d:1}, {t:'Vou fazer mudanças drásticas no time.', d:-2}]},
+    {q:'A torcida pode cobrar mais?', a:[{t:'A torcida tem todo o direito, vamos honrar a camisa.', d:2}, {t:'Cobrança é justa, entendemos perfeitamente.', d:1}, {t:'A torcida atrapalhou com vaias.', d:-2}]},
+    {q:'Seu cargo está em risco?', a:[{t:'Não penso nisso, foco no trabalho.', d:2}, {t:'Decisão da diretoria, sigo trabalhando.', d:1}, {t:'Tenho contrato e confiança da diretoria.', d:-1}]},
+    {q:'O {GK} falhou no gol. Vai ser punido?', a:[{t:'Erro faz parte, ele é nosso titular.', d:2}, {t:'Vamos analisar internamente.', d:0}, {t:'Quem erra paga, simples.', d:-2}]},
+    {q:'O esquema tático não funcionou. Vai mudar?', a:[{t:'Vou reavaliar, mas confio no meu trabalho.', d:2}, {t:'Podemos ajustar peças sem mudar tudo.', d:1}, {t:'O problema foi falta de entrega, não o esquema.', d:-2}]},
+    {q:'Você gritou com os jogadores no vestiário?', a:[{t:'Cobrei na medida certa, sem perder a cabeça.', d:2}, {t:'Conversa de vestiário fica no vestiário.', d:1}, {t:'Sim, e eles mereceram cada palavra.', d:-2}]},
+    {q:'O capitão {CAP} foi pouco visto. Decepcionou?', a:[{t:'Capitão é referência, ele vai responder em campo.', d:2}, {t:'Foi um jogo difícil pra todos, incluindo ele.', d:1}, {t:'Esperava muito mais, vai ter conversa séria.', d:-2}]},
+    {q:'A diretoria veio falar com você?', a:[{t:'Conversamos abertamente, tem total apoio.', d:2}, {t:'Conversa profissional, tudo nos eixos.', d:0}, {t:'Não venham me cobrar agora, façam o trabalho deles.', d:-2}]},
+    {q:'Que recado dá pra torcida?', a:[{t:'Peço desculpas, vamos retribuir o apoio.', d:2}, {t:'Continuem com a gente, vamos sair dessa.', d:1}, {t:'Que apareçam no próximo jogo, time precisa.', d:-1}]},
+    {q:'O adversário foi muito superior?', a:[{t:'Foram melhores hoje, mérito deles.', d:2}, {t:'Soube aproveitar nossos erros.', d:1}, {t:'Não, nos sabotamos sozinhos.', d:-1}]},
+    {q:'A pressão da torneio está pesando?', a:[{t:'Time tá maduro, sabe lidar com isso.', d:2}, {t:'É natural sentir, mas vamos superar.', d:1}, {t:'Sim, o peso da camisa é pesado demais pra alguns.', d:-2}]},
+    {q:'Vai pedir reforços pra diretoria?', a:[{t:'Confio no elenco que tenho.', d:2}, {t:'Vou apresentar opções, decisão da diretoria.', d:1}, {t:'Esse elenco não dá, precisa de gente nova já.', d:-2}]},
+    {q:'Como vai dormir hoje após essa derrota?', a:[{t:'Mal, vou rever vídeos e pensar nos ajustes.', d:2}, {t:'Faz parte da profissão, viro a página.', d:1}, {t:'A culpa não é minha, durmo tranquilo.', d:-2}]},
+    {q:'Você assumiria a derrota publicamente?', a:[{t:'Já assumi, a responsabilidade é minha.', d:2}, {t:'É de todos, comecando por mim.', d:1}, {t:'Tem nome e sobrenome quem errou hoje.', d:-2}]}
   ]
 };
 
@@ -3034,43 +3068,45 @@ function openPressConference(score, foe, outcome){
   const modal = document.getElementById('press-modal');
   const body = document.getElementById('press-body');
   const gk = (state.lineup[0] && state.lineup[0].n) || 'goleiro';
-  const qs = PRESS_QUESTIONS[outcome] || PRESS_QUESTIONS.draw;
+  const cap = (state.captain>=0 && state.lineup[state.captain]) ? state.lineup[state.captain].n : 'capitão';
+  const ataList = state.lineup.filter(p=>p && p.pos==='ATA');
+  const ata = (ataList.length ? pick(ataList).n : 'atacante');
+  const meiList = state.lineup.filter(p=>p && p.pos==='MEI');
+  const mei = (meiList.length ? pick(meiList).n : 'meia');
+  const pool = PRESS_QUESTIONS[outcome] || PRESS_QUESTIONS.draw;
+  const Q = pick(pool);
+  const replacer = s => s.replace('{GK}', gk).replace('{CAP}', cap).replace('{ATA}', ata).replace('{MEI}', mei);
+  const qText = replacer(Q.q);
   const head = `<p style="color:var(--muted);font-size:13px;text-align:center;margin:0 0 6px">${state.teamName} ${score[0]} x ${score[1]} ${foe.nome}</p>
-                <p style="color:var(--muted);font-size:11px;text-align:center;margin:0 0 14px">Responda com cuidado — afeta a moral do elenco</p>`;
-  let qsHtml = '';
-  qs.forEach((Q,i)=>{
-    const qText = Q.q.replace('{GK}', gk);
-    const opts = Q.a.map((opt, j)=>`<button class="press-opt" data-q="${i}" data-d="${opt.d}" data-cls="${opt.d>0?'good':'bad'}">${opt.t}</button>`).join('');
-    qsHtml += `<div class="press-q" data-q="${i}"><div class="press-q-text">${qText}</div><div class="press-opts">${opts}</div></div>`;
-  });
+                <p style="color:var(--muted);font-size:11px;text-align:center;margin:0 0 14px">Uma pergunta da imprensa — escolha sua resposta com cuidado</p>`;
+  const opts = Q.a.map((opt)=>`<button class="press-opt" data-d="${opt.d}" data-cls="${opt.d>=2?'good':opt.d<=-2?'bad':'neutral'}">${replacer(opt.t)}</button>`).join('');
+  const qHtml = `<div class="press-q"><div class="press-q-text">${qText}</div><div class="press-opts">${opts}</div></div>`;
   const summary = `<div class="press-summary" id="press-summary"></div>
                    <div style="display:flex;justify-content:center;margin-top:16px"><button class="setup-go" id="press-done" style="display:none">CONFIRMAR</button></div>`;
-  body.innerHTML = head + qsHtml + summary;
+  body.innerHTML = head + qHtml + summary;
   modal.classList.add('open');
-  let delta = 0, answered = 0;
   body.querySelectorAll('.press-opt').forEach(b=>{
     b.onclick = ()=>{
-      const qi = b.dataset.q;
       const d = parseInt(b.dataset.d, 10);
-      const card = body.querySelector(`.press-q[data-q="${qi}"]`);
-      if(!card || card.dataset.done) return;
-      card.dataset.done = '1';
-      card.querySelectorAll('.press-opt').forEach(o=>o.classList.add('disabled'));
+      body.querySelectorAll('.press-opt').forEach(o=>o.classList.add('disabled'));
       b.classList.remove('disabled');
       b.classList.add('picked', b.dataset.cls);
-      delta += d; answered++;
-      if(answered>=qs.length){
-        const sum = document.getElementById('press-summary');
-        sum.classList.add('show');
-        if(delta>=2){ sum.classList.add('up'); sum.textContent = `🔥 ELENCO MOTIVADO! Moral ${delta>0?'+':''}${delta}`; }
-        else if(delta<=-2){ sum.classList.add('down'); sum.textContent = `💔 CLIMA RUIM NO VESTIÁRIO. Moral ${delta}`; }
-        else { sum.classList.add('neutral'); sum.textContent = `😐 Discurso equilibrado. Moral ${delta>0?'+':''}${delta}`; }
-        document.getElementById('press-done').style.display = '';
-      }
+      const sum = document.getElementById('press-summary');
+      sum.classList.add('show');
+      sum.classList.remove('up','down','neutral');
+      if(d>=2){ sum.classList.add('up'); sum.textContent = `🔥 ELENCO MOTIVADO! Moral +${d}`; }
+      else if(d<=-2){ sum.classList.add('down'); sum.textContent = `💔 CLIMA RUIM NO VESTIÁRIO. Moral ${d}`; }
+      else if(d>0){ sum.classList.add('up'); sum.textContent = `😊 Resposta equilibrada. Moral +${d}`; }
+      else if(d<0){ sum.classList.add('down'); sum.textContent = `😬 Resposta arriscada. Moral ${d}`; }
+      else { sum.classList.add('neutral'); sum.textContent = `😐 Resposta neutra. Moral 0`; }
+      const btn = document.getElementById('press-done');
+      btn.style.display = '';
+      btn.dataset.delta = d;
     };
   });
-  document.getElementById('press-done').onclick = ()=>{
-    setMoral(getMoral() + Math.sign(delta) * Math.min(2, Math.abs(delta)));
+  document.getElementById('press-done').onclick = (e)=>{
+    const d = parseInt(e.target.dataset.delta||'0', 10);
+    setMoral(getMoral() + d);
     modal.classList.remove('open');
   };
   document.getElementById('press-close').onclick = ()=>{ modal.classList.remove('open'); };
