@@ -215,7 +215,7 @@
 
   .match-overlay{position:fixed;inset:0;background:rgba(5,6,10,.95);display:none;align-items:flex-start;justify-content:center;z-index:200;padding:12px;overflow-y:auto}
   .match-overlay.open{display:flex}
-  .match-box{background:linear-gradient(180deg,#0f1320,#0a0d16);border:1px solid var(--line);border-radius:14px;width:100%;max-width:620px;padding:16px;text-align:center;margin:auto}
+  .match-box{background:linear-gradient(180deg,#0f1320,#0a0d16);border:1px solid var(--line);border-radius:14px;width:100%;max-width:620px;padding:16px;text-align:center;margin:auto;position:relative}
   .match-teams{display:flex;justify-content:space-around;align-items:center;gap:12px}
   .match-teams .tn{font-family:'Bebas Neue';font-size:15px;letter-spacing:1px;color:var(--neon)}
   .match-teams .tn.foe{color:var(--red)}
@@ -916,6 +916,31 @@
   .ev.special{background:linear-gradient(90deg,rgba(245,200,66,.18),rgba(245,200,66,.06));border-left:3px solid var(--gold);color:var(--gold-2);font-weight:600;font-style:italic}
   .ev.weather{background:linear-gradient(90deg,rgba(99,102,241,.15),rgba(99,102,241,.05));border-left:3px solid #818cf8;color:#a5b4fc}
   .ev.fans{background:linear-gradient(90deg,rgba(34,197,94,.14),rgba(34,197,94,.04));border-left:3px solid #22c55e;color:#86efac;font-weight:600}
+  .ev.chaos{background:linear-gradient(90deg,rgba(239,68,68,.18),rgba(245,200,66,.08));border-left:3px solid #ef4444;color:#fecaca;font-weight:700;font-style:italic}
+
+  /* ============ EVENT POPUP (popup no meio da partida) ============ */
+  .event-popup{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.7);opacity:0;pointer-events:none;
+    background:linear-gradient(180deg,#0f1320 0%,#070a13 100%);border:2px solid var(--gold);border-radius:14px;padding:18px 22px;min-width:280px;max-width:88%;
+    text-align:center;z-index:250;box-shadow:0 0 60px rgba(245,200,66,.35),0 30px 60px rgba(0,0,0,.7);
+    transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .25s ease}
+  .event-popup.show{transform:translate(-50%,-50%) scale(1);opacity:1}
+  .event-popup.hide{transform:translate(-50%,-50%) scale(.85);opacity:0}
+  .event-popup .ep-icon{font-size:54px;line-height:1;margin-bottom:6px;filter:drop-shadow(0 4px 12px rgba(0,0,0,.6));animation:epIconPulse 1.4s ease infinite}
+  @keyframes epIconPulse{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.1) rotate(-3deg)}}
+  .event-popup .ep-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2.5px;color:var(--gold);margin-bottom:8px;text-shadow:0 0 16px rgba(245,200,66,.5)}
+  .event-popup .ep-txt{font-family:'Outfit',sans-serif;font-size:13px;color:#cbd5e1;line-height:1.45;margin-bottom:12px;max-width:340px;margin-left:auto;margin-right:auto}
+  .event-popup .ep-dur{font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:2px;color:var(--neon);font-weight:700;margin-bottom:8px}
+  .event-popup .ep-bar{height:4px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden}
+  .event-popup .ep-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--neon));width:100%;animation:epBarShrink 3.2s linear forwards;transform-origin:left}
+  @keyframes epBarShrink{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+  /* Variações por tipo */
+  .event-popup.weather{border-color:#818cf8;box-shadow:0 0 60px rgba(99,102,241,.4),0 30px 60px rgba(0,0,0,.7)}
+  .event-popup.weather .ep-title{color:#a5b4fc;text-shadow:0 0 16px rgba(99,102,241,.5)}
+  .event-popup.fans{border-color:#22c55e;box-shadow:0 0 60px rgba(34,197,94,.4),0 30px 60px rgba(0,0,0,.7)}
+  .event-popup.fans .ep-title{color:#86efac;text-shadow:0 0 16px rgba(34,197,94,.5)}
+  .event-popup.chaos{border-color:#ef4444;box-shadow:0 0 60px rgba(239,68,68,.5),0 30px 60px rgba(0,0,0,.7);animation:epChaosShake .4s ease-in-out 0s 3}
+  .event-popup.chaos .ep-title{color:#fca5a5;text-shadow:0 0 16px rgba(239,68,68,.6)}
+  @keyframes epChaosShake{0%,100%{transform:translate(-50%,-50%) scale(1)}25%{transform:translate(-52%,-50%) scale(1.02) rotate(-1deg)}75%{transform:translate(-48%,-50%) scale(1.02) rotate(1deg)}}
 
   /* ============ COLETIVA DE IMPRENSA ============ */
   #press-modal .modal{max-width:560px}
@@ -2669,16 +2694,55 @@ function narrateFoeGoal(scorer, foeName, score){
 
 // ======== EVENTOS ESPECIAIS ========
 const SPECIAL_EVENTS = [
-  {key:'fans',     icon:'📣', cls:'fans',    txt:'TORCIDA EMPURRA! Cantos no estádio levantam o time', ourMul:1.18, theirMul:0.92, dur:6},
-  {key:'rain',     icon:'🌧', cls:'weather', txt:'CHUVA FORTE! Bola fica pesada, jogo trava',           ourMul:0.85, theirMul:0.85, dur:8},
-  {key:'wind',     icon:'💨', cls:'weather', txt:'VENTO FORTE! Cruzamentos imprevisíveis',              ourMul:0.92, theirMul:0.92, dur:6},
-  {key:'var',      icon:'📺', cls:'special', txt:'VAR sendo consultado… paralisação',                   ourMul:0.7,  theirMul:0.7,  dur:3},
-  {key:'pressure', icon:'🔥', cls:'special', txt:'ADVERSÁRIO PRESSIONA NO ATAQUE!',                     ourMul:0.88, theirMul:1.15, dur:5},
-  {key:'momentum', icon:'⚡', cls:'special', txt:'MOMENTO INSPIRADO! Nosso time toca de primeira',      ourMul:1.22, theirMul:0.95, dur:5},
-  {key:'sun',      icon:'☀️', cls:'weather', txt:'SOL FORTE incomoda os jogadores',                     ourMul:0.94, theirMul:0.94, dur:5},
-  {key:'silence',  icon:'🤫', cls:'fans',    txt:'TORCIDA SILENCIOU… time precisa reagir',              ourMul:0.9,  theirMul:1.05, dur:4}
+  // Clima / Atmosfera
+  {key:'fans',     icon:'📣', cls:'fans',    title:'TORCIDA EMPURRA!',     txt:'A arquibancada explode em cantos. O time joga embalado pela torcida.', ourMul:1.18, theirMul:0.92, dur:6},
+  {key:'rain',     icon:'🌧', cls:'weather', title:'CHUVA FORTE!',         txt:'Começou a chover. A bola fica pesada, o gramado escorrega e o jogo trava.', ourMul:0.85, theirMul:0.85, dur:8},
+  {key:'wind',     icon:'💨', cls:'weather', title:'VENTO FORTE!',         txt:'Ventania no estádio: cruzamentos imprevisíveis e bolas longas viram loteria.', ourMul:0.92, theirMul:0.92, dur:6},
+  {key:'sun',      icon:'☀️', cls:'weather', title:'SOL ESCALDANTE',       txt:'O sol bate forte no campo, os jogadores sentem o calor e o ritmo cai.', ourMul:0.94, theirMul:0.94, dur:5},
+  {key:'momentum', icon:'⚡', cls:'special', title:'MOMENTO INSPIRADO!',   txt:'Nosso time engatou. Toca de primeira, troca de passes triangulares, adversário não consegue tomar a bola.', ourMul:1.22, theirMul:0.95, dur:5},
+  {key:'pressure', icon:'🔥', cls:'special', title:'PRESSÃO ADVERSÁRIA',   txt:'O adversário sobe a marcação e empilha jogadores no nosso campo. Precisamos segurar!', ourMul:0.88, theirMul:1.15, dur:5},
+  {key:'silence',  icon:'🤫', cls:'fans',    title:'TORCIDA SILENCIOU',    txt:'Vaias começam a tomar conta. O time sente o peso e perde confiança.', ourMul:0.9,  theirMul:1.05, dur:4},
+  // Polêmicas / Arbitragem
+  {key:'var',      icon:'📺', cls:'special', title:'VAR EM CONSULTA',      txt:'Árbitro vai ao monitor analisar um lance polêmico. Jogo paralisado por longos minutos.', ourMul:0.7,  theirMul:0.7,  dur:3},
+  {key:'arbreclam',icon:'😡', cls:'special', title:'RECLAMAÇÃO GERAL',     txt:'Jogadores cercam o árbitro depois de uma decisão polêmica. Ânimos exaltados em campo.', ourMul:0.85, theirMul:0.85, dur:3},
+  // Brigas / Confusão
+  {key:'briga',    icon:'🥊', cls:'chaos',   title:'BRIGA NO CAMPO!',      txt:'Confusão generalizada após dividida violenta! Empurra-empurra dos dois lados, juiz tenta separar.', ourMul:0.75, theirMul:0.75, dur:4},
+  {key:'banco',    icon:'🪑', cls:'chaos',   title:'CONFUSÃO NO BANCO',    txt:'Reservas e comissão técnica trocam farpas com o banco adversário. Tensão alta.', ourMul:0.9,  theirMul:0.9,  dur:3},
+  // Invasões / fora do normal
+  {key:'invasao',  icon:'🏃', cls:'chaos',   title:'INVASÃO DE CAMPO!',    txt:'Torcedor pula a grade e invade o gramado. Seguranças correm atrás, partida paralisada.', ourMul:0.6,  theirMul:0.6,  dur:2},
+  {key:'apagao',   icon:'💡', cls:'chaos',   title:'APAGÃO NO ESTÁDIO',    txt:'As luzes piscaram! Falha elétrica deixou o estádio no escuro por alguns instantes.', ourMul:0.55, theirMul:0.55, dur:2},
+  {key:'cachorro', icon:'🐕', cls:'chaos',   title:'CACHORRO NO GRAMADO',  txt:'Um cachorro invadiu o campo correndo atrás da bola! A galera no estádio em êxtase, jogadores sorrindo.', ourMul:0.7,  theirMul:0.7,  dur:2},
+  {key:'gandula',  icon:'⏱', cls:'special', title:'GANDULA CATIMBANDO',   txt:'Gandulas demoram pra devolver a bola. Time que está ganhando comemora a perda de tempo.', ourMul:1.05, theirMul:0.9, dur:3},
+  // Lesões e cansaço (sem ferrar o jogo)
+  {key:'caimbra',  icon:'🦵', cls:'special', title:'CÃIBRAS NO ELENCO',    txt:'Vários jogadores no chão com câimbra. O time inteiro está apagando fisicamente.', ourMul:0.88, theirMul:0.95, dur:4},
+  // Tática
+  {key:'tatica',   icon:'🧠', cls:'special', title:'AJUSTE TÁTICO',        txt:'O técnico desenha no quadro e os jogadores ouvem com atenção. Mudança de postura agora.', ourMul:1.15, theirMul:1.0, dur:5},
+  {key:'rotacao',  icon:'🔄', cls:'special', title:'TROCA NO ADVERSÁRIO',  txt:'Adversário tira um jogador cansado e coloca peça nova. Eles ganham fôlego pra atacar.', ourMul:0.95, theirMul:1.12, dur:5}
 ];
 function pickSpecialEvent(){ return pick(SPECIAL_EVENTS); }
+
+function showEventPopup(ev){
+  const host = document.getElementById('match-box') || document.body;
+  let pop = document.getElementById('event-popup');
+  if(pop) pop.remove();
+  pop = document.createElement('div');
+  pop.id = 'event-popup';
+  pop.className = 'event-popup ' + (ev.cls || '');
+  pop.innerHTML = `
+    <div class="ep-icon">${ev.icon}</div>
+    <div class="ep-title">${ev.title}</div>
+    <div class="ep-txt">${ev.txt}</div>
+    <div class="ep-dur">⏱ DURA ${ev.dur} MINUTOS</div>
+    <div class="ep-bar"><div class="ep-bar-fill"></div></div>`;
+  host.appendChild(pop);
+  void pop.offsetWidth;
+  pop.classList.add('show');
+  setTimeout(()=>{
+    pop.classList.remove('show');
+    pop.classList.add('hide');
+    setTimeout(()=>pop.remove(), 350);
+  }, 3200);
+}
 
 function runLiveMatch(foe, onEnd){
   applyMatchTheme();
@@ -2742,13 +2806,14 @@ function runLiveMatch(foe, onEnd){
     $('#m-clock').textContent = String(minute).padStart(2,'0')+"'";
     moveBall();
     const stats = state.matchStats;
-    // Evento especial: até 2 por jogo, gatilho ~0.6%/min
-    if(minute<85 && evtTriggered<2 && minute>evtUntil+5 && Math.random()<0.006){
+    // Evento especial: até 3 por jogo, gatilho ~1%/min
+    if(minute<85 && evtTriggered<3 && minute>evtUntil+5 && Math.random()<0.01){
       const ev = pickSpecialEvent();
       evtOurMul = ev.ourMul; evtTheirMul = ev.theirMul;
       evtUntil = minute + ev.dur; evtTriggered++;
-      addEv(minute, `${ev.icon} <strong>${ev.txt}</strong> · próximos ${ev.dur}min`, ev.cls);
+      addEv(minute, `${ev.icon} <strong>${ev.title}</strong> ${ev.txt} <i>(${ev.dur}min)</i>`, ev.cls);
       pitchEffect(ev.icon, 'save');
+      showEventPopup(ev);
     }
     if(minute>evtUntil && (evtOurMul!==1 || evtTheirMul!==1)){
       evtOurMul = 1; evtTheirMul = 1;
