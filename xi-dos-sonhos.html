@@ -462,6 +462,21 @@
   .cap-opt .nm{flex:1;font-weight:700;font-size:13px}
   .cap-opt .rt{font-family:'Bebas Neue',sans-serif;font-size:15px;color:var(--gold)}
 
+  /* Match stats post-jogo */
+  .match-stats{margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:10px;background:rgba(34,211,238,.04)}
+  .ms-title{font-family:'Bebas Neue',sans-serif;letter-spacing:1.5px;color:var(--neon);font-size:13px;text-align:center;margin-bottom:8px}
+  .ms-row{display:grid;grid-template-columns:50px 1fr 50px;align-items:center;gap:8px;margin-top:6px}
+  .ms-val{font-family:'Bebas Neue',sans-serif;font-size:18px;line-height:1;text-align:center}
+  .ms-val.ours{color:var(--gold);text-align:right}
+  .ms-val.theirs{color:var(--red);text-align:left}
+  .ms-lbl{font-family:'Outfit',sans-serif;font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:center;font-weight:700}
+  .ms-bar{height:4px;border-radius:99px;background:rgba(239,68,68,.25);overflow:hidden;margin:2px 0 4px}
+  .ms-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-2));transition:width .6s ease}
+  .ms-motm{margin-top:12px;padding:10px;background:linear-gradient(180deg,rgba(245,200,66,.12),rgba(245,200,66,.02));border:1px solid var(--gold);border-radius:8px;text-align:center}
+  .ms-motm-lbl{font-family:'Outfit',sans-serif;font-size:9px;letter-spacing:1.5px;color:var(--gold);font-weight:700;margin-bottom:2px}
+  .ms-motm-name{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;color:#fff;line-height:1.1}
+  .ms-motm-role{font-size:10.5px;color:var(--muted);margin-top:2px;letter-spacing:.5px}
+
   /* Top scorers */
   .top-scorers{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:10px;background:rgba(34,211,238,.04);text-align:left}
   .ts-head{font-family:'Bebas Neue',sans-serif;letter-spacing:1.2px;color:var(--neon);font-size:12px;margin-bottom:6px;text-align:center}
@@ -2162,7 +2177,13 @@ function effectiveR(p,i){
   return Math.min(99, r);
 }
 function calcTeamR(){
-  return state.lineup.reduce((s,p,i)=>s+effectiveR(p,i),0)/11;
+  const out = state.matchOutNow || new Set();
+  return state.lineup.reduce((s,p,i)=>{
+    if(!p) return s;
+    let r = effectiveR(p,i);
+    if(out.has(p.n)) r = Math.max(50, r-18); // substituto com OVR reduzido
+    return s + r;
+  },0)/11;
 }
 
 function pickFoe(filter){
@@ -2247,6 +2268,22 @@ function simConfronto(){
 
 function runLiveMatch(foe, onEnd){
   state.matchScorerEvents = [];
+  state.matchStats = {ourShots:0, theirShots:0, ourShotsOn:0, theirShotsOn:0, ourCorners:0, theirCorners:0, ourFouls:0, theirFouls:0, ourSaves:0, theirSaves:0};
+  // Aplica suspensões/lesões dos torneios (vigentes nesta partida)
+  const outNow = new Set();
+  if(state.tournament){
+    state.tournament.cards = state.tournament.cards || {};
+    state.tournament.miss = state.tournament.miss || {};
+    state.tournament.injuries = state.tournament.injuries || {};
+    Object.keys(state.tournament.miss).forEach(n=>{ if(state.tournament.miss[n]>0) outNow.add(n); });
+    Object.keys(state.tournament.injuries).forEach(n=>{ if(state.tournament.injuries[n]>0) outNow.add(n); });
+    if(outNow.size>0){
+      const list = [...outNow].slice(0,3).join(', ');
+      const extra = outNow.size>3 ? ` +${outNow.size-3}` : '';
+      addEv(0, `<i>⚠ Desfalques: ${list}${extra} (substitutos em campo)</i>`, 'bad');
+    }
+  }
+  state.matchOutNow = outNow;
   const teamR = calcTeamR();
   let foeR = foe.jogadores.reduce((s,p)=>s+p.r,0)/foe.jogadores.length;
   // Aumentar dificuldade nos mata-matas internacionais
@@ -2287,23 +2324,39 @@ function runLiveMatch(foe, onEnd){
     minute++;
     $('#m-clock').textContent = String(minute).padStart(2,'0')+"'";
     moveBall();
+    const stats = state.matchStats;
     if(Math.random()<ourChance/12){
       const sc = weighted(scorers,w);
       score[0]++; $('#sc-a').textContent=score[0]; bumpScore('sc-a');
+      stats.ourShots++; stats.ourShotsOn++;
       const capIcon = (captain && captain.n===sc.n) ? ' 🅒' : '';
       addEv(minute,`<strong>⚽ GOL!</strong> ${sc.n}${capIcon} marca! ${score[0]}-${score[1]}`,'goal');
       pitchEffect('GOL!','goal','right');
       trackScorer(sc, state.teamName, minute);
     } else if(Math.random()<theirChance/12){
       score[1]++; $('#sc-b').textContent=score[1]; bumpScore('sc-b');
+      stats.theirShots++; stats.theirShotsOn++;
       const sc = pick(foe.jogadores.filter(p=>p.pos==='ATA'||p.pos==='MEI'));
       addEv(minute,`<strong>Gol do adversário</strong> · ${sc.n} (${foe.nome}) · ${score[0]}-${score[1]}`,'bad');
       pitchEffect('GOL','goal','left');
       trackScorer(sc, foe.nome, minute);
     } else {
       const r = Math.random();
+      // LESÃO: ~0.1%/min → ~9% chance/jogo (apenas em torneios)
+      if(r < 0.001){
+        if(state.tournament){
+          const p = pickOurNonGK();
+          if(p && !state.tournament.injuries[p.n]){
+            const games = 1 + Math.floor(Math.random()*4);
+            state.tournament.injuries[p.n] = games + 1;
+            addEv(minute, `🩹 LESÃO · ${p.n} sai machucado! Fora por ${games} jogo${games>1?'s':''}`, 'bad');
+            pitchEffect('🩹','red');
+            stats.ourFouls++;
+          }
+        }
+      }
       // RED CARD: ~0.18%/min → ~15% chance/jogo · time mais fraco mais propenso · max 1 por equipe
-      if(r < 0.0018){
+      else if(r < 0.0028){
         const skill = (foeR-teamR)*0.012;
         const ourRed = Math.random() < (0.5 + skill);
         if(ourRed && ourReds<1){
@@ -2325,21 +2378,24 @@ function runLiveMatch(foe, onEnd){
         }
       }
       // PÊNALTI: ~0.32%/min → ~25% chance/jogo combinado (nosso+deles)
-      else if(r < 0.005){
+      else if(r < 0.0055){
         const ourPen = Math.random() < 0.55;
         if(ourPen && captain){
-          const conv = Math.random() < 0.78; // 78% conversão (realista)
+          stats.ourShots++; stats.ourShotsOn++;
+          const conv = Math.random() < 0.78;
           if(conv){
             score[0]++; $('#sc-a').textContent=score[0]; bumpScore('sc-a');
             addEv(minute,`<strong>⚽ PÊNALTI · GOL!</strong> ${captain.n} 🅒 bate firme! ${score[0]}-${score[1]}`,'goal');
             pitchEffect('PÊNALTI!','goal','right');
             trackScorer(captain, state.teamName, minute);
           } else {
+            stats.theirSaves++;
             addEv(minute,`❌ PÊNALTI · ${captain.n} 🅒 isolou! defesa adversária`,'bad');
             pitchEffect('FORA!','red');
           }
         } else {
           const gk = state.lineup[0];
+          stats.theirShots++; stats.theirShotsOn++;
           const conv = Math.random() < 0.72;
           if(conv){
             score[1]++; $('#sc-b').textContent=score[1]; bumpScore('sc-b');
@@ -2348,25 +2404,60 @@ function runLiveMatch(foe, onEnd){
             pitchEffect('PÊNALTI','goal','left');
             trackScorer(sc, foe.nome, minute);
           } else if(gk){
+            stats.ourSaves++;
             addEv(minute,`🧤 PÊNALTI! ${gk.n} defendeu!`,'goal');
             pitchEffect('DEFENDEU!','save');
           }
         }
       }
-      // AMARELOS: ~2-3 por jogo
-      else if(r < 0.035){
+      // AMARELOS: ~2-3 por jogo · 3 amarelos = suspenso pra próxima
+      else if(r < 0.045){
         const ourCard = Math.random()<0.5;
         if(ourCard){
           const p = pickOurNonGK();
-          if(p){ addEv(minute,`🟨 Amarelo · ${p.n}`); pitchEffect('🟨','yel'); }
+          if(p){
+            addEv(minute,`🟨 Amarelo · ${p.n}`); pitchEffect('🟨','yel');
+            stats.ourFouls++;
+            if(state.tournament){
+              state.tournament.cards[p.n] = (state.tournament.cards[p.n]||0) + 1;
+              if(state.tournament.cards[p.n] >= 3){
+                addEv(minute, `⛔ ${p.n} suspenso por 3º amarelo! Fora da próxima.`, 'bad');
+                state.tournament.miss[p.n] = 2;
+                delete state.tournament.cards[p.n];
+              }
+            }
+          }
         } else {
           const p = pickTheirNonGK();
-          if(p){ addEv(minute,`🟨 Amarelo · ${p.n} (${foe.nome})`); pitchEffect('🟨','yel'); }
+          if(p){ addEv(minute,`🟨 Amarelo · ${p.n} (${foe.nome})`); pitchEffect('🟨','yel'); stats.theirFouls++; }
         }
       }
-      // Falta perigosa: evento de cor
-      else if(r < 0.05){
-        addEv(minute,'Falta perigosa próxima à área.');
+      // Chute fora — incrementa estatística sem evento de cor
+      else if(r < 0.10){
+        const ourShot = Math.random()<0.5;
+        if(ourShot) stats.ourShots++; else stats.theirShots++;
+      }
+      // Defesa do goleiro (chute no alvo defendido)
+      else if(r < 0.13){
+        const ourShot = Math.random()<0.55;
+        if(ourShot){
+          stats.ourShots++; stats.ourShotsOn++; stats.theirSaves++;
+          if(Math.random()<0.18){ addEv(minute,`🧤 Defesa do goleiro adversário!`); pitchEffect('DEFENDEU!','save'); }
+        } else {
+          stats.theirShots++; stats.theirShotsOn++; stats.ourSaves++;
+          const gk = state.lineup[0];
+          if(Math.random()<0.25 && gk){ addEv(minute,`🧤 ${gk.n} faz milagre!`,'goal'); pitchEffect('PEGOU!','save'); }
+        }
+      }
+      // Escanteio
+      else if(r < 0.17){
+        if(Math.random()<0.5) stats.ourCorners++; else stats.theirCorners++;
+      }
+      // Falta sem cartão
+      else if(r < 0.22){
+        const ourFoul = Math.random()<0.5;
+        if(ourFoul) stats.ourFouls++; else stats.theirFouls++;
+        if(Math.random()<0.10) addEv(minute,'Falta perigosa próxima à área.');
       }
     }
     if(minute>=90){
@@ -2375,6 +2466,14 @@ function runLiveMatch(foe, onEnd){
       state.matchTickFn = null;
       addEv(90,'<strong>⏱ FIM DE JOGO</strong>','goal'); $('#m-clock').classList.add('finished');
       const sb=$('#side-badge'); if(sb){sb.textContent='ENCERRADO';sb.className='badge ended';}
+      finalizeMatchStats(score, teamR, foeR);
+      // Decrementa suspensões/lesões após este jogo
+      if(state.tournament){
+        ['miss','injuries'].forEach(k=>{
+          const obj = state.tournament[k] || {};
+          Object.keys(obj).forEach(n=>{ obj[n]--; if(obj[n]<=0) delete obj[n]; });
+        });
+      }
       onEnd(score);
     }
   };
@@ -2382,6 +2481,69 @@ function runLiveMatch(foe, onEnd){
   state.matchTick = setInterval(tickFn, state.speed);
 }
 
+function finalizeMatchStats(score, teamR, foeR){
+  const s = state.matchStats || {};
+  const ratio = teamR / Math.max(1, teamR + foeR);
+  let poss = Math.round(ratio*100 + (Math.random()*8-4));
+  poss = Math.max(35, Math.min(70, poss));
+  s.ourPoss = poss; s.theirPoss = 100-poss;
+  // Garante mínimos coerentes com placar
+  s.ourShots = Math.max(s.ourShots, score[0]+1);
+  s.theirShots = Math.max(s.theirShots, score[1]+1);
+  s.ourShotsOn = Math.max(s.ourShotsOn, score[0]);
+  s.theirShotsOn = Math.max(s.theirShotsOn, score[1]);
+  s.motm = pickMOTM(score);
+  state.matchStats = s;
+}
+function pickMOTM(score){
+  const events = state.matchScorerEvents || [];
+  const mine = events.filter(e=>e.team===state.teamName);
+  if(score[0] >= score[1] && mine.length){
+    const counts = {};
+    mine.forEach(e=>counts[e.name] = (counts[e.name]||0)+1);
+    const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+    const topG = sorted[0][1];
+    const candidatos = sorted.filter(e=>e[1]===topG).map(e=>e[0]);
+    let best = null;
+    candidatos.forEach(name=>{
+      const p = state.lineup.find(pl=>pl && pl.n===name);
+      if(p && (!best || p.r > best.r)) best = p;
+    });
+    if(best) return {name:best.n, rating:best.r, role:`⚽ ${counts[best.n]} gol${counts[best.n]>1?'s':''}`};
+  }
+  // Fallback: melhor OVR em campo
+  let best = null;
+  state.lineup.forEach(p=>{ if(p && (!best || p.r > best.r)) best = p; });
+  return best ? {name:best.n, rating:best.r, role:'Destaque'} : null;
+}
+function renderMatchStats(){
+  const s = state.matchStats;
+  if(!s || !s.ourPoss) return '';
+  const bar = (a,b,labA,labB) => `
+    <div class="ms-row">
+      <span class="ms-val ours">${a}</span>
+      <span class="ms-lbl">${labA}</span>
+      <span class="ms-val theirs">${b}</span>
+    </div>
+    <div class="ms-bar"><div class="ms-fill" style="width:${(a/Math.max(1,a+b))*100}%"></div></div>`;
+  const motm = s.motm ? `
+    <div class="ms-motm">
+      <div class="ms-motm-lbl">⭐ HOMEM DO JOGO</div>
+      <div class="ms-motm-name">${s.motm.name}</div>
+      <div class="ms-motm-role">${s.motm.role} · OVR ${s.motm.rating}</div>
+    </div>` : '';
+  return `
+    <div class="match-stats">
+      <div class="ms-title">📊 ESTATÍSTICAS</div>
+      ${bar(s.ourPoss+'%', s.theirPoss+'%', 'Posse de bola')}
+      ${bar(s.ourShots, s.theirShots, 'Chutes')}
+      ${bar(s.ourShotsOn, s.theirShotsOn, 'No alvo')}
+      ${bar(s.ourCorners, s.theirCorners, 'Escanteios')}
+      ${bar(s.ourFouls, s.theirFouls, 'Faltas')}
+      ${bar(s.ourSaves, s.theirSaves, 'Defesas')}
+      ${motm}
+    </div>`;
+}
 function moveBall(){
   const b = $('#mp-ball');
   if(!b) return;
@@ -2507,7 +2669,7 @@ function playNextBrasRound(){
   });
   runLiveMatch(foe,(score)=>{
     recordMatch(t.table, t.meName, foe.nome, score[0], score[1]);
-    t.results.push({round:t.round, foe, score:score.slice(), outcome:score[0]>score[1]?'V':score[0]<score[1]?'D':'E', scorers:(state.matchScorerEvents||[]).slice()});
+    t.results.push({round:t.round, foe, score:score.slice(), outcome:score[0]>score[1]?'V':score[0]<score[1]?'D':'E', scorers:(state.matchScorerEvents||[]).slice(), stats:state.matchStats?{...state.matchStats}:null});
     showStandings(t.table, t.meName, t.allTeams);
     showRoundEndUI();
   });
@@ -2925,8 +3087,8 @@ function playLibertaRound(){
       win = pen.win;
       addEv(91,`<strong>🥅 PÊNALTIS!</strong> ${state.teamName} ${pen.mg} x ${pen.fg} ${foe.nome}`,win?'goal':'bad');
     }
-    t2.campaign.push({stage:t2.round, foe, score:score.slice(), pen, win, scorers:(state.matchScorerEvents||[]).slice()});
-    t2.results.push({stage:t2.round, foe, score, win, pen, scorers:(state.matchScorerEvents||[]).slice()});
+    t2.campaign.push({stage:t2.round, foe, score:score.slice(), pen, win, scorers:(state.matchScorerEvents||[]).slice(), stats:state.matchStats?{...state.matchStats}:null});
+    t2.results.push({stage:t2.round, foe, score, win, pen, scorers:(state.matchScorerEvents||[]).slice(), stats:state.matchStats?{...state.matchStats}:null});
     if(win){
       const winners = [meTeam, ...others.map(o=>o.winner)];
       const nextRound = {Oitavas:'Quartas', Quartas:'Semi', Semi:'FINAL', FINAL:'CAMPEÃO'}[t2.round];
@@ -3038,8 +3200,8 @@ function playMundialRound(){
       win = pen.win;
       addEv(91,`<strong>🥅 PÊNALTIS!</strong> ${state.teamName} ${pen.mg} x ${pen.fg} ${foe.nome}`,win?'goal':'bad');
     }
-    t2.campaign.push({stage:t2.round, foe, score:score.slice(), pen, win, scorers:(state.matchScorerEvents||[]).slice()});
-    t2.results.push({stage:t2.round, foe, score, win, pen, scorers:(state.matchScorerEvents||[]).slice()});
+    t2.campaign.push({stage:t2.round, foe, score:score.slice(), pen, win, scorers:(state.matchScorerEvents||[]).slice(), stats:state.matchStats?{...state.matchStats}:null});
+    t2.results.push({stage:t2.round, foe, score, win, pen, scorers:(state.matchScorerEvents||[]).slice(), stats:state.matchStats?{...state.matchStats}:null});
     if(win){
       const winners = [meTeam, ...others.map(o=>o.winner)];
       const nextRound = {Quartas:'Semi', Semi:'FINAL', FINAL:'CAMPEÃO'}[t2.round];
@@ -3852,10 +4014,11 @@ function trackScorer(player, teamName, minute){
 }
 
 function renderTopScorers(){
+  const statsHTML = renderMatchStats();
   const bucket = state.tournament ? state.tournament.scorers : state.matchScorers;
-  if(!bucket) return '';
+  if(!bucket){ state.matchScorers = null; return statsHTML; }
   const arr = Object.values(bucket).sort((a,b)=>b.goals-a.goals).slice(0,5);
-  if(arr.length===0) return '';
+  if(arr.length===0){ state.matchScorers = null; return statsHTML; }
   let html = '<div class="top-scorers"><div class="ts-head">⚽ ARTILHEIROS</div>';
   arr.forEach((s,i)=>{
     html += `<div class="ts-row ${i===0?'first':''}">
@@ -3867,7 +4030,7 @@ function renderTopScorers(){
   });
   html += '</div>';
   state.matchScorers = null;
-  return html;
+  return statsHTML + html;
 }
 
 // ============ CAPITÃO ============
@@ -4211,7 +4374,7 @@ function playNextEuroRound(){
   });
   runLiveMatch(foe,(score)=>{
     recordMatch(t.table, t.meName, foe.nome, score[0], score[1]);
-    t.results.push({round:t.round, foe, score:score.slice(), outcome:score[0]>score[1]?'V':score[0]<score[1]?'D':'E', scorers:(state.matchScorerEvents||[]).slice()});
+    t.results.push({round:t.round, foe, score:score.slice(), outcome:score[0]>score[1]?'V':score[0]<score[1]?'D':'E', scorers:(state.matchScorerEvents||[]).slice(), stats:state.matchStats?{...state.matchStats}:null});
     showStandings(t.table, t.meName, t.allTeams);
     showEuroRoundEndUI();
   });
@@ -4466,8 +4629,8 @@ function playChampionsRound(){
       win = pen.win;
       addEv(91,`<strong>🥅 PÊNALTIS!</strong> ${state.teamName} ${pen.mg} x ${pen.fg} ${foe.nome}`,win?'goal':'bad');
     }
-    t2.campaign.push({stage:t2.round, foe, score:score.slice(), pen, win, scorers:(state.matchScorerEvents||[]).slice()});
-    t2.results.push({stage:t2.round, foe, score, win, pen, scorers:(state.matchScorerEvents||[]).slice()});
+    t2.campaign.push({stage:t2.round, foe, score:score.slice(), pen, win, scorers:(state.matchScorerEvents||[]).slice(), stats:state.matchStats?{...state.matchStats}:null});
+    t2.results.push({stage:t2.round, foe, score, win, pen, scorers:(state.matchScorerEvents||[]).slice(), stats:state.matchStats?{...state.matchStats}:null});
     if(win){
       const winners=[meTeam,...others.map(o=>o.winner)];
       const nextRound={Oitavas:'Quartas',Quartas:'Semi',Semi:'FINAL',FINAL:'CAMPEÃO'}[t2.round];
