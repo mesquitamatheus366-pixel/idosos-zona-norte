@@ -3290,18 +3290,18 @@ function showLibertaGroupEndUI(){
   $('#v-title').textContent = `RODADA ${t.round}/${t.totalRounds} · ${myPos}º NO GRUPO ${meGroup.name}`;
   const remaining = t.totalRounds - t.round;
   if(remaining>0){
-    $('#v-text').textContent = `Faltam ${remaining} rodada${remaining>1?'s':''}. Só o líder avança às quartas.`;
+    $('#v-text').textContent = `Faltam ${remaining} rodada${remaining>1?'s':''}. Top 2 avança às oitavas.`;
     $('#verdict .actions').innerHTML = `
       <button id="btn-next-grp">PRÓXIMA RODADA →</button>
       <button class="ghost" id="btn-quit-tournament">DESISTIR</button>`;
     $('#btn-next-grp').onclick = ()=>{ t.round++; playLibertaGroupRound(); };
   } else {
-    if(myPos<=1){
+    if(myPos<=2){
       v.classList.add('win');
       $('#v-title').textContent = `✅ ${myPos}º LUGAR · CLASSIFICADO!`;
       $('#v-text').textContent = `Você passou de fase. Hora do mata-mata.`;
       $('#verdict .actions').innerHTML = `
-        <button id="btn-next-knock">IR PARA AS QUARTAS →</button>
+        <button id="btn-next-knock">IR PARA AS OITAVAS →</button>
         <button class="ghost" id="btn-quit-tournament">DESISTIR</button>`;
       $('#btn-next-knock').onclick = ()=>{ startLibertaKnockout(); };
     } else {
@@ -5143,7 +5143,7 @@ function showChampionsGroupEnd(){
       $('#v-title').textContent = `✅ ${myPos}º · CLASSIFICADO!`;
       $('#v-text').textContent = `Hora do mata-mata europeu.`;
       $('#verdict .actions').innerHTML = `
-        <button id="btn-next-knock">QUARTAS DE FINAL →</button>
+        <button id="btn-next-knock">OITAVAS DE FINAL →</button>
         <button class="ghost" id="btn-quit-tournament">DESISTIR</button>`;
       $('#btn-next-knock').onclick = ()=>{ startChampionsKnockout(); };
     } else {
