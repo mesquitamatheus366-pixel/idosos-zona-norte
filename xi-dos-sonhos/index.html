@@ -278,7 +278,7 @@
   .setup-input{width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:10px 14px;color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1.5px;text-transform:uppercase;outline:none;transition:.2s}
   .setup-input:focus{border-color:var(--neon);background:#0d1018}
   .setup-grid{display:grid;gap:6px}
-  .form-grid{grid-template-columns:repeat(5,1fr)}
+  .form-grid{grid-template-columns:repeat(4,1fr)}
   .style-grid{grid-template-columns:repeat(3,1fr)}
   .style-grid.two{grid-template-columns:repeat(2,1fr)}
   .style-grid.four{grid-template-columns:repeat(4,1fr)}
@@ -814,6 +814,65 @@
     .match-score{font-size:32px}
   }
 
+  /* ============ TEMAS POR COMPETIÇÃO ============ */
+  /* Copa do Mundo: verde + amarelo (FIFA) */
+  .match-overlay.comp-theme-copa{background:radial-gradient(1400px 900px at 50% -20%,rgba(34,197,94,.18),transparent 60%),radial-gradient(1000px 700px at 50% 120%,rgba(245,200,66,.10),transparent 60%),rgba(5,18,10,.95)}
+  .match-box.comp-theme-copa{border:1px solid rgba(34,197,94,.4);box-shadow:0 0 60px rgba(34,197,94,.15),0 20px 60px rgba(0,0,0,.6)}
+  .match-box.comp-theme-copa .match-head{background:linear-gradient(180deg,rgba(34,197,94,.10),rgba(34,197,94,0));border:1px solid rgba(34,197,94,.3)}
+  .match-box.comp-theme-copa .match-side{background:linear-gradient(180deg,#0a1f12,#08160d);border-color:rgba(34,197,94,.3)}
+  .match-box.comp-theme-copa .match-side h4 .badge{background:rgba(34,197,94,.15);color:#4ade80;border-color:rgba(34,197,94,.4)}
+  .match-box.comp-theme-copa .match-pitch{border-color:rgba(34,197,94,.35);box-shadow:inset 0 0 50px rgba(0,0,0,.55),0 8px 24px rgba(0,0,0,.4),0 0 30px rgba(34,197,94,.12)}
+
+  /* Champions League: azul + branco (UEFA) */
+  .match-overlay.comp-theme-champ{background:radial-gradient(1400px 900px at 50% -20%,rgba(59,130,246,.20),transparent 60%),radial-gradient(1000px 700px at 50% 120%,rgba(255,255,255,.05),transparent 60%),rgba(4,9,20,.95)}
+  .match-box.comp-theme-champ{border:1px solid rgba(99,102,241,.5);box-shadow:0 0 60px rgba(99,102,241,.18),0 20px 60px rgba(0,0,0,.6)}
+  .match-box.comp-theme-champ .match-head{background:linear-gradient(180deg,rgba(99,102,241,.12),rgba(99,102,241,0));border:1px solid rgba(99,102,241,.35)}
+  .match-box.comp-theme-champ .match-side{background:linear-gradient(180deg,#0b1530,#08101f);border-color:rgba(99,102,241,.3)}
+  .match-box.comp-theme-champ .match-side h4 .badge{background:rgba(99,102,241,.15);color:#a5b4fc;border-color:rgba(99,102,241,.4)}
+  .match-box.comp-theme-champ .match-pitch{border-color:rgba(99,102,241,.4);box-shadow:inset 0 0 50px rgba(0,0,0,.55),0 8px 24px rgba(0,0,0,.4),0 0 30px rgba(99,102,241,.15)}
+  .match-box.comp-theme-champ .match-clock{color:#c7d2fe}
+
+  /* Libertadores: vermelho + dourado (Conmebol) */
+  .match-overlay.comp-theme-liberta{background:radial-gradient(1400px 900px at 50% -20%,rgba(239,68,68,.18),transparent 60%),radial-gradient(1000px 700px at 50% 120%,rgba(245,200,66,.12),transparent 60%),rgba(20,6,6,.95)}
+  .match-box.comp-theme-liberta{border:1px solid rgba(239,68,68,.45);box-shadow:0 0 60px rgba(239,68,68,.15),0 20px 60px rgba(0,0,0,.6)}
+  .match-box.comp-theme-liberta .match-head{background:linear-gradient(180deg,rgba(239,68,68,.10),rgba(245,200,66,.04));border:1px solid rgba(239,68,68,.3)}
+  .match-box.comp-theme-liberta .match-side{background:linear-gradient(180deg,#1a0b0b,#100707);border-color:rgba(239,68,68,.3)}
+  .match-box.comp-theme-liberta .match-side h4 .badge{background:rgba(245,200,66,.15);color:var(--gold);border-color:rgba(245,200,66,.4)}
+  .match-box.comp-theme-liberta .match-pitch{border-color:rgba(239,68,68,.4);box-shadow:inset 0 0 50px rgba(0,0,0,.55),0 8px 24px rgba(0,0,0,.4),0 0 30px rgba(239,68,68,.12)}
+
+  /* Mundial de Clubes: dourado intenso (FIFA Club WC) */
+  .match-overlay.comp-theme-mundial{background:radial-gradient(1400px 900px at 50% -20%,rgba(245,200,66,.20),transparent 60%),radial-gradient(1000px 700px at 50% 120%,rgba(245,200,66,.10),transparent 60%),rgba(15,12,5,.95)}
+  .match-box.comp-theme-mundial{border:1px solid rgba(245,200,66,.55);box-shadow:0 0 70px rgba(245,200,66,.18),0 20px 60px rgba(0,0,0,.7)}
+  .match-box.comp-theme-mundial .match-head{background:linear-gradient(180deg,rgba(245,200,66,.12),rgba(245,200,66,0));border:1px solid rgba(245,200,66,.4)}
+  .match-box.comp-theme-mundial .match-side{background:linear-gradient(180deg,#1a1505,#100c03);border-color:rgba(245,200,66,.35)}
+  .match-box.comp-theme-mundial .match-side h4 .badge{background:rgba(245,200,66,.18);color:var(--gold-2);border-color:rgba(245,200,66,.5)}
+  .match-box.comp-theme-mundial .match-pitch{border-color:rgba(245,200,66,.45);box-shadow:inset 0 0 50px rgba(0,0,0,.55),0 8px 24px rgba(0,0,0,.4),0 0 35px rgba(245,200,66,.18)}
+  .match-box.comp-theme-mundial .match-clock{color:var(--gold-2)}
+
+  /* Brasileirão: verde-amarelo (CBF) */
+  .match-overlay.comp-theme-bra{background:radial-gradient(1400px 900px at 50% -20%,rgba(34,197,94,.14),transparent 60%),radial-gradient(1000px 700px at 50% 120%,rgba(245,200,66,.08),transparent 60%),rgba(5,12,8,.95)}
+  .match-box.comp-theme-bra{border:1px solid rgba(34,197,94,.35)}
+  .match-box.comp-theme-bra .match-head{background:linear-gradient(180deg,rgba(34,197,94,.08),rgba(245,200,66,.03));border:1px solid rgba(34,197,94,.25)}
+
+  /* Liga Nacional Europeia: azul suave */
+  .match-overlay.comp-theme-liga{background:radial-gradient(1400px 900px at 50% -20%,rgba(99,102,241,.12),transparent 60%),rgba(7,10,18,.95)}
+  .match-box.comp-theme-liga{border:1px solid rgba(99,102,241,.3)}
+
+  /* Banner do nome da competição (topo da match-box) */
+  .comp-banner{display:none;text-align:center;font-family:'Bebas Neue',sans-serif;letter-spacing:3px;font-size:13px;padding:6px 10px;border-radius:8px;margin-bottom:10px;font-weight:400}
+  .match-box.comp-theme-copa .comp-banner{display:block;background:linear-gradient(90deg,rgba(34,197,94,.15),rgba(245,200,66,.15),rgba(34,197,94,.15));color:#4ade80;border:1px solid rgba(34,197,94,.4)}
+  .match-box.comp-theme-copa .comp-banner::before{content:'🏆 COPA DO MUNDO 🏆'}
+  .match-box.comp-theme-champ .comp-banner{display:block;background:linear-gradient(90deg,rgba(99,102,241,.18),rgba(255,255,255,.08),rgba(99,102,241,.18));color:#c7d2fe;border:1px solid rgba(99,102,241,.45)}
+  .match-box.comp-theme-champ .comp-banner::before{content:'⭐ UEFA CHAMPIONS LEAGUE ⭐'}
+  .match-box.comp-theme-liberta .comp-banner{display:block;background:linear-gradient(90deg,rgba(239,68,68,.16),rgba(245,200,66,.16),rgba(239,68,68,.16));color:var(--gold-2);border:1px solid rgba(239,68,68,.4)}
+  .match-box.comp-theme-liberta .comp-banner::before{content:'🌎 COPA LIBERTADORES 🌎'}
+  .match-box.comp-theme-mundial .comp-banner{display:block;background:linear-gradient(90deg,rgba(245,200,66,.18),rgba(255,215,0,.22),rgba(245,200,66,.18));color:var(--gold-2);border:1px solid rgba(245,200,66,.5)}
+  .match-box.comp-theme-mundial .comp-banner::before{content:'👑 MUNDIAL DE CLUBES 👑'}
+  .match-box.comp-theme-bra .comp-banner{display:block;background:linear-gradient(90deg,rgba(34,197,94,.12),rgba(245,200,66,.12),rgba(34,197,94,.12));color:#4ade80;border:1px solid rgba(34,197,94,.3)}
+  .match-box.comp-theme-bra .comp-banner::before{content:'🏆 BRASILEIRÃO 🏆'}
+  .match-box.comp-theme-liga .comp-banner{display:block;background:rgba(99,102,241,.12);color:#a5b4fc;border:1px solid rgba(99,102,241,.35)}
+  .match-box.comp-theme-liga .comp-banner::before{content:'⭐ LIGA NACIONAL ⭐'}
+
   /* ============ FIELD CONFIG TAGS ============ */
   .fc-tags{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
   .fc-tag{font-size:9px;font-weight:700;letter-spacing:.8px;padding:2px 7px;border-radius:99px;font-family:'Outfit',sans-serif;text-transform:uppercase}
@@ -1166,6 +1225,7 @@
 
 <div class="match-overlay" id="match">
   <div class="match-box big" id="match-box">
+    <div class="comp-banner"></div>
     <div class="match-layout">
       <div class="match-main">
         <div class="match-head">
@@ -1587,6 +1647,93 @@ const TIMES = [
     {n:'T. Spoonley',pos:'GOL',r:78},{n:'A. Krishna',pos:'DEF',r:76},{n:'Pearce',pos:'DEF',r:77},{n:'A. Bevin',pos:'DEF',r:76},{n:'White',pos:'DEF',r:75},
     {n:'M. Ortega',pos:'MEI',r:78},{n:'Lewis',pos:'MEI',r:76},{n:'Lobo',pos:'MEI',r:75},
     {n:'I. Bunce',pos:'ATA',r:78},{n:'E. Rufer',pos:'ATA',r:77},{n:'Iwata',pos:'ATA',r:76},{n:'Berger',pos:'ATA',r:75}]},
+
+  // ===== NOVOS TIMES HISTÓRICOS =====
+  // Europeus
+  { id:'bay13', tipo:'europeu', nome:'Bayern 2013', era:'Tríplice coroa · Heynckes', cores:['#dc2626','#fff'], jogadores:[
+    {n:'Neuer',pos:'GOL',r:94},{n:'Lahm',pos:'DEF',pos2:'MEI',r:92},{n:'Boateng',pos:'DEF',r:88},{n:'Dante',pos:'DEF',r:86},{n:'Alaba',pos:'DEF',pos2:'MEI',r:89},
+    {n:'Javi Martínez',pos:'MEI',r:88},{n:'Schweinsteiger',pos:'MEI',r:91},{n:'Kroos',pos:'MEI',r:88},
+    {n:'Robben',pos:'ATA',pos2:'MEI',r:93},{n:'Mandžukić',pos:'ATA',r:88},{n:'Ribéry',pos:'ATA',pos2:'MEI',r:94}]},
+  { id:'mu08', tipo:'europeu', nome:'Manchester United 2008', era:'Champions · Moscou', cores:['#dc2626','#fde047'], jogadores:[
+    {n:'Van der Sar',pos:'GOL',r:91},{n:'Brown',pos:'DEF',r:84},{n:'Ferdinand',pos:'DEF',r:92},{n:'Vidić',pos:'DEF',r:91},{n:'Evra',pos:'DEF',pos2:'MEI',r:88},
+    {n:'Carrick',pos:'MEI',r:87},{n:'Scholes',pos:'MEI',r:91},{n:'Hargreaves',pos:'MEI',r:85},
+    {n:'C. Ronaldo',pos:'ATA',pos2:'MEI',r:97},{n:'Tevez',pos:'ATA',pos2:'MEI',r:90},{n:'Rooney',pos:'ATA',pos2:'MEI',r:91}]},
+  { id:'inter10', tipo:'europeu', nome:'Inter 2010', era:'Tríplice coroa · Mourinho', cores:['#1d4ed8','#000'], jogadores:[
+    {n:'Júlio César',pos:'GOL',r:93},{n:'Maicon',pos:'DEF',pos2:'MEI',r:91},{n:'Lúcio',pos:'DEF',r:91},{n:'Samuel',pos:'DEF',r:89},{n:'Chivu',pos:'DEF',pos2:'MEI',r:84},
+    {n:'Cambiasso',pos:'MEI',r:89},{n:'Zanetti',pos:'MEI',pos2:'DEF',r:90},{n:'Stanković',pos:'MEI',r:86},
+    {n:'Sneijder',pos:'MEI',pos2:'ATA',r:93},{n:'Milito',pos:'ATA',r:91},{n:'Eto\'o',pos:'ATA',pos2:'MEI',r:93}]},
+  { id:'milan07', tipo:'europeu', nome:'Milan 2007', era:'Champions · Atenas', cores:['#dc2626','#000'], jogadores:[
+    {n:'Dida',pos:'GOL',r:88},{n:'Oddo',pos:'DEF',r:84},{n:'Nesta',pos:'DEF',r:93},{n:'Maldini',pos:'DEF',r:93},{n:'Jankulovski',pos:'DEF',r:85},
+    {n:'Gattuso',pos:'MEI',r:88},{n:'Pirlo',pos:'MEI',r:94},{n:'Ambrosini',pos:'MEI',r:85},{n:'Seedorf',pos:'MEI',pos2:'ATA',r:90},
+    {n:'Kaká',pos:'MEI',pos2:'ATA',r:96},{n:'Inzaghi',pos:'ATA',r:90}]},
+  { id:'liv05', tipo:'europeu', nome:'Liverpool 2005', era:'Milagre de Istambul', cores:['#dc2626','#fde047'], jogadores:[
+    {n:'Dudek',pos:'GOL',r:87},{n:'Finnan',pos:'DEF',r:83},{n:'Carragher',pos:'DEF',r:89},{n:'Hyypiä',pos:'DEF',r:88},{n:'Traoré',pos:'DEF',r:82},
+    {n:'Hamann',pos:'MEI',r:86},{n:'Xabi Alonso',pos:'MEI',r:88},{n:'Riise',pos:'MEI',pos2:'DEF',r:84},{n:'Gerrard',pos:'MEI',pos2:'ATA',r:94},
+    {n:'L. García',pos:'ATA',r:84},{n:'Baroš',pos:'ATA',r:85}]},
+  { id:'bar11', tipo:'europeu', nome:'Barcelona 2011', era:'Auge Guardiola · Wembley', cores:['#dc2626','#1d4ed8'], jogadores:[
+    {n:'Valdés',pos:'GOL',r:88},{n:'Dani Alves',pos:'DEF',pos2:'MEI',r:92},{n:'Piqué',pos:'DEF',r:90},{n:'Mascherano',pos:'DEF',pos2:'MEI',r:88},{n:'Abidal',pos:'DEF',r:87},
+    {n:'Busquets',pos:'MEI',r:88},{n:'Xavi',pos:'MEI',r:96},{n:'Iniesta',pos:'MEI',pos2:'ATA',r:95},
+    {n:'Pedro',pos:'ATA',r:86},{n:'Messi',pos:'ATA',pos2:'MEI',r:98},{n:'Villa',pos:'ATA',r:91}]},
+  { id:'rm22', tipo:'europeu', nome:'Real Madrid 2022', era:'14ª Champions · Ancelotti', cores:['#fff','#1d4ed8'], jogadores:[
+    {n:'Courtois',pos:'GOL',r:93},{n:'Carvajal',pos:'DEF',r:87},{n:'Militão',pos:'DEF',r:88},{n:'Alaba',pos:'DEF',pos2:'MEI',r:89},{n:'Mendy',pos:'DEF',r:84},
+    {n:'Casemiro',pos:'MEI',r:90},{n:'Kroos',pos:'MEI',r:90},{n:'Modrić',pos:'MEI',r:90},
+    {n:'Valverde',pos:'MEI',pos2:'ATA',r:88},{n:'Benzema',pos:'ATA',r:93},{n:'Vini Jr.',pos:'ATA',pos2:'MEI',r:91}]},
+  { id:'mc23x', tipo:'europeu', nome:'Manchester City 2008', era:'Era Pré-Sheikh', cores:['#7dd3fc','#fff'], jogadores:[
+    {n:'Hart',pos:'GOL',r:84},{n:'Richards',pos:'DEF',r:81},{n:'Dunne',pos:'DEF',r:82},{n:'Onuoha',pos:'DEF',r:78},{n:'Garrido',pos:'DEF',r:78},
+    {n:'Hamann',pos:'MEI',r:82},{n:'Ireland',pos:'MEI',r:81},{n:'Petrov',pos:'MEI',r:80},
+    {n:'Wright-Phillips',pos:'ATA',pos2:'MEI',r:81},{n:'Robinho',pos:'ATA',pos2:'MEI',r:89},{n:'Sturridge',pos:'ATA',r:79}]},
+  { id:'che21', tipo:'europeu', nome:'Chelsea 2021', era:'Champions · Tuchel', cores:['#1d4ed8','#fff'], jogadores:[
+    {n:'Mendy',pos:'GOL',r:88},{n:'James',pos:'DEF',pos2:'MEI',r:86},{n:'Silva',pos:'DEF',r:89},{n:'Rüdiger',pos:'DEF',r:87},{n:'Azpilicueta',pos:'DEF',pos2:'MEI',r:86},
+    {n:'Kanté',pos:'MEI',r:91},{n:'Jorginho',pos:'MEI',r:87},{n:'Mount',pos:'MEI',pos2:'ATA',r:84},
+    {n:'Pulisic',pos:'ATA',pos2:'MEI',r:84},{n:'Werner',pos:'ATA',r:83},{n:'Havertz',pos:'ATA',pos2:'MEI',r:84}]},
+
+  // Brasileiros
+  { id:'san11', tipo:'brasileiro', nome:'Santos 2011', era:'Libertadores · Neymar/Ganso', cores:['#fff','#000'], jogadores:[
+    {n:'Rafael',pos:'GOL',r:84},{n:'D. Carvalho',pos:'DEF',r:83},{n:'Edu Dracena',pos:'DEF',r:84},{n:'Durval',pos:'DEF',r:83},{n:'Léo',pos:'DEF',pos2:'MEI',r:85},
+    {n:'Adriano',pos:'MEI',r:82},{n:'Arouca',pos:'MEI',r:85},{n:'Ganso',pos:'MEI',pos2:'ATA',r:90},
+    {n:'Elano',pos:'MEI',pos2:'ATA',r:85},{n:'Borges',pos:'ATA',r:84},{n:'Neymar',pos:'ATA',pos2:'MEI',r:92}]},
+  { id:'fla22', tipo:'brasileiro', nome:'Flamengo 2022', era:'Tri Libertadores · Sampaoli', cores:['#dc2626','#000'], jogadores:[
+    {n:'S. Santos',pos:'GOL',r:86},{n:'Rodinei',pos:'DEF',pos2:'MEI',r:83},{n:'F. Luís',pos:'DEF',pos2:'MEI',r:84},{n:'D. Pereira',pos:'DEF',r:86},{n:'Ayrton Lucas',pos:'DEF',pos2:'MEI',r:83},
+    {n:'João Gomes',pos:'MEI',r:84},{n:'Thiago Maia',pos:'MEI',r:83},{n:'Arrascaeta',pos:'MEI',pos2:'ATA',r:90},{n:'É. Ribeiro',pos:'MEI',r:88},
+    {n:'Pedro',pos:'ATA',r:88},{n:'Gabigol',pos:'ATA',r:90}]},
+  { id:'pal20', tipo:'brasileiro', nome:'Palmeiras 2020', era:'Libertadores · Abel', cores:['#16a34a','#fff'], jogadores:[
+    {n:'Weverton',pos:'GOL',r:87},{n:'Marcos Rocha',pos:'DEF',r:83},{n:'Gómez',pos:'DEF',r:87},{n:'L. Felipe',pos:'DEF',r:84},{n:'Viña',pos:'DEF',pos2:'MEI',r:83},
+    {n:'F. Anderson',pos:'MEI',r:83},{n:'Patrick',pos:'MEI',r:83},{n:'Raphael Veiga',pos:'MEI',pos2:'ATA',r:87},
+    {n:'Rony',pos:'ATA',pos2:'MEI',r:84},{n:'L. Adriano',pos:'ATA',r:84},{n:'Wesley',pos:'ATA',r:81}]},
+  { id:'gre95', tipo:'brasileiro', nome:'Grêmio 1995', era:'Libertadores · Felipão', cores:['#1d4ed8','#000'], jogadores:[
+    {n:'Danrlei',pos:'GOL',r:85},{n:'Arce',pos:'DEF',r:83},{n:'A. Aldair',pos:'DEF',r:85},{n:'Adílson',pos:'DEF',r:83},{n:'Roger',pos:'DEF',pos2:'MEI',r:85},
+    {n:'Goiano',pos:'MEI',r:84},{n:'Dinho',pos:'MEI',r:85},{n:'Carlos Miguel',pos:'MEI',r:83},
+    {n:'Paulo Nunes',pos:'ATA',r:85},{n:'Jardel',pos:'ATA',r:91},{n:'Mário Jardel',pos:'ATA',r:88}]},
+  { id:'spfc77', tipo:'brasileiro', nome:'São Paulo 1977', era:'Geração Tetra', cores:['#dc2626','#fff'], jogadores:[
+    {n:'Valdir Peres',pos:'GOL',r:85},{n:'Getúlio',pos:'DEF',r:82},{n:'Chicão',pos:'DEF',r:84},{n:'Mirandinha',pos:'DEF',r:83},{n:'Zé Carlos',pos:'DEF',r:82},
+    {n:'Toninho',pos:'MEI',r:84},{n:'Chico',pos:'MEI',r:84},{n:'Zé Sérgio',pos:'MEI',r:83},
+    {n:'Serginho',pos:'ATA',r:85},{n:'Müller',pos:'ATA',r:86},{n:'Renato',pos:'ATA',r:85}]},
+  { id:'flu70', tipo:'brasileiro', nome:'Fluminense 1970', era:'Tricolor da Década', cores:['#7e22ce','#16a34a'], jogadores:[
+    {n:'Félix',pos:'GOL',r:83},{n:'Marco Antônio',pos:'DEF',pos2:'MEI',r:86},{n:'Assis',pos:'DEF',r:83},{n:'Vanderlei',pos:'DEF',r:82},{n:'Carlos Alberto',pos:'DEF',pos2:'MEI',r:88},
+    {n:'Cafuringa',pos:'MEI',r:85},{n:'Dario',pos:'MEI',r:84},{n:'Gérson',pos:'MEI',r:92},
+    {n:'Doval',pos:'ATA',r:85},{n:'Lula',pos:'ATA',r:84},{n:'Manfrini',pos:'ATA',r:82}]},
+
+  // Seleções
+  { id:'fra84', tipo:'selecao', nome:'França 1984', era:'Eurocopa · Platini', cores:['#1d4ed8','#fff'], jogadores:[
+    {n:'Bats',pos:'GOL',r:84},{n:'Battiston',pos:'DEF',r:85},{n:'Bossis',pos:'DEF',r:84},{n:'Le Roux',pos:'DEF',r:83},{n:'Amoros',pos:'DEF',pos2:'MEI',r:85},
+    {n:'Fernández',pos:'MEI',r:85},{n:'Tigana',pos:'MEI',r:92},{n:'Giresse',pos:'MEI',r:91},{n:'Platini',pos:'MEI',pos2:'ATA',r:97},
+    {n:'Lacombe',pos:'ATA',r:84},{n:'Bellone',pos:'ATA',r:83}]},
+  { id:'br86', tipo:'selecao', nome:'Brasil 1986', era:'Copa do Mundo · México', cores:['#fde047','#16a34a'], jogadores:[
+    {n:'Carlos',pos:'GOL',r:85},{n:'Edson',pos:'DEF',r:84},{n:'Júlio César',pos:'DEF',r:86},{n:'Edinho',pos:'DEF',r:85},{n:'Branco',pos:'DEF',pos2:'MEI',r:87},
+    {n:'Elzo',pos:'MEI',r:84},{n:'Alemão',pos:'MEI',r:85},{n:'Júnior',pos:'MEI',pos2:'DEF',r:91},
+    {n:'Sócrates',pos:'MEI',pos2:'ATA',r:93},{n:'Careca',pos:'ATA',r:91},{n:'Zico',pos:'ATA',pos2:'MEI',r:94}]},
+  { id:'ger06', tipo:'selecao', nome:'Alemanha 2006', era:'Copa do Mundo · Anfitriã', cores:['#fff','#000'], jogadores:[
+    {n:'Lehmann',pos:'GOL',r:88},{n:'Friedrich',pos:'DEF',r:83},{n:'Mertesacker',pos:'DEF',r:84},{n:'Metzelder',pos:'DEF',r:83},{n:'Lahm',pos:'DEF',pos2:'MEI',r:88},
+    {n:'Frings',pos:'MEI',r:86},{n:'Schweinsteiger',pos:'MEI',r:87},{n:'Ballack',pos:'MEI',pos2:'ATA',r:92},
+    {n:'Schneider',pos:'MEI',r:84},{n:'Klose',pos:'ATA',r:90},{n:'Podolski',pos:'ATA',pos2:'MEI',r:85}]},
+  { id:'br98', tipo:'selecao', nome:'Brasil 1998', era:'Copa do Mundo · França', cores:['#fde047','#16a34a'], jogadores:[
+    {n:'Taffarel',pos:'GOL',r:88},{n:'Cafu',pos:'DEF',pos2:'MEI',r:92},{n:'Aldair',pos:'DEF',r:89},{n:'J. Baiano',pos:'DEF',r:84},{n:'R. Carlos',pos:'DEF',pos2:'MEI',r:94},
+    {n:'Dunga',pos:'MEI',r:88},{n:'C. Sampaio',pos:'MEI',r:85},{n:'Rivaldo',pos:'MEI',pos2:'ATA',r:94},
+    {n:'Leonardo',pos:'MEI',pos2:'ATA',r:88},{n:'Ronaldo',pos:'ATA',pos2:'MEI',r:98},{n:'Bebeto',pos:'ATA',r:88}]},
+  { id:'arg78', tipo:'selecao', nome:'Argentina 1978', era:'Copa do Mundo · Casa', cores:['#7dd3fc','#fff'], jogadores:[
+    {n:'Fillol',pos:'GOL',r:88},{n:'Olguín',pos:'DEF',r:83},{n:'Galván',pos:'DEF',r:84},{n:'Passarella',pos:'DEF',pos2:'MEI',r:91},{n:'Tarantini',pos:'DEF',r:83},
+    {n:'Ardiles',pos:'MEI',r:88},{n:'Gallego',pos:'MEI',r:84},{n:'Kempes',pos:'MEI',pos2:'ATA',r:93},
+    {n:'Bertoni',pos:'ATA',r:86},{n:'Luque',pos:'ATA',r:87},{n:'Ortiz',pos:'ATA',r:83}]},
 ];
 
 const FORMATIONS = {
@@ -1659,6 +1806,48 @@ const FORMATIONS = {
       {pos:'MEI',label:'Meia',num:10,x:50,y:33},
       {pos:'MEI',label:'Meia D.',num:11,x:82,y:35},
       {pos:'ATA',label:'Centroavante',num:9,x:50,y:15},
+    ]},
+  '3-4-3': {label:'3-4-3', descr:'Ofensivo com alas',
+    defs:[
+      {pos:'GOL',label:'Goleiro',num:1,x:50,y:86},
+      {pos:'DEF',label:'Zagueiro',num:3,x:25,y:76},
+      {pos:'DEF',label:'Líbero',num:4,x:50,y:78},
+      {pos:'DEF',label:'Zagueiro',num:5,x:75,y:76},
+      {pos:'MEI',label:'Ala Esq.',num:6,x:10,y:50},
+      {pos:'MEI',label:'Volante',num:8,x:38,y:55},
+      {pos:'MEI',label:'Meia',num:10,x:62,y:55},
+      {pos:'MEI',label:'Ala Dir.',num:2,x:90,y:50},
+      {pos:'ATA',label:'Ponta Esq.',num:7,x:18,y:22},
+      {pos:'ATA',label:'Centroavante',num:9,x:50,y:18},
+      {pos:'ATA',label:'Ponta Dir.',num:11,x:82,y:22},
+    ]},
+  '4-1-4-1': {label:'4-1-4-1', descr:'Controle de meio',
+    defs:[
+      {pos:'GOL',label:'Goleiro',num:1,x:50,y:86},
+      {pos:'LAT',label:'Lat. Esq.',num:6,x:14,y:73},
+      {pos:'DEF',label:'Zagueiro',num:3,x:36,y:76},
+      {pos:'DEF',label:'Zagueiro',num:4,x:64,y:76},
+      {pos:'LAT',label:'Lat. Dir.',num:2,x:86,y:73},
+      {pos:'MEI',label:'Volante',num:5,x:50,y:60},
+      {pos:'MEI',label:'Meia E.',num:7,x:15,y:38},
+      {pos:'MEI',label:'Meia',num:8,x:38,y:40},
+      {pos:'MEI',label:'Meia',num:10,x:62,y:40},
+      {pos:'MEI',label:'Meia D.',num:11,x:85,y:38},
+      {pos:'ATA',label:'Centroavante',num:9,x:50,y:15},
+    ]},
+  '4-3-2-1': {label:'4-3-2-1', descr:'Árvore de Natal',
+    defs:[
+      {pos:'GOL',label:'Goleiro',num:1,x:50,y:86},
+      {pos:'LAT',label:'Lat. Esq.',num:6,x:14,y:73},
+      {pos:'DEF',label:'Zagueiro',num:3,x:36,y:76},
+      {pos:'DEF',label:'Zagueiro',num:4,x:64,y:76},
+      {pos:'LAT',label:'Lat. Dir.',num:2,x:86,y:73},
+      {pos:'MEI',label:'Volante',num:5,x:25,y:57},
+      {pos:'MEI',label:'Volante',num:8,x:50,y:60},
+      {pos:'MEI',label:'Meia',num:10,x:75,y:57},
+      {pos:'MEI',label:'Meia E.',num:7,x:35,y:35},
+      {pos:'MEI',label:'Meia D.',num:11,x:65,y:35},
+      {pos:'ATA',label:'Centroavante',num:9,x:50,y:13},
     ]},
 };
 
@@ -2279,7 +2468,21 @@ function simConfronto(){
   });
 }
 
+function applyMatchTheme(){
+  const mode = (state.tournament && state.tournament.mode) || state.comp || 'amistoso';
+  const map = {brasileirao:'bra', 'liga-europeia':'liga', copa:'copa', libertadores:'liberta', champions:'champ', mundial:'mundial', confronto:'vs', amistoso:'amistoso'};
+  const key = map[mode] || 'amistoso';
+  const box = document.getElementById('match-box');
+  if(box){
+    box.className = box.className.replace(/\bcomp-theme-\S+/g,'').trim() + ' comp-theme-' + key;
+  }
+  const overlay = document.getElementById('match');
+  if(overlay){
+    overlay.className = overlay.className.replace(/\bcomp-theme-\S+/g,'').trim() + ' comp-theme-' + key;
+  }
+}
 function runLiveMatch(foe, onEnd){
+  applyMatchTheme();
   state.matchScorerEvents = [];
   state.matchStats = {ourShots:0, theirShots:0, ourShotsOn:0, theirShotsOn:0, ourCorners:0, theirCorners:0, ourFouls:0, theirFouls:0, ourSaves:0, theirSaves:0};
   // Aplica suspensões/lesões dos torneios (vigentes nesta partida)
