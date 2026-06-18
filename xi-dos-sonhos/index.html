@@ -2263,12 +2263,19 @@ function runLiveMatch(foe, onEnd){
   }
   let ourMul = guaranteedWin ? 2.2 : 1;
   let theirMul = guaranteedWin ? 0.25 : 1;
-  const ourChance  = Math.max(.05,((teamR-foeR)/100)*0.35 + 0.18) * sty.mulOur * ourMul;
-  const theirChance= Math.max(.04,((foeR-teamR+8)/100)*0.30 + 0.07) * sty.mulTheir * theirMul;
+  // Modificador de dificuldade: deixa o adversário mais forte conforme escolha
+  const DIFF_MATCH = {facil:{us:1.10, them:0.85}, normal:{us:1.0, them:1.0}, dificil:{us:0.90, them:1.18}, lendario:{us:0.82, them:1.35}};
+  const dm = DIFF_MATCH[state.diff] || DIFF_MATCH.normal;
+  let ourChance  = Math.max(.04,((teamR-foeR)/100)*0.28 + 0.15) * sty.mulOur * ourMul * dm.us;
+  let theirChance= Math.max(.05,((foeR-teamR+6)/100)*0.32 + 0.10) * sty.mulTheir * theirMul * dm.them;
   let score=[0,0], minute=0;
   const scorers = state.lineup.filter(p=>p.pos==='ATA'||p.pos==='MEI');
   const w = scorers.map((p)=>effectiveR(p, state.lineup.indexOf(p)));
   const captain = state.captain>=0 ? state.lineup[state.captain] : null;
+  // Estado da partida: cartões e expulsões acumuladas
+  let ourReds=0, theirReds=0;
+  const pickOurNonGK = ()=>{ const arr=state.lineup.filter((p,i)=>p && p.pos!=='GOL'); return arr.length?pick(arr):null; };
+  const pickTheirNonGK = ()=>{ const arr=foe.jogadores.filter(p=>p.pos!=='GOL'); return arr.length?pick(arr):null; };
   const tickFn = ()=>{
     minute++;
     $('#m-clock').textContent = String(minute).padStart(2,'0')+"'";
@@ -2286,18 +2293,74 @@ function runLiveMatch(foe, onEnd){
       addEv(minute,`<strong>Gol do adversário</strong> · ${sc.n} (${foe.nome}) · ${score[0]}-${score[1]}`,'bad');
       pitchEffect('GOL','goal','left');
       trackScorer(sc, foe.nome);
-    } else if(Math.random()<0.04){
-      const ev = pick(['yellow','yellow','red','save','save','foul','pen-our','pen-our']);
-      if(ev==='yellow'){addEv(minute,`🟨 Amarelo · ${pick(state.lineup).n}`);pitchEffect('🟨','yel');}
-      else if(ev==='red'){addEv(minute,`🟥 VERMELHO · ${pick(state.lineup).n} expulso!`,'bad');pitchEffect('🟥','red');}
-      else if(ev==='save'){const gk=state.lineup[0];addEv(minute,`🧤 Defesa de pênalti! ${gk.n} pega!`,'goal');pitchEffect('DEFENDEU!','save');}
-      else if(ev==='pen-our' && captain){
-        score[0]++; $('#sc-a').textContent=score[0]; bumpScore('sc-a');
-        addEv(minute,`<strong>⚽ PÊNALTI · GOL!</strong> ${captain.n} 🅒 bate firme! ${score[0]}-${score[1]}`,'goal');
-        pitchEffect('PÊNALTI!','goal','right');
-        trackScorer(captain, state.teamName);
+    } else {
+      const r = Math.random();
+      // RED CARD: ~0.18%/min → ~15% chance/jogo · time mais fraco mais propenso · max 1 por equipe
+      if(r < 0.0018){
+        const skill = (foeR-teamR)*0.012;
+        const ourRed = Math.random() < (0.5 + skill);
+        if(ourRed && ourReds<1){
+          const p = pickOurNonGK();
+          if(p){
+            ourReds++;
+            addEv(minute,`🟥 VERMELHO · ${p.n} expulso! ${state.teamName} com 10`,'bad');
+            pitchEffect('🟥','red');
+            ourChance *= 0.55; theirChance *= 1.35;
+          }
+        } else if(!ourRed && theirReds<1){
+          const p = pickTheirNonGK();
+          if(p){
+            theirReds++;
+            addEv(minute,`🟥 VERMELHO · ${p.n} (${foe.nome}) expulso! Adversário com 10`,'goal');
+            pitchEffect('🟥','red');
+            ourChance *= 1.35; theirChance *= 0.55;
+          }
+        }
       }
-      else addEv(minute,'Falta perigosa próxima à área.');
+      // PÊNALTI: ~0.32%/min → ~25% chance/jogo combinado (nosso+deles)
+      else if(r < 0.005){
+        const ourPen = Math.random() < 0.55;
+        if(ourPen && captain){
+          const conv = Math.random() < 0.78; // 78% conversão (realista)
+          if(conv){
+            score[0]++; $('#sc-a').textContent=score[0]; bumpScore('sc-a');
+            addEv(minute,`<strong>⚽ PÊNALTI · GOL!</strong> ${captain.n} 🅒 bate firme! ${score[0]}-${score[1]}`,'goal');
+            pitchEffect('PÊNALTI!','goal','right');
+            trackScorer(captain, state.teamName);
+          } else {
+            addEv(minute,`❌ PÊNALTI · ${captain.n} 🅒 isolou! defesa adversária`,'bad');
+            pitchEffect('FORA!','red');
+          }
+        } else {
+          const gk = state.lineup[0];
+          const conv = Math.random() < 0.72;
+          if(conv){
+            score[1]++; $('#sc-b').textContent=score[1]; bumpScore('sc-b');
+            const sc = pick(foe.jogadores.filter(p=>p.pos==='ATA'||p.pos==='MEI'));
+            addEv(minute,`<strong>Pênalti do adversário · GOL</strong> ${sc.n} (${foe.nome}) · ${score[0]}-${score[1]}`,'bad');
+            pitchEffect('PÊNALTI','goal','left');
+            trackScorer(sc, foe.nome);
+          } else if(gk){
+            addEv(minute,`🧤 PÊNALTI! ${gk.n} defendeu!`,'goal');
+            pitchEffect('DEFENDEU!','save');
+          }
+        }
+      }
+      // AMARELOS: ~2-3 por jogo
+      else if(r < 0.035){
+        const ourCard = Math.random()<0.5;
+        if(ourCard){
+          const p = pickOurNonGK();
+          if(p){ addEv(minute,`🟨 Amarelo · ${p.n}`); pitchEffect('🟨','yel'); }
+        } else {
+          const p = pickTheirNonGK();
+          if(p){ addEv(minute,`🟨 Amarelo · ${p.n} (${foe.nome})`); pitchEffect('🟨','yel'); }
+        }
+      }
+      // Falta perigosa: evento de cor
+      else if(r < 0.05){
+        addEv(minute,'Falta perigosa próxima à área.');
+      }
     }
     if(minute>=90){
       clearInterval(state.matchTick);
