@@ -60,6 +60,12 @@
   .field-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
   .field-head .title{font-family:'Bebas Neue';font-size:26px;letter-spacing:1.5px}
   .field-head .hint{color:var(--muted);font-size:12px;font-family:'Outfit',sans-serif;letter-spacing:1px;text-transform:uppercase}
+  .syn-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;overflow:visible}
+  .syn-svg line{animation:synPulse 2s ease-in-out infinite}
+  @keyframes synPulse{0%,100%{stroke-opacity:.45}50%{stroke-opacity:.85}}
+  .syn-pill{position:fixed;top:14px;right:14px;background:linear-gradient(180deg,rgba(245,200,66,.15),rgba(245,200,66,.05));border:1px solid rgba(245,200,66,.4);color:var(--gold-2);padding:8px 14px;border-radius:99px;font-family:'Outfit',sans-serif;font-size:11px;letter-spacing:1px;font-weight:600;z-index:90;opacity:0;transform:translateY(-8px);transition:all .25s;box-shadow:0 6px 18px rgba(0,0,0,.4),0 0 16px rgba(245,200,66,.2);pointer-events:none}
+  .syn-pill.show{opacity:1;transform:translateY(0)}
+  .syn-pill b{color:var(--gold);font-weight:700}
   .pitch{position:relative;width:100%;max-width:540px;aspect-ratio:3/4;margin:0 auto;border-radius:14px;border:2px solid rgba(34,211,238,.25);
     background:repeating-linear-gradient(0deg,var(--grass) 0 7%,var(--grass-2) 7% 14%);
     overflow:hidden;box-shadow:inset 0 0 80px rgba(0,0,0,.55), 0 30px 80px rgba(0,0,0,.5)}
@@ -1310,7 +1316,7 @@
       <div class="title">CAMPO · <span id="field-formation">4-3-3</span></div>
       <div class="hint" id="field-config"><div class="fc-tags"><span class="fc-tag style">EQUILIBRADO</span><span class="fc-tag mode">CLÁSSICO</span><span class="fc-tag diff">NORMAL</span><span class="fc-tag comp">AMISTOSO</span></div></div>
     </div>
-    <div class="pitch" id="pitch"><div class="mid"></div><div class="circle"></div></div>
+    <div class="pitch" id="pitch"><svg class="syn-svg" id="syn-svg" preserveAspectRatio="none" viewBox="0 0 100 100"></svg><div class="mid"></div><div class="circle"></div></div>
   </section>
 
   <aside class="panel">
@@ -1843,6 +1849,136 @@ const TIMES = [
     {n:'Fillol',pos:'GOL',r:88},{n:'Olguín',pos:'DEF',r:83},{n:'Galván',pos:'DEF',r:84},{n:'Passarella',pos:'DEF',pos2:'MEI',r:91},{n:'Tarantini',pos:'DEF',r:83},
     {n:'Ardiles',pos:'MEI',r:88},{n:'Gallego',pos:'MEI',r:84},{n:'Kempes',pos:'MEI',pos2:'ATA',r:93},
     {n:'Bertoni',pos:'ATA',r:86},{n:'Luque',pos:'ATA',r:87},{n:'Ortiz',pos:'ATA',r:83}]},
+
+  // ===== Times históricos adicionais =====
+  { id:'ale90', tipo:'selecao', nome:'Alemanha 1990', era:'Copa do Mundo · Itália', cores:['#000','#fde047'], jogadores:[
+    {n:'Illgner',pos:'GOL',r:88},{n:'Brehme',pos:'DEF',r:91},{n:'Augenthaler',pos:'DEF',r:88},{n:'Kohler',pos:'DEF',r:88},{n:'Berthold',pos:'DEF',r:84},
+    {n:'Matthäus',pos:'MEI',r:96},{n:'Hässler',pos:'MEI',r:87},{n:'Littbarski',pos:'MEI',pos2:'ATA',r:87},
+    {n:'Klinsmann',pos:'ATA',r:92},{n:'Völler',pos:'ATA',r:90},{n:'Riedle',pos:'ATA',r:84}]},
+  { id:'fra98', tipo:'selecao', nome:'França 1998', era:'Copa do Mundo · Casa', cores:['#1d4ed8','#fff'], jogadores:[
+    {n:'Barthez',pos:'GOL',r:89},{n:'Lizarazu',pos:'DEF',r:89},{n:'Blanc',pos:'DEF',r:90},{n:'Desailly',pos:'DEF',r:91},{n:'Thuram',pos:'DEF',r:92},
+    {n:'Deschamps',pos:'MEI',r:88},{n:'Petit',pos:'MEI',r:87},{n:'Zidane',pos:'MEI',pos2:'ATA',r:97},
+    {n:'Djorkaeff',pos:'MEI',pos2:'ATA',r:88},{n:'Guivarc\'h',pos:'ATA',r:80},{n:'Henry',pos:'ATA',r:88}]},
+  { id:'fra06', tipo:'selecao', nome:'França 2006', era:'Copa do Mundo · Alemanha', cores:['#1d4ed8','#fff'], jogadores:[
+    {n:'Barthez',pos:'GOL',r:86},{n:'Abidal',pos:'DEF',r:86},{n:'Gallas',pos:'DEF',r:87},{n:'Thuram',pos:'DEF',r:88},{n:'Sagnol',pos:'DEF',r:84},
+    {n:'Makelele',pos:'MEI',r:89},{n:'Vieira',pos:'MEI',r:90},{n:'Zidane',pos:'MEI',pos2:'ATA',r:95},
+    {n:'Ribéry',pos:'MEI',pos2:'ATA',r:88},{n:'Henry',pos:'ATA',r:93},{n:'Trezeguet',pos:'ATA',r:87}]},
+  { id:'ita06', tipo:'selecao', nome:'Itália 2006', era:'Copa do Mundo · Alemanha', cores:['#1e40af','#fff'], jogadores:[
+    {n:'Buffon',pos:'GOL',r:95},{n:'Grosso',pos:'DEF',r:84},{n:'Cannavaro',pos:'DEF',r:94},{n:'Materazzi',pos:'DEF',r:86},{n:'Zambrotta',pos:'DEF',pos2:'MEI',r:88},
+    {n:'Pirlo',pos:'MEI',r:94},{n:'Gattuso',pos:'MEI',r:88},{n:'Camoranesi',pos:'MEI',r:84},
+    {n:'Totti',pos:'MEI',pos2:'ATA',r:91},{n:'Toni',pos:'ATA',r:86},{n:'Del Piero',pos:'ATA',pos2:'MEI',r:90}]},
+  { id:'esp10', tipo:'selecao', nome:'Espanha 2010', era:'Copa do Mundo · África do Sul', cores:['#dc2626','#fde047'], jogadores:[
+    {n:'Casillas',pos:'GOL',r:94},{n:'Capdevila',pos:'DEF',r:83},{n:'Piqué',pos:'DEF',r:90},{n:'Puyol',pos:'DEF',r:90},{n:'Ramos',pos:'DEF',pos2:'MEI',r:90},
+    {n:'Busquets',pos:'MEI',r:88},{n:'Xavi',pos:'MEI',r:95},{n:'Iniesta',pos:'MEI',pos2:'ATA',r:94},
+    {n:'Pedro',pos:'ATA',pos2:'MEI',r:84},{n:'Villa',pos:'ATA',r:92},{n:'Torres',pos:'ATA',r:88}]},
+  { id:'uru50', tipo:'selecao', nome:'Uruguai 1950', era:'Maracanazo · Copa Brasil', cores:['#0ea5e9','#fff'], jogadores:[
+    {n:'Máspoli',pos:'GOL',r:88},{n:'M. González',pos:'DEF',r:84},{n:'Tejera',pos:'DEF',r:83},{n:'Varela',pos:'DEF',pos2:'MEI',r:91},{n:'A. González',pos:'DEF',r:83},
+    {n:'Gambetta',pos:'MEI',r:84},{n:'Pérez',pos:'MEI',r:84},
+    {n:'Ghiggia',pos:'ATA',pos2:'MEI',r:89},{n:'Schiaffino',pos:'MEI',pos2:'ATA',r:94},{n:'Míguez',pos:'ATA',r:86},{n:'Morán',pos:'ATA',r:83}]},
+  { id:'por16', tipo:'selecao', nome:'Portugal 2016', era:'EURO · França', cores:['#dc2626','#16a34a'], jogadores:[
+    {n:'Rui Patrício',pos:'GOL',r:88},{n:'R. Guerreiro',pos:'DEF',pos2:'MEI',r:84},{n:'Pepe',pos:'DEF',r:88},{n:'Fonte',pos:'DEF',r:82},{n:'Cédric',pos:'DEF',r:81},
+    {n:'W. Carvalho',pos:'MEI',r:84},{n:'Adrien',pos:'MEI',r:82},{n:'João Mário',pos:'MEI',r:83},
+    {n:'Nani',pos:'ATA',pos2:'MEI',r:86},{n:'Cristiano Ronaldo',pos:'ATA',r:96},{n:'Quaresma',pos:'ATA',pos2:'MEI',r:84}]},
+  { id:'cro18', tipo:'selecao', nome:'Croácia 2018', era:'Vice · Copa Rússia', cores:['#dc2626','#fff'], jogadores:[
+    {n:'Subašić',pos:'GOL',r:85},{n:'Strinić',pos:'DEF',r:81},{n:'Lovren',pos:'DEF',r:83},{n:'Vida',pos:'DEF',r:82},{n:'Vrsaljko',pos:'DEF',r:82},
+    {n:'Brozović',pos:'MEI',r:85},{n:'Modrić',pos:'MEI',r:93},{n:'Rakitić',pos:'MEI',r:88},
+    {n:'Perišić',pos:'ATA',pos2:'MEI',r:87},{n:'Mandžukić',pos:'ATA',r:87},{n:'Rebić',pos:'ATA',pos2:'MEI',r:82}]},
+
+  // ===== Brasileiros adicionais =====
+  { id:'sao92', tipo:'brasileiro', nome:'São Paulo 1992', era:'Bicampeão Libertadores', cores:['#dc2626','#000'], jogadores:[
+    {n:'Zetti',pos:'GOL',r:88},{n:'Cafu',pos:'DEF',pos2:'MEI',r:90},{n:'Adílson',pos:'DEF',r:84},{n:'Ronaldão',pos:'DEF',r:84},{n:'Válber',pos:'DEF',pos2:'MEI',r:82},
+    {n:'Pintado',pos:'MEI',r:85},{n:'Toninho Cerezo',pos:'MEI',r:88},{n:'Raí',pos:'MEI',pos2:'ATA',r:93},
+    {n:'Müller',pos:'MEI',pos2:'ATA',r:88},{n:'Palhinha',pos:'ATA',r:86},{n:'Macedo',pos:'ATA',r:83}]},
+  { id:'vas89', tipo:'brasileiro', nome:'Vasco 1989', era:'Campeão Brasileiro', cores:['#000','#fff'], jogadores:[
+    {n:'Acácio',pos:'GOL',r:86},{n:'Mazinho',pos:'DEF',pos2:'MEI',r:84},{n:'Geovani Silva',pos:'DEF',r:83},{n:'Ricardo Rocha',pos:'DEF',r:87},{n:'Carlos Germano',pos:'DEF',r:82},
+    {n:'Bismarck',pos:'MEI',r:88},{n:'Geovani',pos:'MEI',pos2:'ATA',r:90},
+    {n:'Roberto Dinamite',pos:'ATA',r:92},{n:'Romário',pos:'ATA',r:96},{n:'Sorato',pos:'ATA',pos2:'MEI',r:83},{n:'Cocada',pos:'ATA',r:82}]},
+  { id:'cru03', tipo:'brasileiro', nome:'Cruzeiro 2003', era:'Tríplice Coroa', cores:['#1d4ed8','#fff'], jogadores:[
+    {n:'Gomes',pos:'GOL',r:87},{n:'Maurício',pos:'DEF',r:83},{n:'Edu Dracena',pos:'DEF',r:87},{n:'Cris',pos:'DEF',r:86},{n:'Maicon',pos:'DEF',pos2:'MEI',r:88},
+    {n:'Augusto Recife',pos:'MEI',r:84},{n:'Ricardinho',pos:'MEI',r:88},{n:'Alex',pos:'MEI',pos2:'ATA',r:93},
+    {n:'Jardel',pos:'ATA',r:84},{n:'Aristizábal',pos:'ATA',r:84},{n:'Deivid',pos:'ATA',r:84}]},
+  { id:'atm13', tipo:'brasileiro', nome:'Atlético-MG 2013', era:'Libertadores · Cruzeiro Imperial', cores:['#000','#fff'], jogadores:[
+    {n:'Victor',pos:'GOL',r:90},{n:'Júnior César',pos:'DEF',r:82},{n:'Réver',pos:'DEF',r:85},{n:'Leonardo Silva',pos:'DEF',r:84},{n:'Marcos Rocha',pos:'DEF',pos2:'MEI',r:84},
+    {n:'Pierre',pos:'MEI',r:83},{n:'Leandro Donizete',pos:'MEI',r:83},{n:'Bernard',pos:'MEI',pos2:'ATA',r:87},
+    {n:'Diego Tardelli',pos:'ATA',pos2:'MEI',r:87},{n:'Jô',pos:'ATA',r:86},{n:'Ronaldinho Gaúcho',pos:'MEI',pos2:'ATA',r:91}]},
+  { id:'pal99', tipo:'brasileiro', nome:'Palmeiras 1999', era:'Campeão Libertadores', cores:['#16a34a','#fff'], jogadores:[
+    {n:'Marcos',pos:'GOL',r:92},{n:'Júnior',pos:'DEF',r:84},{n:'Roque Júnior',pos:'DEF',r:87},{n:'César Sampaio',pos:'MEI',pos2:'DEF',r:86},{n:'Arce',pos:'DEF',pos2:'MEI',r:85},
+    {n:'Galeano',pos:'MEI',r:84},{n:'Rogério',pos:'MEI',pos2:'ATA',r:85},{n:'Alex',pos:'MEI',pos2:'ATA',r:90},
+    {n:'Zinho',pos:'MEI',r:86},{n:'Oséas',pos:'ATA',r:84},{n:'Evair',pos:'ATA',r:84}]},
+  { id:'gre83', tipo:'brasileiro', nome:'Grêmio 1983', era:'Mundial · Renato Gaúcho', cores:['#1e3a8a','#fff'], jogadores:[
+    {n:'Mazaropi',pos:'GOL',r:86},{n:'De León',pos:'DEF',r:88},{n:'Casemiro',pos:'DEF',r:83},{n:'Paulo Roberto',pos:'DEF',r:83},{n:'Baidek',pos:'DEF',r:82},
+    {n:'Tita',pos:'MEI',r:86},{n:'Caio',pos:'MEI',r:84},{n:'Osvaldo',pos:'MEI',pos2:'ATA',r:85},
+    {n:'Renato Gaúcho',pos:'MEI',pos2:'ATA',r:90},{n:'China',pos:'ATA',r:84},{n:'Tarciso',pos:'ATA',r:83}]},
+  { id:'flu12', tipo:'brasileiro', nome:'Fluminense 2012', era:'Campeão Brasileiro', cores:['#7f1d1d','#16a34a'], jogadores:[
+    {n:'Diego Cavalieri',pos:'GOL',r:86},{n:'Bruno',pos:'DEF',r:82},{n:'Gum',pos:'DEF',r:83},{n:'Leandro Euzébio',pos:'DEF',r:81},{n:'Carlinhos',pos:'DEF',pos2:'MEI',r:82},
+    {n:'Diguinho',pos:'MEI',r:82},{n:'Jean',pos:'MEI',r:82},{n:'Thiago Neves',pos:'MEI',pos2:'ATA',r:88},
+    {n:'Deco',pos:'MEI',r:88},{n:'Fred',pos:'ATA',r:88},{n:'Wellington Nem',pos:'ATA',pos2:'MEI',r:82}]},
+
+  // ===== Europeus adicionais =====
+  { id:'mun99', tipo:'europeu', nome:'Manchester United 1999', era:'Treble · Ferguson', cores:['#dc2626','#fde047'], jogadores:[
+    {n:'Schmeichel',pos:'GOL',r:95},{n:'Irwin',pos:'DEF',r:85},{n:'G. Neville',pos:'DEF',r:85},{n:'Stam',pos:'DEF',r:90},{n:'Johnsen',pos:'DEF',r:83},
+    {n:'Keane',pos:'MEI',r:93},{n:'Scholes',pos:'MEI',r:91},{n:'Beckham',pos:'MEI',pos2:'ATA',r:90},
+    {n:'Giggs',pos:'MEI',pos2:'ATA',r:92},{n:'Cole',pos:'ATA',r:87},{n:'Yorke',pos:'ATA',r:88}]},
+  { id:'liv05', tipo:'europeu', nome:'Liverpool 2005', era:'Milagre de Istambul', cores:['#dc2626','#fff'], jogadores:[
+    {n:'Dudek',pos:'GOL',r:87},{n:'Traoré',pos:'DEF',r:80},{n:'Carragher',pos:'DEF',r:87},{n:'Hyypiä',pos:'DEF',r:86},{n:'Finnan',pos:'DEF',r:82},
+    {n:'Hamann',pos:'MEI',r:84},{n:'Xabi Alonso',pos:'MEI',r:90},{n:'Gerrard',pos:'MEI',pos2:'ATA',r:94},
+    {n:'Riise',pos:'MEI',r:84},{n:'García',pos:'MEI',pos2:'ATA',r:84},{n:'Baroš',pos:'ATA',r:83}]},
+  { id:'che12', tipo:'europeu', nome:'Chelsea 2012', era:'Campeão Champions', cores:['#1e3a8a','#fff'], jogadores:[
+    {n:'Čech',pos:'GOL',r:91},{n:'Cole',pos:'DEF',r:87},{n:'David Luiz',pos:'DEF',r:85},{n:'Cahill',pos:'DEF',r:84},{n:'Ivanović',pos:'DEF',pos2:'MEI',r:85},
+    {n:'Mikel',pos:'MEI',r:82},{n:'Lampard',pos:'MEI',pos2:'ATA',r:92},{n:'Mata',pos:'MEI',pos2:'ATA',r:88},
+    {n:'Ramires',pos:'MEI',r:84},{n:'Drogba',pos:'ATA',r:91},{n:'Mikel',pos:'MEI',r:80}]},
+  { id:'dort13', tipo:'europeu', nome:'Borussia Dortmund 2013', era:'Vice Champions · Klopp', cores:['#fde047','#000'], jogadores:[
+    {n:'Weidenfeller',pos:'GOL',r:86},{n:'Schmelzer',pos:'DEF',r:82},{n:'Subotić',pos:'DEF',r:85},{n:'Hummels',pos:'DEF',r:89},{n:'Piszczek',pos:'DEF',r:84},
+    {n:'Bender',pos:'MEI',r:82},{n:'Gündoğan',pos:'MEI',r:87},{n:'Götze',pos:'MEI',pos2:'ATA',r:88},
+    {n:'Reus',pos:'MEI',pos2:'ATA',r:89},{n:'Lewandowski',pos:'ATA',r:92},{n:'Błaszczykowski',pos:'MEI',pos2:'ATA',r:84}]},
+  { id:'rma02', tipo:'europeu', nome:'Real Madrid 2002', era:'Galácticos · Champions', cores:['#fff','#fde047'], jogadores:[
+    {n:'Casillas',pos:'GOL',r:88},{n:'R. Carlos',pos:'DEF',pos2:'MEI',r:94},{n:'Hierro',pos:'DEF',r:90},{n:'Helguera',pos:'DEF',r:85},{n:'Salgado',pos:'DEF',r:84},
+    {n:'Makelele',pos:'MEI',r:88},{n:'Zidane',pos:'MEI',pos2:'ATA',r:96},{n:'Figo',pos:'MEI',pos2:'ATA',r:93},
+    {n:'Raúl',pos:'ATA',pos2:'MEI',r:93},{n:'Ronaldo',pos:'ATA',r:96},{n:'McManaman',pos:'MEI',r:84}]},
+  { id:'int10', tipo:'europeu', nome:'Inter 2010', era:'Triplete · Mourinho', cores:['#1e3a8a','#000'], jogadores:[
+    {n:'Júlio César',pos:'GOL',r:92},{n:'Maicon',pos:'DEF',pos2:'MEI',r:91},{n:'Samuel',pos:'DEF',r:88},{n:'Lúcio',pos:'DEF',r:89},{n:'Chivu',pos:'DEF',r:84},
+    {n:'Cambiasso',pos:'MEI',r:88},{n:'Zanetti',pos:'MEI',pos2:'DEF',r:89},{n:'Sneijder',pos:'MEI',pos2:'ATA',r:92},
+    {n:'Pandev',pos:'MEI',pos2:'ATA',r:84},{n:'Milito',pos:'ATA',r:90},{n:'Eto\'o',pos:'ATA',r:92}]},
+  { id:'juv96', tipo:'europeu', nome:'Juventus 1996', era:'Campeã Champions', cores:['#000','#fff'], jogadores:[
+    {n:'Peruzzi',pos:'GOL',r:90},{n:'Pessotto',pos:'DEF',r:84},{n:'Ferrara',pos:'DEF',r:86},{n:'Vierchowod',pos:'DEF',r:85},{n:'Torricelli',pos:'DEF',r:82},
+    {n:'Deschamps',pos:'MEI',r:86},{n:'Conte',pos:'MEI',r:86},{n:'Zidane',pos:'MEI',pos2:'ATA',r:92},
+    {n:'Del Piero',pos:'MEI',pos2:'ATA',r:90},{n:'Ravanelli',pos:'ATA',r:88},{n:'Vialli',pos:'ATA',r:88}]},
+  { id:'ars04', tipo:'europeu', nome:'Arsenal 2004', era:'Invincibles', cores:['#dc2626','#fff'], jogadores:[
+    {n:'Lehmann',pos:'GOL',r:86},{n:'A. Cole',pos:'DEF',r:88},{n:'Campbell',pos:'DEF',r:87},{n:'Touré',pos:'DEF',r:85},{n:'Lauren',pos:'DEF',r:83},
+    {n:'Gilberto Silva',pos:'MEI',r:86},{n:'Vieira',pos:'MEI',r:92},{n:'Pirès',pos:'MEI',pos2:'ATA',r:89},
+    {n:'Ljungberg',pos:'MEI',pos2:'ATA',r:86},{n:'Henry',pos:'ATA',r:96},{n:'Bergkamp',pos:'ATA',pos2:'MEI',r:91}]},
+  { id:'bay13', tipo:'europeu', nome:'Bayern 2013', era:'Treble · Heynckes', cores:['#dc2626','#1e3a8a'], jogadores:[
+    {n:'Neuer',pos:'GOL',r:94},{n:'Alaba',pos:'DEF',pos2:'MEI',r:88},{n:'Boateng',pos:'DEF',r:87},{n:'Dante',pos:'DEF',r:84},{n:'Lahm',pos:'DEF',pos2:'MEI',r:90},
+    {n:'Schweinsteiger',pos:'MEI',r:91},{n:'Martínez',pos:'MEI',r:86},{n:'Müller',pos:'MEI',pos2:'ATA',r:90},
+    {n:'Ribéry',pos:'MEI',pos2:'ATA',r:92},{n:'Robben',pos:'ATA',pos2:'MEI',r:91},{n:'Mandžukić',pos:'ATA',r:86}]},
+  { id:'mci23', tipo:'europeu', nome:'Manchester City 2023', era:'Treble · Guardiola', cores:['#7dd3fc','#fff'], jogadores:[
+    {n:'Ederson',pos:'GOL',r:90},{n:'Aké',pos:'DEF',r:84},{n:'Dias',pos:'DEF',r:90},{n:'Stones',pos:'DEF',pos2:'MEI',r:86},{n:'Walker',pos:'DEF',r:85},
+    {n:'Rodri',pos:'MEI',r:91},{n:'De Bruyne',pos:'MEI',pos2:'ATA',r:95},{n:'B. Silva',pos:'MEI',pos2:'ATA',r:89},
+    {n:'Grealish',pos:'ATA',pos2:'MEI',r:86},{n:'Haaland',pos:'ATA',r:94},{n:'Foden',pos:'ATA',pos2:'MEI',r:87}]},
+
+  // ===== Sul-americanos adicionais =====
+  { id:'riv86', tipo:'sulam', nome:'River Plate 1986', era:'Libertadores · Intercontinental', cores:['#dc2626','#fff'], jogadores:[
+    {n:'Pumpido',pos:'GOL',r:86},{n:'Ruggeri',pos:'DEF',r:88},{n:'Gallego',pos:'DEF',r:84},{n:'Montenegro',pos:'DEF',r:82},{n:'Saldaña',pos:'DEF',r:81},
+    {n:'Enrique',pos:'MEI',r:84},{n:'Gallardo',pos:'MEI',r:86},{n:'Alonso',pos:'MEI',pos2:'ATA',r:88},
+    {n:'Funes',pos:'ATA',r:84},{n:'Alzamendi',pos:'ATA',r:86},{n:'Centurión',pos:'ATA',pos2:'MEI',r:84}]},
+  { id:'boc03', tipo:'sulam', nome:'Boca Juniors 2003', era:'Bicampeão Libertadores', cores:['#1e3a8a','#fde047'], jogadores:[
+    {n:'Abbondanzieri',pos:'GOL',r:88},{n:'Schiavi',pos:'DEF',r:85},{n:'Burdisso',pos:'DEF',r:84},{n:'Bermúdez',pos:'DEF',r:84},{n:'Ibarra',pos:'DEF',r:84},
+    {n:'Battaglia',pos:'MEI',r:84},{n:'Cagna',pos:'MEI',r:83},{n:'Riquelme',pos:'MEI',pos2:'ATA',r:94},
+    {n:'Schelotto',pos:'MEI',r:83},{n:'Tevez',pos:'ATA',pos2:'MEI',r:90},{n:'Delgado',pos:'ATA',r:84}]},
+  { id:'nac88', tipo:'sulam', nome:'Nacional 1988', era:'Libertadores · Intercontinental', cores:['#1e40af','#fff'], jogadores:[
+    {n:'Álvez',pos:'GOL',r:85},{n:'Saralegui',pos:'DEF',r:82},{n:'Revelez',pos:'DEF',r:82},{n:'Domínguez',pos:'DEF',r:81},{n:'De Lima',pos:'DEF',r:81},
+    {n:'Vargas',pos:'MEI',r:83},{n:'Ostolaza',pos:'MEI',r:85},{n:'De León',pos:'MEI',pos2:'DEF',r:85},
+    {n:'Aguilera',pos:'ATA',pos2:'MEI',r:84},{n:'Carlos da Silva',pos:'ATA',r:83},{n:'Ferreira',pos:'ATA',r:82}]},
+
+  // ===== Mundial-X / Outros continentes =====
+  { id:'al24', tipo:'mundialx', nome:'Al-Hilal 2024', era:'Mundial · Saudi Pro', cores:['#1e40af','#fff'], jogadores:[
+    {n:'Bono',pos:'GOL',r:86},{n:'João Cancelo',pos:'DEF',pos2:'MEI',r:86},{n:'Koulibaly',pos:'DEF',r:86},{n:'Yasser',pos:'DEF',r:80},{n:'Renan Lodi',pos:'DEF',pos2:'MEI',r:82},
+    {n:'Rúben Neves',pos:'MEI',r:85},{n:'Milinković',pos:'MEI',pos2:'ATA',r:86},{n:'Neymar',pos:'MEI',pos2:'ATA',r:91},
+    {n:'Malcom',pos:'ATA',pos2:'MEI',r:84},{n:'Mitrović',pos:'ATA',r:87},{n:'Salem',pos:'ATA',r:80}]},
+  { id:'pach22', tipo:'mundialx', nome:'Pachuca 2010', era:'Concacaf · México', cores:['#1e3a8a','#fff'], jogadores:[
+    {n:'M. Pérez',pos:'GOL',r:81},{n:'Cervantes',pos:'DEF',r:80},{n:'Toledo',pos:'DEF',r:80},{n:'Castro',pos:'DEF',r:80},{n:'Salgado',pos:'DEF',r:79},
+    {n:'Christian Giménez',pos:'MEI',pos2:'ATA',r:83},{n:'Pinto',pos:'MEI',r:79},{n:'Quintero',pos:'MEI',r:79},
+    {n:'D. Cabrera',pos:'ATA',r:81},{n:'Esquivel',pos:'ATA',r:79},{n:'Caballero',pos:'ATA',r:79}]},
 ];
 
 const FORMATIONS = {
@@ -2159,8 +2295,71 @@ function renderPitch(){
     }
     pitch.appendChild(el);
   });
+  renderSynergies();
   renderLineup();
   updateStats();
+}
+
+// ======== SINERGIA: linhas entre jogadores do mesmo time ========
+function renderSynergies(){
+  const svg = document.getElementById('syn-svg');
+  if(!svg) return;
+  svg.innerHTML = '';
+  // Agrupa por time
+  const groups = {};
+  state.lineup.forEach((p,i)=>{
+    if(!p || !p.team) return;
+    if(!groups[p.team]) groups[p.team] = [];
+    groups[p.team].push(i);
+  });
+  let bonus = 0;
+  const pairs = [];
+  Object.entries(groups).forEach(([teamName, idxs])=>{
+    if(idxs.length < 2) return;
+    // Conecta cada par possível
+    for(let i=0;i<idxs.length;i++){
+      for(let j=i+1;j<idxs.length;j++){
+        pairs.push({a:idxs[i], b:idxs[j], n:idxs.length});
+      }
+    }
+    bonus += idxs.length - 1;
+  });
+  pairs.forEach(({a,b,n})=>{
+    const sa = SLOTS[a], sb = SLOTS[b];
+    if(!sa || !sb) return;
+    const strong = n>=3;
+    const stroke = strong ? '#f5c842' : '#22d3ee';
+    const opacity = strong ? 0.65 : 0.45;
+    const width = strong ? 0.6 : 0.4;
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1', sa.x);
+    line.setAttribute('y1', sa.y);
+    line.setAttribute('x2', sb.x);
+    line.setAttribute('y2', sb.y);
+    line.setAttribute('stroke', stroke);
+    line.setAttribute('stroke-width', width);
+    line.setAttribute('stroke-opacity', opacity);
+    line.setAttribute('stroke-linecap', 'round');
+    line.setAttribute('stroke-dasharray', strong ? '0' : '1.2 1');
+    line.style.filter = `drop-shadow(0 0 1.5px ${stroke})`;
+    svg.appendChild(line);
+  });
+  // Atualiza pílula de sinergia
+  let pill = document.getElementById('syn-pill');
+  const totalGroups = Object.values(groups).filter(g=>g.length>=2).length;
+  if(totalGroups > 0){
+    if(!pill){
+      pill = document.createElement('div');
+      pill.id = 'syn-pill';
+      pill.className = 'syn-pill';
+      document.body.appendChild(pill);
+    }
+    const totalPlayers = Object.values(groups).filter(g=>g.length>=2).reduce((s,g)=>s+g.length,0);
+    pill.innerHTML = `🔗 SINERGIA · <b>${totalGroups}</b> ${totalGroups>1?'duplas/trios':'dupla'} · <b>${totalPlayers}</b> ${totalPlayers>1?'jogadores conectados':'jogador conectado'}`;
+    pill.classList.add('show');
+  } else if(pill){
+    pill.classList.remove('show');
+  }
 }
 const SLOT_CODE_MAP = {
   'Goleiro':'GOL','Lat. Esq.':'LAT','Lat. Dir.':'LAT','Zagueiro':'ZAG','Líbero':'LIB',
@@ -2546,6 +2745,16 @@ function effectiveR(p,i){
   if(i===state.captain) r += 5;
   const m = (typeof state.moral==='number') ? state.moral : 0;
   r += m; // moral aplica +/- nos jogadores
+  // Sinergia: bônus por colegas do mesmo time histórico em campo
+  if(p.team){
+    let sameTeam = 0;
+    for(let k=0;k<state.lineup.length;k++){
+      const q = state.lineup[k];
+      if(k!==i && q && q.team===p.team) sameTeam++;
+    }
+    if(sameTeam>=2) r += 3;
+    else if(sameTeam===1) r += 2;
+  }
   return Math.min(99, Math.max(40, r));
 }
 function calcTeamR(){
