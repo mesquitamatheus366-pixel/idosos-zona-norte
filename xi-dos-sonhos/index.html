@@ -173,9 +173,22 @@
 
   .roll-stage{text-align:center;padding:20px 0 8px}
   .dice{width:140px;height:140px;margin:0 auto 20px;border-radius:22px;background:linear-gradient(180deg,#fff,#e9eef7);color:#0b0d12;display:flex;align-items:center;justify-content:center;font-size:88px;
-    box-shadow:0 18px 40px rgba(0,0,0,.6),inset 0 -10px 0 rgba(0,0,0,.08);transition:transform .15s}
-  .dice.rolling{animation:dice .08s infinite}
-  @keyframes dice{0%{transform:rotate(-14deg) scale(1.05)}50%{transform:rotate(16deg) scale(.95)}100%{transform:rotate(-8deg) scale(1.02)}}
+    box-shadow:0 18px 40px rgba(0,0,0,.6),inset 0 -10px 0 rgba(0,0,0,.08);transition:transform .15s;perspective:600px;transform-style:preserve-3d;will-change:transform}
+  .dice.rolling{animation:diceRoll .6s cubic-bezier(.45,.05,.55,.95) infinite;box-shadow:0 22px 48px rgba(34,211,238,.45),0 0 30px rgba(245,200,66,.35),inset 0 -10px 0 rgba(0,0,0,.08)}
+  .dice.settled{animation:diceSettle .42s cubic-bezier(.34,1.56,.64,1)}
+  @keyframes diceRoll{
+    0%   {transform: rotateX(0)      rotateY(0)      rotateZ(0)     scale(1)}
+    25%  {transform: rotateX(180deg) rotateY(90deg)  rotateZ(-15deg) scale(1.08)}
+    50%  {transform: rotateX(360deg) rotateY(180deg) rotateZ(10deg)  scale(.92)}
+    75%  {transform: rotateX(540deg) rotateY(270deg) rotateZ(-8deg)  scale(1.06)}
+    100% {transform: rotateX(720deg) rotateY(360deg) rotateZ(0)     scale(1)}
+  }
+  @keyframes diceSettle{
+    0%   {transform: scale(1.3) rotate(-14deg); box-shadow:0 0 60px rgba(245,200,66,.7),0 22px 48px rgba(0,0,0,.6)}
+    40%  {transform: scale(.92) rotate(8deg)}
+    70%  {transform: scale(1.04) rotate(-3deg)}
+    100% {transform: scale(1) rotate(0); box-shadow:0 18px 40px rgba(0,0,0,.6),inset 0 -10px 0 rgba(0,0,0,.08)}
+  }
   .roll-btn{background:linear-gradient(180deg,var(--neon),#0ea5cc);color:#031620;border:none;padding:15px 28px;font-weight:800;font-size:13px;letter-spacing:1.2px;cursor:pointer;border-radius:10px;font-family:'Outfit',sans-serif;text-transform:uppercase;transition:all .25s;box-shadow:0 6px 18px rgba(34,211,238,.25),inset 0 -2px 0 rgba(0,0,0,.15)}
   .roll-btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(34,211,238,.3)}
   .roll-btn.alt{background:var(--panel-2);color:var(--muted);border:1px solid var(--line);margin-left:8px}
@@ -251,8 +264,9 @@
   .dice-hint{font-size:11px;color:var(--muted);text-align:center;margin:-4px 0 10px;line-height:1.4;padding:0 6px}
   .dice-wrap{text-align:center;margin-bottom:6px}
   .dice-inline{width:90px;height:90px;margin:4px auto 8px;border-radius:18px;background:linear-gradient(180deg,#fff,#e9eef7);color:#0b0d12;display:flex;align-items:center;justify-content:center;font-size:56px;animation:float 3s ease-in-out infinite;
-    box-shadow:0 10px 24px rgba(0,0,0,.55),inset 0 -6px 0 rgba(0,0,0,.08);transition:transform .15s}
-  .dice-inline.rolling{animation:dice .08s infinite}
+    box-shadow:0 10px 24px rgba(0,0,0,.55),inset 0 -6px 0 rgba(0,0,0,.08);transition:transform .15s;perspective:500px;transform-style:preserve-3d;will-change:transform}
+  .dice-inline.rolling{animation:diceRoll .55s cubic-bezier(.45,.05,.55,.95) infinite;box-shadow:0 14px 32px rgba(34,211,238,.4),0 0 22px rgba(245,200,66,.3),inset 0 -6px 0 rgba(0,0,0,.08)}
+  .dice-inline.settled{animation:diceSettle .42s cubic-bezier(.34,1.56,.64,1)}
   .rolls-left{font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;color:var(--neon);letter-spacing:.5px}
   .rolls-left.danger{color:var(--red);animation:pulse-soft 1s ease infinite}
   .rolls-left.dead{color:var(--muted);opacity:.6}
@@ -2224,6 +2238,9 @@ function rollDice(){
       clearInterval(it);
       dice.classList.remove('rolling');
       dice.textContent = faces[Math.floor(Math.random()*6)];
+      void dice.offsetWidth;
+      dice.classList.add('settled');
+      setTimeout(()=>dice.classList.remove('settled'), 450);
       const pool = state.tipo==='todos'?TIMES:TIMES.filter(x=>x.tipo===state.tipo);
       const team = pick(pool);
       state.currentTeam = team;
@@ -3289,6 +3306,27 @@ function rebindEndButtons(){
   $('#btn-restart').onclick = ()=>{state.lineup=Array(11).fill(null);state.rolls=0;state.buff=null;state.captain=-1;renderPitch();renderBuffPanel();$('#match').classList.remove('open');state.tournament=null;};
 }
 
+// Animação de rolagem do dado na janela de transferências
+function animateTfRoll(host, done){
+  const faces = ['⚀','⚁','⚂','⚃','⚄','⚅'];
+  host.innerHTML = `<div style="text-align:center;padding:24px 0"><div id="tf-dice-anim" class="dice-inline rolling" style="margin:0 auto">🎲</div><p style="color:var(--muted);font-size:12px;margin-top:14px;letter-spacing:1.5px;font-family:'Outfit',sans-serif">SORTEANDO ELENCO…</p></div>`;
+  const d = host.querySelector('#tf-dice-anim');
+  let t = 0;
+  const it = setInterval(()=>{
+    if(d) d.textContent = faces[Math.floor(Math.random()*6)];
+    t++;
+    if(t>9){
+      clearInterval(it);
+      if(d){
+        d.classList.remove('rolling');
+        void d.offsetWidth;
+        d.classList.add('settled');
+      }
+      setTimeout(done, 380);
+    }
+  }, 75);
+}
+
 // ============ JANELA DE TRANSFERÊNCIAS (3 rolagens, 3 trocas) ============
 function openTransferWindow(nextComp){
   state.transfer = {nextComp, swapsLeft:3, rollsLeft:5, selectedIdx:-1, currentTeam:null};
@@ -3301,7 +3339,7 @@ function renderTransfer(){
   const tf = state.transfer;
   const nextLabel = tf.nextComp==='libertadores'?'LIBERTADORES':tf.nextComp==='champions'?'CHAMPIONS LEAGUE':'MUNDIAL DE CLUBES';
   $('#tf-title').textContent = `🔄 JANELA DE TRANSFERÊNCIAS · ${nextLabel}`;
-  $('#tf-info').innerHTML = `<b style="color:var(--gold)">${tf.swapsLeft}</b> troca${tf.swapsLeft!==1?'s':''} · <b style="color:var(--neon)">${tf.rollsLeft}</b> rolagem${tf.rollsLeft!==1?'ns':''} restante${tf.rollsLeft!==1?'s':''}`;
+  $('#tf-info').innerHTML = `<b style="color:var(--gold)">${tf.swapsLeft}</b> ${tf.swapsLeft!==1?'trocas':'troca'} · <b style="color:var(--neon)">${tf.rollsLeft}</b> ${tf.rollsLeft!==1?'rolagens restantes':'rolagem restante'}`;
   // lineup atual
   $('#tf-lineup').innerHTML = state.lineup.map((p,i)=>{
     const slot = SLOTS[i];
@@ -3328,15 +3366,17 @@ function renderTransfer(){
   } else if(tf.selectedIdx<0){
     dice.innerHTML = '<p style="color:var(--muted);text-align:center;padding:14px;font-size:12px">Selecione um jogador acima para trocar</p>';
   } else if(!tf.currentTeam){
-    dice.innerHTML = `<button class="roll-btn full" id="tf-roll">🎲 ROLAR DADO (${tf.rollsLeft} restante${tf.rollsLeft!==1?'s':''})</button>`;
+    dice.innerHTML = `<button class="roll-btn full" id="tf-roll">🎲 ROLAR DADO (${tf.rollsLeft} ${tf.rollsLeft!==1?'restantes':'restante'})</button>`;
     $('#tf-roll').onclick = ()=>{
       if(tf.rollsLeft<=0){ toast('Sem rolagens!','err'); return; }
       tf.rollsLeft--;
       const slotPos = SLOTS[tf.selectedIdx].pos;
       const positionsOK = p => (p.pos===slotPos) || (p.pos2===slotPos);
       const pool = TIMES.filter(team => team.jogadores.some(positionsOK));
-      tf.currentTeam = pick(pool);
-      renderTransfer();
+      animateTfRoll(dice, ()=>{
+        tf.currentTeam = pick(pool);
+        renderTransfer();
+      });
     };
   } else {
     const team = tf.currentTeam;
@@ -3360,7 +3400,7 @@ function renderTransfer(){
           </div>`;
         }).join('')}
       </div>
-      ${tf.rollsLeft>0 ? `<button class="roll-btn full" id="tf-skip" style="margin-top:10px;background:transparent;border:1px solid var(--line);color:var(--muted)">PULAR (rolar de novo · ${tf.rollsLeft} restante${tf.rollsLeft!==1?'s':''})</button>` : `<p style="color:var(--red);text-align:center;padding:10px;font-size:11px;margin-top:8px">💀 Sem mais rolagens</p>`}`;
+      ${tf.rollsLeft>0 ? `<button class="roll-btn full" id="tf-skip" style="margin-top:10px;background:transparent;border:1px solid var(--line);color:var(--muted)">PULAR (rolar de novo · ${tf.rollsLeft} ${tf.rollsLeft!==1?'restantes':'restante'})</button>` : `<p style="color:var(--red);text-align:center;padding:10px;font-size:11px;margin-top:8px">💀 Sem mais rolagens</p>`}`;
     $$('#tf-dice-box .pl').forEach(el=>{
       el.onclick = ()=>{
         const p = team.jogadores[+el.dataset.j];
@@ -3383,8 +3423,11 @@ function renderTransfer(){
       const slotPos = SLOTS[tf.selectedIdx].pos;
       const positionsOK = p => (p.pos===slotPos) || (p.pos2===slotPos);
       const pool = TIMES.filter(team => team.jogadores.some(positionsOK));
-      tf.currentTeam = pick(pool);
-      renderTransfer();
+      const dice = $('#tf-dice-box');
+      animateTfRoll(dice, ()=>{
+        tf.currentTeam = pick(pool);
+        renderTransfer();
+      });
     };
   }
 }
@@ -3551,66 +3594,122 @@ function startLibertaKnockout(){
   t.phase = 'knockout';
   t.bracket = shuffle(qualified);
   t.round = 'Oitavas';
+  t.leg = 1; t.firstLegScore = null; t.currentFoe = null;
   $('#feed').innerHTML='';
   closeSidePanel();
   $('#sc-a').textContent='0'; $('#sc-b').textContent='0';
   $('#verdict').classList.remove('show','win','lose','draw');
-  addEv(0,`<strong>🌎 LIBERTADORES · OITAVAS DE FINAL</strong>`,'goal');
+  addEv(0,`<strong>🌎 LIBERTADORES · OITAVAS DE FINAL (ida e volta)</strong>`,'goal');
   playLibertaRound();
 }
 
 function playLibertaRound(){
   const t = state.tournament;
+  if(!t.leg) t.leg = 1;
   const meIdx = t.bracket.findIndex(x=>x.me);
-  const myPairStart = meIdx - (meIdx % 2);
-  const pairIdx = (myPairStart===meIdx) ? meIdx+1 : meIdx-1;
-  const foe = t.bracket[pairIdx];
+  // Pareamento: define apenas na ida (jogo 1); preserva na volta
+  if(t.leg === 1){
+    const myPairStart = meIdx - (meIdx % 2);
+    const pairIdx = (myPairStart===meIdx) ? meIdx+1 : meIdx-1;
+    t.currentFoe = t.bracket[pairIdx];
+    t.currentMyPairStart = myPairStart;
+    t.othersWinners = [];
+    // Simula adversários: ida e volta agregada (ou jogo único na FINAL)
+    const twoLegs = t.round !== 'FINAL';
+    for(let i=0;i<t.bracket.length;i+=2){
+      if(i===myPairStart) continue;
+      const a=t.bracket[i], b=t.bracket[i+1];
+      if(!a||!b) continue;
+      let aggA, aggB;
+      if(twoLegs){
+        const s1 = simScore('x', avgR(a.jogadores), avgR(b.jogadores));
+        const s2 = simScore('x', avgR(b.jogadores), avgR(a.jogadores));
+        aggA = s1[0]+s2[1]; aggB = s1[1]+s2[0];
+      } else {
+        const sc = simScore('x', avgR(a.jogadores), avgR(b.jogadores));
+        aggA = sc[0]; aggB = sc[1];
+      }
+      let winner = aggA>aggB ? a : (aggB>aggA ? b : (simShootoutAi(a,b)?a:b));
+      t.othersWinners.push(winner);
+    }
+  }
+  const foe = t.currentFoe;
+  const twoLegs = t.round !== 'FINAL';
   $('#feed').innerHTML='';
   $('#sc-a').textContent='0'; $('#sc-b').textContent='0';
   $('#verdict').classList.remove('show','win','lose','draw');
   setFoeUI(foe);
-  addEv(0,`<strong>🌎 ${t.round.toUpperCase()}</strong> · ${state.teamName} x ${foe.nome}`,'goal');
-  const others = [];
-  for(let i=0;i<t.bracket.length;i+=2){
-    if(i===myPairStart) continue;
-    const a=t.bracket[i], b=t.bracket[i+1];
-    if(!a||!b) continue;
-    const sc = simScore('x', avgR(a.jogadores), avgR(b.jogadores));
-    let winner = sc[0]>sc[1] ? a : (sc[1]>sc[0] ? b : (simShootoutAi(a,b)?a:b));
-    others.push({a, b, score:sc, winner});
+  const legLabel = twoLegs ? (t.leg===1 ? ' · IDA (casa)' : ' · VOLTA (fora)') : ' · JOGO ÚNICO';
+  addEv(0,`<strong>🌎 ${t.round.toUpperCase()}${legLabel}</strong> · ${state.teamName} x ${foe.nome}`,'goal');
+  if(twoLegs && t.leg===2 && t.firstLegScore){
+    addEv(0, `<i>Agregado parcial: ${state.teamName} ${t.firstLegScore[0]} x ${t.firstLegScore[1]} ${foe.nome}</i>`);
   }
   runLiveMatch(foe,(score)=>{
     const t2 = state.tournament;
     const meTeam = t2.bracket[meIdx];
-    let pen = null, win;
-    if(score[0]>score[1]) win = true;
-    else if(score[1]>score[0]) win = false;
+    if(twoLegs && t2.leg === 1){
+      t2.firstLegScore = score.slice();
+      t2.campaign.push({stage:t2.round+' · Ida', foe, score:score.slice(), win:null, scorers:(state.matchScorerEvents||[]).slice(), stats:state.matchStats?{...state.matchStats}:null});
+      t2.results.push({stage:t2.round+' · Ida', foe, score:score.slice(), win:null, scorers:(state.matchScorerEvents||[]).slice(), stats:state.matchStats?{...state.matchStats}:null});
+      showLibertaLegEnd(score, foe);
+      return;
+    }
+    // Decisão: jogo único ou agregado
+    let pen=null, win, aggUs, aggThem;
+    if(twoLegs){
+      aggUs = t2.firstLegScore[0] + score[0];
+      aggThem = t2.firstLegScore[1] + score[1];
+    } else {
+      aggUs = score[0]; aggThem = score[1];
+    }
+    if(aggUs > aggThem) win = true;
+    else if(aggThem > aggUs) win = false;
     else {
       pen = shootout(meTeam.jogadores||state.lineup.filter(Boolean), foe.jogadores);
       win = pen.win;
       addEv(91,`<strong>🥅 PÊNALTIS!</strong> ${state.teamName} ${pen.mg} x ${pen.fg} ${foe.nome}`,win?'goal':'bad');
     }
-    t2.campaign.push({stage:t2.round, foe, score:score.slice(), pen, win, scorers:(state.matchScorerEvents||[]).slice(), stats:state.matchStats?{...state.matchStats}:null});
-    t2.results.push({stage:t2.round, foe, score, win, pen, scorers:(state.matchScorerEvents||[]).slice(), stats:state.matchStats?{...state.matchStats}:null});
+    const stageLabel = twoLegs ? t2.round+' · Volta' : t2.round;
+    t2.campaign.push({stage:stageLabel, foe, score:score.slice(), agg:twoLegs?[aggUs,aggThem]:null, pen, win, scorers:(state.matchScorerEvents||[]).slice(), stats:state.matchStats?{...state.matchStats}:null});
+    t2.results.push({stage:stageLabel, foe, score:score.slice(), agg:twoLegs?[aggUs,aggThem]:null, pen, win, scorers:(state.matchScorerEvents||[]).slice(), stats:state.matchStats?{...state.matchStats}:null});
     if(win){
-      const winners = [meTeam, ...others.map(o=>o.winner)];
+      const winners = [meTeam, ...t2.othersWinners];
       const nextRound = {Oitavas:'Quartas', Quartas:'Semi', Semi:'FINAL', FINAL:'CAMPEÃO'}[t2.round];
       if(nextRound==='CAMPEÃO'){ finishLibertadores(true); return; }
       t2.bracket = shuffle(winners);
       t2.round = nextRound;
-      showLibertaRoundEnd(true);
+      t2.leg = 1; t2.firstLegScore = null; t2.currentFoe = null;
+      showLibertaRoundEnd(true, twoLegs ? {aggUs, aggThem} : null);
     } else {
       finishLibertadores(false, t2.round);
     }
   });
 }
 
-function showLibertaRoundEnd(win){
+function showLibertaLegEnd(score, foe){
+  const t = state.tournament;
+  const v = $('#verdict'); v.classList.add('show');
+  v.classList.remove('win','lose','draw');
+  const d = score[0]-score[1];
+  if(d>0) v.classList.add('win');
+  else if(d===0) v.classList.add('draw');
+  else v.classList.add('lose');
+  $('#v-title').textContent = `JOGO DE IDA · ${state.teamName} ${score[0]} x ${score[1]} ${foe.nome}`;
+  $('#v-text').textContent = `Decisão na volta. Agregado parcial vale.`;
+  $('#verdict .actions').innerHTML = `
+    <button id="btn-next-leg">JOGO DE VOLTA →</button>
+    <button class="ghost" id="btn-quit-tournament">DESISTIR</button>`;
+  $('#btn-next-leg').onclick = ()=>{ t.leg = 2; playLibertaRound(); };
+  $('#btn-quit-tournament').onclick = ()=>{ $('#match').classList.remove('open'); state.tournament=null; };
+  setTimeout(()=>v.scrollIntoView({behavior:'smooth',block:'center'}),60);
+}
+
+function showLibertaRoundEnd(win, agg){
   const t = state.tournament;
   const v = $('#verdict'); v.classList.add('show');
   v.classList.add('win');
   $('#v-title').textContent = `✅ CLASSIFICADO PARA ${t.round.toUpperCase()}`;
-  $('#v-text').textContent = `Próximo desafio na frente.`;
+  $('#v-text').textContent = agg ? `Avançou no agregado ${agg.aggUs} x ${agg.aggThem}. Próximo desafio na frente.` : `Próximo desafio na frente.`;
   $('#verdict .actions').innerHTML = `
     <button id="btn-next-liberta">PRÓXIMA FASE →</button>
     <button class="ghost" id="btn-quit-tournament">DESISTIR</button>`;
@@ -5393,56 +5492,91 @@ function startChampionsKnockout(){
   t.phase='knockout';
   t.bracket=shuffle(qualified);
   t.round='Oitavas';
+  t.leg=1; t.firstLegScore=null; t.currentFoe=null;
   $('#feed').innerHTML='';
   closeSidePanel();
   $('#sc-a').textContent='0'; $('#sc-b').textContent='0';
   $('#verdict').classList.remove('show','win','lose','draw');
-  addEv(0,`<strong>⭐ CHAMPIONS LEAGUE · OITAVAS DE FINAL</strong>`,'goal');
+  addEv(0,`<strong>⭐ CHAMPIONS LEAGUE · OITAVAS DE FINAL (ida e volta)</strong>`,'goal');
   playChampionsRound();
 }
 
 function playChampionsRound(){
   const t = state.tournament;
+  if(!t.leg) t.leg = 1;
   const meIdx = t.bracket.findIndex(x=>x.me);
-  const myPairStart = meIdx-(meIdx%2);
-  const pairIdx = (myPairStart===meIdx)?meIdx+1:meIdx-1;
-  const foe = t.bracket[pairIdx];
+  if(t.leg===1){
+    const myPairStart = meIdx-(meIdx%2);
+    const pairIdx = (myPairStart===meIdx)?meIdx+1:meIdx-1;
+    t.currentFoe = t.bracket[pairIdx];
+    t.currentMyPairStart = myPairStart;
+    t.othersWinners = [];
+    const twoLegs = t.round !== 'FINAL';
+    for(let i=0;i<t.bracket.length;i+=2){
+      if(i===myPairStart) continue;
+      const a=t.bracket[i],b=t.bracket[i+1];
+      if(!a||!b) continue;
+      let aggA, aggB;
+      if(twoLegs){
+        const s1 = simScore('x', avgR(a.jogadores), avgR(b.jogadores));
+        const s2 = simScore('x', avgR(b.jogadores), avgR(a.jogadores));
+        aggA = s1[0]+s2[1]; aggB = s1[1]+s2[0];
+      } else {
+        const sc = simScore('x', avgR(a.jogadores), avgR(b.jogadores));
+        aggA = sc[0]; aggB = sc[1];
+      }
+      let winner = aggA>aggB?a:(aggB>aggA?b:(simShootoutAi(a,b)?a:b));
+      t.othersWinners.push(winner);
+    }
+  }
+  const foe = t.currentFoe;
+  const twoLegs = t.round !== 'FINAL';
   $('#feed').innerHTML='';
   $('#sc-a').textContent='0'; $('#sc-b').textContent='0';
   $('#verdict').classList.remove('show','win','lose','draw');
   setFoeUI(foe);
-  addEv(0,`<strong>⭐ ${t.round.toUpperCase()}</strong> · ${state.teamName} x ${foe.nome}`,'goal');
-  const others=[];
-  for(let i=0;i<t.bracket.length;i+=2){
-    if(i===myPairStart) continue;
-    const a=t.bracket[i],b=t.bracket[i+1];
-    if(!a||!b) continue;
-    const sc=simScore('x',avgR(a.jogadores),avgR(b.jogadores));
-    let winner = sc[0]>sc[1]?a:(sc[1]>sc[0]?b:(simShootoutAi(a,b)?a:b));
-    others.push({a,b,score:sc,winner});
+  const legLabel = twoLegs ? (t.leg===1 ? ' · IDA (casa)' : ' · VOLTA (fora)') : ' · JOGO ÚNICO';
+  addEv(0,`<strong>⭐ ${t.round.toUpperCase()}${legLabel}</strong> · ${state.teamName} x ${foe.nome}`,'goal');
+  if(twoLegs && t.leg===2 && t.firstLegScore){
+    addEv(0, `<i>Agregado parcial: ${state.teamName} ${t.firstLegScore[0]} x ${t.firstLegScore[1]} ${foe.nome}</i>`);
   }
   runLiveMatch(foe,(score)=>{
     const t2=state.tournament;
     const meTeam = t2.bracket[meIdx];
-    let pen=null, win;
-    if(score[0]>score[1]) win = true;
-    else if(score[1]>score[0]) win = false;
+    if(twoLegs && t2.leg===1){
+      t2.firstLegScore = score.slice();
+      t2.campaign.push({stage:t2.round+' · Ida', foe, score:score.slice(), win:null, scorers:(state.matchScorerEvents||[]).slice(), stats:state.matchStats?{...state.matchStats}:null});
+      t2.results.push({stage:t2.round+' · Ida', foe, score:score.slice(), win:null, scorers:(state.matchScorerEvents||[]).slice(), stats:state.matchStats?{...state.matchStats}:null});
+      showChampionsLegEnd(score, foe);
+      return;
+    }
+    let pen=null, win, aggUs, aggThem;
+    if(twoLegs){
+      aggUs = t2.firstLegScore[0] + score[0];
+      aggThem = t2.firstLegScore[1] + score[1];
+    } else {
+      aggUs = score[0]; aggThem = score[1];
+    }
+    if(aggUs > aggThem) win = true;
+    else if(aggThem > aggUs) win = false;
     else {
       pen = shootout(meTeam.jogadores||state.lineup.filter(Boolean), foe.jogadores);
       win = pen.win;
       addEv(91,`<strong>🥅 PÊNALTIS!</strong> ${state.teamName} ${pen.mg} x ${pen.fg} ${foe.nome}`,win?'goal':'bad');
     }
-    t2.campaign.push({stage:t2.round, foe, score:score.slice(), pen, win, scorers:(state.matchScorerEvents||[]).slice(), stats:state.matchStats?{...state.matchStats}:null});
-    t2.results.push({stage:t2.round, foe, score, win, pen, scorers:(state.matchScorerEvents||[]).slice(), stats:state.matchStats?{...state.matchStats}:null});
+    const stageLabel = twoLegs ? t2.round+' · Volta' : t2.round;
+    t2.campaign.push({stage:stageLabel, foe, score:score.slice(), agg:twoLegs?[aggUs,aggThem]:null, pen, win, scorers:(state.matchScorerEvents||[]).slice(), stats:state.matchStats?{...state.matchStats}:null});
+    t2.results.push({stage:stageLabel, foe, score:score.slice(), agg:twoLegs?[aggUs,aggThem]:null, pen, win, scorers:(state.matchScorerEvents||[]).slice(), stats:state.matchStats?{...state.matchStats}:null});
     if(win){
-      const winners=[meTeam,...others.map(o=>o.winner)];
+      const winners=[meTeam,...t2.othersWinners];
       const nextRound={Oitavas:'Quartas',Quartas:'Semi',Semi:'FINAL',FINAL:'CAMPEÃO'}[t2.round];
       if(nextRound==='CAMPEÃO'){ finishChampions(true); return; }
       t2.bracket=shuffle(winners);
       t2.round=nextRound;
+      t2.leg=1; t2.firstLegScore=null; t2.currentFoe=null;
       const v=$('#verdict'); v.classList.add('show','win'); v.classList.remove('lose','draw');
       $('#v-title').textContent=`✅ CLASSIFICADO PARA ${t2.round.toUpperCase()}`;
-      $('#v-text').textContent='Próxima fase da Champions.';
+      $('#v-text').textContent= twoLegs ? `Avançou no agregado ${aggUs} x ${aggThem}. Próxima fase da Champions.` : 'Próxima fase da Champions.';
       $('#verdict .actions').innerHTML=`<button id="btn-next-champ">PRÓXIMA FASE →</button><button class="ghost" id="btn-quit-tournament">DESISTIR</button>`;
       $('#btn-next-champ').onclick=()=>playChampionsRound();
       $('#btn-quit-tournament').onclick=()=>{$('#match').classList.remove('open');state.tournament=null;};
@@ -5451,6 +5585,24 @@ function playChampionsRound(){
       finishChampions(false,t2.round);
     }
   });
+}
+
+function showChampionsLegEnd(score, foe){
+  const t = state.tournament;
+  const v = $('#verdict'); v.classList.add('show');
+  v.classList.remove('win','lose','draw');
+  const d = score[0]-score[1];
+  if(d>0) v.classList.add('win');
+  else if(d===0) v.classList.add('draw');
+  else v.classList.add('lose');
+  $('#v-title').textContent = `JOGO DE IDA · ${state.teamName} ${score[0]} x ${score[1]} ${foe.nome}`;
+  $('#v-text').textContent = `Decisão na volta. Agregado parcial vale.`;
+  $('#verdict .actions').innerHTML = `
+    <button id="btn-next-leg-ch">JOGO DE VOLTA →</button>
+    <button class="ghost" id="btn-quit-tournament">DESISTIR</button>`;
+  $('#btn-next-leg-ch').onclick = ()=>{ t.leg = 2; playChampionsRound(); };
+  $('#btn-quit-tournament').onclick = ()=>{ $('#match').classList.remove('open'); state.tournament=null; };
+  setTimeout(()=>v.scrollIntoView({behavior:'smooth',block:'center'}),60);
 }
 
 function finishChampions(won, lastStage){
