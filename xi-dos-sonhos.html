@@ -2622,7 +2622,7 @@ function rebindEndButtons(){
 
 // ============ JANELA DE TRANSFERÊNCIAS (3 rolagens, 3 trocas) ============
 function openTransferWindow(nextComp){
-  state.transfer = {nextComp, swapsLeft:3, selectedIdx:-1, currentTeam:null};
+  state.transfer = {nextComp, swapsLeft:3, rollsLeft:5, selectedIdx:-1, currentTeam:null};
   $('#match').classList.remove('open');
   $('#transfer-modal').classList.add('open');
   renderTransfer();
@@ -2632,7 +2632,7 @@ function renderTransfer(){
   const tf = state.transfer;
   const nextLabel = tf.nextComp==='libertadores'?'LIBERTADORES':tf.nextComp==='champions'?'CHAMPIONS LEAGUE':'MUNDIAL DE CLUBES';
   $('#tf-title').textContent = `🔄 JANELA DE TRANSFERÊNCIAS · ${nextLabel}`;
-  $('#tf-info').textContent = `${tf.swapsLeft} troca${tf.swapsLeft!==1?'s':''} disponível${tf.swapsLeft!==1?'eis':''} · role o dado quantas vezes quiser`;
+  $('#tf-info').innerHTML = `<b style="color:var(--gold)">${tf.swapsLeft}</b> troca${tf.swapsLeft!==1?'s':''} · <b style="color:var(--neon)">${tf.rollsLeft}</b> rolagem${tf.rollsLeft!==1?'ns':''} restante${tf.rollsLeft!==1?'s':''}`;
   // lineup atual
   $('#tf-lineup').innerHTML = state.lineup.map((p,i)=>{
     const slot = SLOTS[i];
@@ -2653,12 +2653,16 @@ function renderTransfer(){
   // dado e roster
   const dice = $('#tf-dice-box');
   if(tf.swapsLeft<=0){
-    dice.innerHTML = '<p style="color:var(--gold);text-align:center;padding:14px;font-size:12px">Todas as trocas usadas. Clique em continuar.</p>';
+    dice.innerHTML = '<p style="color:var(--gold);text-align:center;padding:14px;font-size:12px">✓ Todas as trocas usadas. Clique em continuar.</p>';
+  } else if(tf.rollsLeft<=0 && !tf.currentTeam){
+    dice.innerHTML = '<p style="color:var(--red);text-align:center;padding:14px;font-size:12px">💀 Sem mais rolagens. Use uma troca ou continue.</p>';
   } else if(tf.selectedIdx<0){
     dice.innerHTML = '<p style="color:var(--muted);text-align:center;padding:14px;font-size:12px">Selecione um jogador acima para trocar</p>';
   } else if(!tf.currentTeam){
-    dice.innerHTML = `<button class="roll-btn full" id="tf-roll">🎲 ROLAR DADO</button>`;
+    dice.innerHTML = `<button class="roll-btn full" id="tf-roll">🎲 ROLAR DADO (${tf.rollsLeft} restante${tf.rollsLeft!==1?'s':''})</button>`;
     $('#tf-roll').onclick = ()=>{
+      if(tf.rollsLeft<=0){ toast('Sem rolagens!','err'); return; }
+      tf.rollsLeft--;
       const slotPos = SLOTS[tf.selectedIdx].pos;
       const positionsOK = p => (p.pos===slotPos) || (p.pos2===slotPos);
       const pool = TIMES.filter(team => team.jogadores.some(positionsOK));
@@ -2687,7 +2691,7 @@ function renderTransfer(){
           </div>`;
         }).join('')}
       </div>
-      <button class="roll-btn full" id="tf-skip" style="margin-top:10px;background:transparent;border:1px solid var(--line);color:var(--muted)">PULAR (rolar de novo)</button>`;
+      ${tf.rollsLeft>0 ? `<button class="roll-btn full" id="tf-skip" style="margin-top:10px;background:transparent;border:1px solid var(--line);color:var(--muted)">PULAR (rolar de novo · ${tf.rollsLeft} restante${tf.rollsLeft!==1?'s':''})</button>` : `<p style="color:var(--red);text-align:center;padding:10px;font-size:11px;margin-top:8px">💀 Sem mais rolagens</p>`}`;
     $$('#tf-dice-box .pl').forEach(el=>{
       el.onclick = ()=>{
         const p = team.jogadores[+el.dataset.j];
@@ -2704,7 +2708,15 @@ function renderTransfer(){
         else renderTransfer();
       };
     });
-    $('#tf-skip').onclick = ()=>{ tf.currentTeam=null; renderTransfer(); };
+    if($('#tf-skip')) $('#tf-skip').onclick = ()=>{
+      if(tf.rollsLeft<=0){ toast('Sem rolagens!','err'); return; }
+      tf.rollsLeft--;
+      const slotPos = SLOTS[tf.selectedIdx].pos;
+      const positionsOK = p => (p.pos===slotPos) || (p.pos2===slotPos);
+      const pool = TIMES.filter(team => team.jogadores.some(positionsOK));
+      tf.currentTeam = pick(pool);
+      renderTransfer();
+    };
   }
 }
 
