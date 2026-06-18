@@ -1019,8 +1019,8 @@
       <div class="setup-label">3 · ESTILO</div>
       <div class="setup-grid style-grid" id="setup-style">
         <button class="setup-card mini" data-style="ofensivo" title="Pressão alta, mais gols a favor e contra"><div class="sc-icon">⚔️</div><div class="sc-ttl">OFENSIVO</div></button>
-        <button class="setup-card mini active" data-style="equilibrado" title="Padrão equilibrado"><div class="sc-icon">⚖️</div><div class="sc-ttl">EQUILIBRADO</div></button>
         <button class="setup-card mini" data-style="defensivo" title="Trinca atrás, sai no contra-ataque"><div class="sc-icon">🛡️</div><div class="sc-ttl">DEFENSIVO</div></button>
+        <button class="setup-card mini active" data-style="equilibrado" title="Padrão equilibrado"><div class="sc-icon">⚖️</div><div class="sc-ttl">EQUILIBRADO</div></button>
       </div>
     </div>
 
@@ -1066,8 +1066,6 @@
     <div class="setup-foot">
       <button class="history-btn" id="btn-history">📊 Histórico</button>
       <button class="history-btn" id="btn-ach">🏅 Conquistas</button>
-      <button class="history-btn" id="btn-rank">🏆 Ranking</button>
-      <button class="history-btn" id="challenge-paste">⚔️ Colar desafio</button>
     </div>
   </div>
 </div>
@@ -5133,28 +5131,17 @@ checkChallengeFromURL();
 
 $('#btn-ach').onclick = ()=>{ renderAchievements(); $('#ach-modal').classList.add('open'); };
 $('#ach-close').onclick = ()=>$('#ach-modal').classList.remove('open');
-$('#btn-rank').onclick = ()=>openRanking();
-$('#rank-close').onclick = ()=>$('#rank-modal').classList.remove('open');
-$('#share-close').onclick = ()=>$('#share-modal').classList.remove('open');
-$('#share-copy-link').onclick = ()=>{
+const _rankClose = $('#rank-close'); if(_rankClose) _rankClose.onclick = ()=>$('#rank-modal').classList.remove('open');
+const _shareClose = $('#share-close'); if(_shareClose) _shareClose.onclick = ()=>$('#share-modal').classList.remove('open');
+const _shareLink = $('#share-copy-link'); if(_shareLink) _shareLink.onclick = ()=>{
   $('#share-link').select();
   navigator.clipboard.writeText($('#share-link').value);
   toast('🔗 Link copiado!','ok');
 };
-$('#share-copy-code').onclick = ()=>{
+const _shareCode = $('#share-copy-code'); if(_shareCode) _shareCode.onclick = ()=>{
   $('#share-code').select();
   navigator.clipboard.writeText($('#share-code').value);
   toast('📋 Código copiado!','ok');
-};
-$('#challenge-paste').onclick = ()=>{
-  const txt = prompt('Cole o código ou link do desafio:');
-  if(!txt) return;
-  const m = txt.match(/[A-Za-z0-9_\-]+$/);
-  if(!m) return toast('Código inválido','err');
-  const data = decodeXI(m[0]);
-  if(!data) return toast('Código inválido','err');
-  state.challenge = data;
-  toast(`✓ Desafio aceito: ${data.n}`);
 };
 
 // ============ SISTEMA DE BUFFS ============
