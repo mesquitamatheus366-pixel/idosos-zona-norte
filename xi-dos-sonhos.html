@@ -929,10 +929,11 @@
   @keyframes epIconPulse{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.1) rotate(-3deg)}}
   .event-popup .ep-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2.5px;color:var(--gold);margin-bottom:8px;text-shadow:0 0 16px rgba(245,200,66,.5)}
   .event-popup .ep-txt{font-family:'Outfit',sans-serif;font-size:13px;color:#cbd5e1;line-height:1.45;margin-bottom:12px;max-width:340px;margin-left:auto;margin-right:auto}
-  .event-popup .ep-dur{font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:2px;color:var(--neon);font-weight:700;margin-bottom:8px}
-  .event-popup .ep-bar{height:4px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden}
-  .event-popup .ep-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--neon));width:100%;animation:epBarShrink 3.2s linear forwards;transform-origin:left}
-  @keyframes epBarShrink{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+  .event-popup .ep-dur{font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:2px;color:var(--neon);font-weight:700;margin-bottom:14px}
+  .event-popup .ep-btn{background:linear-gradient(180deg,var(--gold),#d4a020);color:#1a1206;border:none;padding:12px 24px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;border-radius:8px;cursor:pointer;font-weight:400;box-shadow:0 4px 14px rgba(245,200,66,.4),inset 0 -2px 0 rgba(0,0,0,.15);pointer-events:auto;transition:transform .15s}
+  .event-popup .ep-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(245,200,66,.5)}
+  .event-popup .ep-btn:active{transform:translateY(0)}
+  .event-popup.show{pointer-events:auto}
   /* Variações por tipo */
   .event-popup.weather{border-color:#818cf8;box-shadow:0 0 60px rgba(99,102,241,.4),0 30px 60px rgba(0,0,0,.7)}
   .event-popup.weather .ep-title{color:#a5b4fc;text-shadow:0 0 16px rgba(99,102,241,.5)}
@@ -2726,6 +2727,8 @@ function showEventPopup(ev){
   const host = document.getElementById('match-box') || document.body;
   let pop = document.getElementById('event-popup');
   if(pop) pop.remove();
+  // Pausa a partida
+  if(state.matchTick){ clearInterval(state.matchTick); state.matchTick = null; }
   pop = document.createElement('div');
   pop.id = 'event-popup';
   pop.className = 'event-popup ' + (ev.cls || '');
@@ -2734,15 +2737,23 @@ function showEventPopup(ev){
     <div class="ep-title">${ev.title}</div>
     <div class="ep-txt">${ev.txt}</div>
     <div class="ep-dur">⏱ DURA ${ev.dur} MINUTOS</div>
-    <div class="ep-bar"><div class="ep-bar-fill"></div></div>`;
+    <button class="ep-btn" id="ep-continue">CONTINUAR PARTIDA →</button>`;
   host.appendChild(pop);
   void pop.offsetWidth;
   pop.classList.add('show');
-  setTimeout(()=>{
+  const dismiss = ()=>{
+    if(!pop || pop.dataset.done) return;
+    pop.dataset.done='1';
     pop.classList.remove('show');
     pop.classList.add('hide');
-    setTimeout(()=>pop.remove(), 350);
-  }, 3200);
+    setTimeout(()=>{ if(pop) pop.remove(); }, 300);
+    // Retoma a partida
+    if(state.matchTickFn && !state.matchTick){
+      state.matchTick = setInterval(state.matchTickFn, state.speed);
+    }
+  };
+  const btn = pop.querySelector('#ep-continue');
+  if(btn) btn.onclick = dismiss;
 }
 
 function runLiveMatch(foe, onEnd){
